@@ -1,8 +1,19 @@
 -module(ebt_task_otp_app).
 
+-compile({parse_transform, do}).
 -behaviour(ebt_task).
 
--export([perform/2]).
+-export([perform/3]).
 
-perform(Dir, _Config) ->
-    ebt:report("otp-app...~s", [Dir]).
+perform(Dir, Config, Defaults) ->
+	do([error_m ||
+		App <- ebt_applib:appname(Dir, Config),
+		ProdDir <- ebt_config:production_outdir(Config, Defaults),
+		DistDir <- ebt_config:dist_outdir(Config, Defaults),
+		Archive <- return(strikead_string:join([DistDir, "/", App, ".ez"],"")),
+		ebt:report("Packing ~s", [Archive]),
+		zip:create(Archive, [App], [
+				{cwd, ProdDir},
+				{compress, all}, {uncompress,[".beam",".app"]}
+		])
+	]).

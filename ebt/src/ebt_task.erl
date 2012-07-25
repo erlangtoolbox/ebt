@@ -5,22 +5,22 @@
 -type target() :: {Name :: atom(), Module :: atom(), Depends :: [atom()]}.
 -export([behaviour_info/1]).
 
--export([perform/3]).
+-export([perform/4]).
 
 behaviour_info(callbacks) ->
-	[{perform, 2}];
+	[{perform, 3}];
 
 behaviour_info(_) ->
 	undefined.
 
--spec perform/3 :: (atom(), file:filename(), ebt_config:config()) ->
+-spec perform/4 :: (atom(), file:name(), ebt_config:config(), strikead_lists:kvlist_at()) ->
 	error_m:monad(any()).
-perform(Target, Dir, Config) ->
+perform(Target, Dir, Config, Defaults) ->
 	do([error_m ||
 		{_Target, Module, Depends} <- find_target(Target),
-		strikead_lists:eforeach(fun(T) -> perform(T, Dir, Config) end, Depends),
+		strikead_lists:eforeach(fun(T) -> perform(T, Dir, Config, Defaults) end, Depends),
 		ebt:report_target(Target),
-		Module:perform(Dir, Config)
+		Module:perform(Dir, Config, Defaults)
 	]).
 
 -spec find_target/1 :: (atom()) -> error_m:monad(target()).

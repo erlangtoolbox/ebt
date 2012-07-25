@@ -9,7 +9,8 @@
 	{env, [
 		{targets, [
 			{erlc, ebt_task_erlc, []},
-			{'otp-app', ebt_task_otp_app, [erlc]}
+			{'otp-app', ebt_task_otp_app, [erlc]},
+			{nothing, ebt_task_nothing, []}
 		]}
 	]}
 ]}.
