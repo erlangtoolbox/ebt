@@ -7,7 +7,7 @@
 -export_types([config/0, defaults/0]).
 
 -export([read/1, value/3, find_value/3, app_production_outdir/3,
-	production_outdir/2, dist_outdir/2, version/1]).
+	production_outdir/2, dist_outdir/2, version/1, appname/2]).
 
 -spec read/1 :: (file:name()) -> error_m:monad(config()).
 read(Filename) ->
@@ -43,7 +43,7 @@ outdir(Config, Defaults, Suffix) ->
 	maybe_m:monad(string()).
 app_production_outdir(Dir, Config, Defaults) ->
 	do([error_m ||
-		App <- ebt_applib:appname(Dir, Config),
+		App <- appname(Dir, Config),
 		ProdOutDir <- production_outdir(Config, Defaults),
 		return(filename:join(ProdOutDir, App))
 	]).
@@ -54,3 +54,11 @@ version(Config) ->
 		{ok, {shell, X}} -> {ok, os:cmd(X)};
 		_ -> {ok, "0.0.1"}
 	end.
+
+-spec appname/2 :: (file:name(), ebt_config:config()) -> error_m:monad(string()).
+appname(Dir, Config) ->
+	do([error_m ||
+		{_, Name, _} <- ebt_applib:load(Dir),
+		Version <- ebt_config:version(Config),
+		return(strikead_string:join([Name, Version],"-"))
+	]).

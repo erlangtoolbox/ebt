@@ -2,7 +2,7 @@
 
 -compile({parse_transform, do}).
 
--export([load/1, update/2, appname/2]).
+-export([load/1, update/2]).
 
 -spec load/1 :: (file:name()) -> error_m:monad(application:application_spec()).
 load(Dir) ->
@@ -23,10 +23,3 @@ load(Dir) ->
 update({application, App, Params}, Param) ->
     {application, App, strikead_lists:keyreplace_or_add(1, Params, Param)}.
 
--spec appname/2 :: (file:name(), ebt_config:config()) -> error_m:monad(string()).
-appname(Dir, Config) ->
-	do([error_m ||
-		{_, Name, _} <- load(Dir),
-		Version <- ebt_config:version(Config),
-		return(strikead_string:join([Name, Version],"-"))
-	]).
