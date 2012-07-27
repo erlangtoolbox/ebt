@@ -11,9 +11,9 @@ perform(Dir, Config, Defaults) ->
 		ProdDir <- ebt_config:production_outdir(Config, Defaults),
 		DistDir <- ebt_config:dist_outdir(Config, Defaults),
 		Archive <- return(strikead_string:join([DistDir, "/", App, ".ez"],"")),
-		ebt:report("Packing ~s", [Archive]),
+		io:format("Packing ~s~n", [Archive]),
 		zip:create(Archive, [App], [
 				{cwd, ProdDir},
-				{compress, all}, {uncompress,[".beam",".app"]}
+				{compress, all}, {uncompress, [".beam",".app"]}
 		])
 	]).

@@ -19,7 +19,7 @@ perform(Target, Dir, Config, Defaults) ->
 	do([error_m ||
 		{_Target, Module, Depends} <- find_target(Target),
 		strikead_lists:eforeach(fun(T) -> perform(T, Dir, Config, Defaults) end, Depends),
-		ebt:report_target(Target),
+		io:format("~s:~n", [Target]),
 		Module:perform(Dir, Config, Defaults)
 	]).
 

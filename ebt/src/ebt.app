@@ -8,9 +8,9 @@
 	]},
 	{env, [
 		{targets, [
-			{erlc, ebt_task_erlc, []},
-			{'otp-app', ebt_task_otp_app, [erlc]},
-			{nothing, ebt_task_nothing, []}
+			{compile, ebt_task_compile, []},
+			{'otp-app', ebt_task_otp_app, [compile]},
+			{escript, ebt_task_escript, [compile]}
 		]}
 	]}
 ]}.

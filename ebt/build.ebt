@@ -1,1 +1,5 @@
-{version, {shell, "echo -n 0.1.0.$BUILD_NUMBER"}}.
+{version, {shell, "../version.sh"}}.
+{targets, [escript, 'otp-app']}.
+{escript, [
+	{ebt, ""}
+]}.

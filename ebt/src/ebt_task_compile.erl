@@ -1,4 +1,4 @@
--module(ebt_task_erlc).
+-module(ebt_task_compile).
 
 -compile({parse_transform, do}).
 
@@ -38,6 +38,6 @@ update_app(AppSpec = {_, App, _}, OutDir) ->
 -spec compile/3 :: (file:name(), file:name(), [any()]) -> error_m:monad(ok).
 compile(SrcDir, OutDir, Flags) ->
 	case make:files(filelib:wildcard(SrcDir ++ "/*.erl"), [{outdir, OutDir} | Flags]) of
-		up_to_date -> ebt:report("...compiled");
+		up_to_date -> io:format("...compiled~n");
 		error -> {error, "Compilation failed!"}
 	end.

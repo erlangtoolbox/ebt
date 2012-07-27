@@ -6,7 +6,7 @@
 -type defaults() :: strikead_lists:kvlist_at().
 -export_types([config/0, defaults/0]).
 
--export([read/1, value/3, find_value/3, app_production_outdir/3,
+-export([read/1, value/3, find_value/3, outdir/2, app_production_outdir/3,
 	production_outdir/2, dist_outdir/2, version/1, appname/2]).
 
 -spec read/1 :: (file:name()) -> error_m:monad(config()).
@@ -31,6 +31,9 @@ production_outdir(Config, Defaults) -> outdir(Config, Defaults, "production").
 
 -spec dist_outdir/2 :: (config(), defaults()) -> error_m:monad(string()).
 dist_outdir(Config, Defaults) -> outdir(Config, Defaults, "dist").
+
+-spec outdir/2 :: (config(), defaults()) -> error_m:monad(string()).
+outdir(Config, Defaults) -> outdir(Config, Defaults, "").
 
 -spec outdir/3 :: (config(), defaults(), string()) -> error_m:monad(string()).
 outdir(Config, Defaults, Suffix) ->
