@@ -20,14 +20,14 @@ main(_Args) ->
     end,
     ok = filelib:ensure_dir(?TARGET),
     case zip:create("memory", load_files([
-    	?BUILD_DIR ++ "/*",
-    	?SOURCES ++ "/*.app",
-    	?LIB_DIRS ++ "/*"
+        ?BUILD_DIR ++ "/*",
+        ?SOURCES ++ "/*.app",
+        ?LIB_DIRS ++ "/*"
     ]), [memory]) of
         {ok, {"memory", ZipBin}} ->
             Header =
-            	"#!/usr/bin/env escript\n"
-            	"%%! -noshell -noinput\n",
+                "#!/usr/bin/env escript\n"
+                "%%! -noshell -noinput\n",
             case file:write_file(?TARGET, iolist_to_binary([Header, ZipBin])) of
                 ok -> ok;
                 {error, Error} ->
@@ -44,9 +44,9 @@ main(_Args) ->
     io:format(os:cmd(?TARGET)).
 
 load_files(Wildcards) ->
-	[read_file(Filename) ||
-		Wildcard <- Wildcards,
-		Filename <- filelib:wildcard(Wildcard)].
+    [read_file(Filename) ||
+        Wildcard <- Wildcards,
+        Filename <- filelib:wildcard(Wildcard)].
 
 read_file(Filename) ->
     {lists:last(filename:split(Filename)), file_contents(Filename)}.
