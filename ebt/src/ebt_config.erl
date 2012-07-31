@@ -6,7 +6,7 @@
 -type defaults() :: strikead_lists:kvlist_at().
 -export_types([config/0, defaults/0]).
 
--export([read/1, value/3, find_value/3, outdir/2, app_production_outdir/3,
+-export([read/1, value/3, value/4, find_value/3, outdir/2, app_production_outdir/3,
     production_outdir/2, dist_outdir/2, version/1, appname/2]).
 
 -spec read/1 :: (file:name()) -> error_m:monad(config()).
@@ -25,6 +25,13 @@ find_value(Key, Config, Defaults) when is_list(Defaults)->
 
 -spec value/3 :: (atom(), config(), any()) -> any().
 value(Key, Config, Default) -> strikead_lists:kvfind(Key, Config, Default).
+
+-spec value/4 :: (atom(), config(), atom(), any()) -> any().
+value(Key, Config, InnerKey, Default) ->
+    case strikead_lists:kvfind(Key, Config) of
+        {ok, V} -> strikead_lists:kvfind(V, InnerKey, Default);
+        undefined -> Default
+    end.
 
 -spec production_outdir/2 :: (config(), defaults()) -> error_m:monad(string()).
 production_outdir(Config, Defaults) -> outdir(Config, Defaults, "production").

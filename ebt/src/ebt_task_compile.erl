@@ -15,7 +15,7 @@ perform(Dir, Config, Defaults) ->
         AppOutDir <- ebt_config:app_production_outdir(Dir, Config, Defaults),
         OutDir <- return(AppOutDir ++ "/ebin"),
         strikead_file:mkdirs(OutDir),
-        compile(SrcDir, OutDir, []),
+        compile(SrcDir, OutDir, ebt_config:value(compile, Config, flags, [])),
         AppSpec <- ebt_applib:load(Dir),
         update_app(AppSpec, OutDir)
     ]).
