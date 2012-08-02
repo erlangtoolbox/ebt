@@ -1,5 +1,5 @@
 {version, {shell, "../version.sh"}}.
-{targets, [escript, 'otp-app']}.
+{targets, [clean, escript, 'otp-app']}.
 {libraries, ["../lib"]}.
 {escript, [
     {ebt, "-noshell -noinput"}
