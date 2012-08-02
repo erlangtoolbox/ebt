@@ -19,7 +19,7 @@ main(Args) ->
     end.
 
 build([{output, OutDir}]) ->
-    Defaults = [{targets, ['otp-app']}, {output, filename:absname(OutDir)}],
+    Defaults = [{output, filename:absname(OutDir)}],
     case build(".", Defaults) of
         ok ->
             io:format("BUILD SUCCESSFUL!~n");
@@ -41,6 +41,10 @@ build(ContextDir, Defaults) ->
 build(ContextDir, Config, Defaults) ->
     do([error_m ||
         OutDir <- ebt_config:outdir(Config, Defaults),
+        strikead_lists:eforeach(fun(T) ->
+            io:format("prepare => ~s ~s~n", [T, ContextDir]),
+            ebt_task:perform(T, ContextDir, Config, Defaults)
+        end, ebt_config:value(targets, Config, prepare, [])),
         strikead_lists:eforeach(
             fun(Dir) ->
                 io:format("==> entering ~s~n", [Dir]),
@@ -55,12 +59,8 @@ build(ContextDir, Config, Defaults) ->
             end,
             ebt_config:value(subdirs, Config, [])
         ),
-        Targets <- maybe_m:to_error_m(
-            ebt_config:find_value(targets, Config, Defaults),
-            "no target"
-        ),
         strikead_lists:eforeach(fun(T) ->
-        io:format("==> ~s ~s~n", [T, ContextDir]),
+            io:format("perform => ~s ~s~n", [T, ContextDir]),
             ebt_task:perform(T, ContextDir, Config, Defaults)
-        end, Targets)
+        end, ebt_config:value(targets, Config, perform, ['otp-app']))
     ]).

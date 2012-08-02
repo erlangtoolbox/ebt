@@ -1,2 +1,5 @@
 {subdirs, ["ebt"]}.
-{targets, []}.
+{targets, [
+    {prepare, [clean]},
+    {perform, []}
+]}.

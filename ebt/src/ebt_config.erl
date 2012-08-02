@@ -30,7 +30,7 @@ value(Key, Config, Default) -> strikead_lists:kvfind(Key, Config, Default).
 -spec value/4 :: (atom(), config(), atom(), any()) -> any().
 value(Key, Config, InnerKey, Default) ->
     case strikead_lists:kvfind(Key, Config) of
-        {ok, V} -> strikead_lists:kvfind(V, InnerKey, Default);
+        {ok, V} -> strikead_lists:kvfind(InnerKey, V, Default);
         undefined -> Default
     end.
 
