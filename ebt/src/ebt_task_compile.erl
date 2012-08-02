@@ -17,7 +17,7 @@ perform(Dir, Config, Defaults) ->
         strikead_file:mkdirs(OutDir),
         compile(SrcDir, OutDir, ebt_config:value(compile, Config, flags, [])),
         AppSpec <- ebt_applib:load(Dir),
-        update_app(AppSpec, OutDir),
+        update_app(AppSpec, OutDir, Config),
         strikead_file:copy_if_exists(Dir ++ "/include", AppOutDir),
         strikead_file:copy_if_exists(Dir ++ "/priv", AppOutDir),
         strikead_file:copy_if_exists(Dir ++ "/bin", AppOutDir)
@@ -29,14 +29,15 @@ load_libs(Config) ->
     [code:add_path(Dir ++ "/ebin") || Dir <- Libs],
     ok.
 
--spec update_app/2 :: ({application, atom(), strikead_lists:kvlist_at()}, file:name()) ->
+-spec update_app/3 :: (application:application_spec(), file:name(), ebt_config:config()) ->
     error_m:monad(ok).
-update_app(AppSpec = {_, App, _}, OutDir) ->
+update_app(AppSpec = {_, App, _}, OutDir, Config) ->
     Filename = strikead_string:join([OutDir, "/", App, ".app"], ""),
     Modules = [list_to_atom(filename:basename(F, ".beam")) ||
         F <- filelib:wildcard(OutDir ++ "/*.beam")],
+    {ok, Version} = ebt_config:version(Config),
     strikead_file:write_terms(Filename,
-            ebt_applib:update(AppSpec, {modules, Modules})).
+            ebt_applib:update(AppSpec, [{modules, Modules}, {vsn, Version}])).
 
 -spec compile/3 :: (file:name(), file:name(), [any()]) -> error_m:monad(ok).
 compile(SrcDir, OutDir, Flags) ->

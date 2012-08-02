@@ -18,8 +18,8 @@ load(Dir) ->
         _ -> {error, "failed to locate single app file in " ++ SrcDir}
     end.
 
--spec update/2 :: (application:application_spec(), application:application_opt())
+-spec update/2 :: (application:application_spec(), [application:application_opt()])
     -> application:application_spec().
-update({application, App, Params}, Param) ->
-    {application, App, strikead_lists:keyreplace_or_add(1, Params, Param)}.
+update({application, App, Params}, Updates) ->
+    {application, App, lists:foldl(fun(P, Ps) -> strikead_lists:keyreplace_or_add(1, Ps, P) end, Params, Updates)}.
 
