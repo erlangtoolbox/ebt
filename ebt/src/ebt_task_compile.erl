@@ -17,7 +17,10 @@ perform(Dir, Config, Defaults) ->
         strikead_file:mkdirs(OutDir),
         compile(SrcDir, OutDir, ebt_config:value(compile, Config, flags, [])),
         AppSpec <- ebt_applib:load(Dir),
-        update_app(AppSpec, OutDir)
+        update_app(AppSpec, OutDir),
+        strikead_file:copy_if_exists(Dir ++ "/include", AppOutDir),
+        strikead_file:copy_if_exists(Dir ++ "/priv", AppOutDir),
+        strikead_file:copy_if_exists(Dir ++ "/bin", AppOutDir)
     ]).
 
 -spec load_libs/1 :: (ebt_config:config()) -> ok.
@@ -37,7 +40,7 @@ update_app(AppSpec = {_, App, _}, OutDir) ->
 
 -spec compile/3 :: (file:name(), file:name(), [any()]) -> error_m:monad(ok).
 compile(SrcDir, OutDir, Flags) ->
-    case make:files(filelib:wildcard(SrcDir ++ "/*.erl"), [{outdir, OutDir} | Flags]) of
+    case make:files(filelib:wildcard(SrcDir ++ "/*.erl"), [{outdir, OutDir}, {i, SrcDir ++ "/../include"} | Flags]) of
         up_to_date -> io:format("...compiled~n");
         error -> {error, "Compilation failed!"}
     end.

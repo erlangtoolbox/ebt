@@ -12,8 +12,9 @@
 -spec read/1 :: (file:name()) -> error_m:monad(config()).
 read(Filename) ->
     case strikead_file:exists(Filename) of
-        true -> strikead_file:read_terms(Filename);
-        false -> {ok, []}
+        {ok, true} -> strikead_file:read_terms(Filename);
+        {ok, false} -> {ok, []};
+        E -> E
     end.
 
 -spec find_value/3 :: (atom(), config(), defaults()) -> maybe_m:monad(any()).

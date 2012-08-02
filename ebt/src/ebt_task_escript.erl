@@ -24,7 +24,8 @@ perform(Dir, Config, Defaults) ->
                     "#!/usr/bin/env escript\n%%! " ++ Params ++ "\n", Zip
                 ])),
                 #file_info{mode = Mode} <- strikead_file:read_file_info(Path),
-                strikead_file:change_mode(Path, Mode bor 8#00100)
+                strikead_file:change_mode(Path, Mode bor 8#00100),
+                io:format("created ~s~n", [Path])
             ])
         end, Scripts)
     ]).
