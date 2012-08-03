@@ -7,7 +7,7 @@
 -export_types([config/0, defaults/0]).
 
 -export([read/1, value/3, value/4, find_value/3, outdir/2, app_production_outdir/3,
-    production_outdir/2, dist_outdir/2, version/1, appname/2]).
+    production_outdir/2, dist_outdir/2, version/1, appname/2, app_test_outdir/3, test_outdir/2]).
 
 -spec read/1 :: (file:name()) -> error_m:monad(config()).
 read(Filename) ->
@@ -37,6 +37,9 @@ value(Key, Config, InnerKey, Default) ->
 -spec production_outdir/2 :: (config(), defaults()) -> error_m:monad(string()).
 production_outdir(Config, Defaults) -> outdir(Config, Defaults, "production").
 
+-spec test_outdir/2 :: (config(), defaults()) -> error_m:monad(string()).
+test_outdir(Config, Defaults) -> outdir(Config, Defaults, "test").
+
 -spec dist_outdir/2 :: (config(), defaults()) -> error_m:monad(string()).
 dist_outdir(Config, Defaults) -> outdir(Config, Defaults, "dist").
 
@@ -55,8 +58,17 @@ outdir(Config, Defaults, Suffix) ->
 app_production_outdir(Dir, Config, Defaults) ->
     do([error_m ||
         App <- appname(Dir, Config),
-        ProdOutDir <- production_outdir(Config, Defaults),
-        return(filename:join(ProdOutDir, App))
+        OutDir <- production_outdir(Config, Defaults),
+        return(filename:join(OutDir, App))
+    ]).
+
+-spec app_test_outdir/3 :: (file:name(), config(), defaults()) ->
+    maybe_m:monad(string()).
+app_test_outdir(Dir, Config, Defaults) ->
+    do([error_m ||
+        App <- appname(Dir, Config),
+        OutDir <- test_outdir(Config, Defaults),
+        return(filename:join(OutDir, App))
     ]).
 
 -spec version/1 :: (config()) -> error_m:monad(string()).
