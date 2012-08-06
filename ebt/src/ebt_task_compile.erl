@@ -9,19 +9,28 @@
 -spec perform/3 :: (file:name(), ebt_config:config(), ebt_config:defaults()) ->
     error_m:monad(ok).
 perform(Dir, Config, Defaults) ->
+    SrcDir = Dir ++ "/src",
+    TestDir = Dir ++ "/test",
     do([error_m ||
         AppProdDir <- ebt_config:app_production_outdir(Dir, Config, Defaults),
         EbinProdDir <- return(AppProdDir ++ "/ebin"),
-        compile(Dir ++ "/src", EbinProdDir, Config),
+        compile(SrcDir, EbinProdDir, Config),
         AppSpec <- ebt_applib:load(Dir),
         update_app(AppSpec, EbinProdDir, Config),
         strikead_file:copy_if_exists(Dir ++ "/include", AppProdDir),
         strikead_file:copy_if_exists(Dir ++ "/priv", AppProdDir),
         strikead_file:copy_if_exists(Dir ++ "/bin", AppProdDir),
+        copy_resources(SrcDir,
+            ebt_config:value(compile, Config, resources, []), EbinProdDir),
         AppTestDir <- ebt_config:app_test_outdir(Dir, Config, Defaults),
         EbinTestDir <- return(AppTestDir ++ "/ebin"),
         case strikead_file:exists(Dir ++ "/test") of
-            {ok, true} -> compile(Dir ++ "/test", EbinTestDir, Config);
+            {ok, true} ->
+                do([error_m ||
+                    compile(TestDir, EbinTestDir, Config),
+                    copy_resources(TestDir,
+                        ebt_config:value(compile, Config, resources, []), EbinTestDir)
+                ]);
             {ok, false} -> ok;
             E -> E
         end
@@ -56,3 +65,10 @@ load_libraries(Config) ->
     [code:add_path(Lib ++ "/ebin") ||
         LibDir <- ebt_config:value(libraries, Config, []),
         Lib <- filelib:wildcard(LibDir ++ "/*")].
+
+-spec copy_resources(file:name(), [string()], file:name()) -> error_m:monad(ok).
+copy_resources(BaseDir, Wildcards, DestDir) ->
+    strikead_lists:eforeach(fun(F) ->
+        io:format("copy ~s to ~s~n", [F, DestDir]),
+        strikead_file:copy(F, DestDir)
+    end, [F || WC <- Wildcards, F <- filelib:wildcard(BaseDir ++ "/" ++ WC)]).
