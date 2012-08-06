@@ -21,7 +21,7 @@ perform(Dir, Config, Defaults) ->
                 strikead_lists:eforeach(fun(Module) ->
                     io:format("test ~p~n", [Module]),
                     case eunit:test(Module) of
-                        error -> {error, test_failed};
+                        error -> {error, {test_failed, Module}};
                         ok -> ok
                     end
                 end, lists:map(fun(F) ->
