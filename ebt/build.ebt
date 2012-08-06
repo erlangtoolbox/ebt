@@ -1,6 +1,6 @@
 {version, {shell, "../version.sh"}}.
 {targets, [
-    {perform, ['otp-app', escript]}
+    {perform, [escript, 'otp-app']}
 ]}.
 {libraries, ["../lib"]}.
 {escript, [
