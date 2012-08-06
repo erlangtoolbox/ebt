@@ -54,7 +54,7 @@ compile(SrcDir, OutDir, Config) ->
         Includes <- return([{i, Lib} || Lib <- ebt_config:value(libraries, Config, [])]),
         Flags <- return(ebt_config:value(compile, Config, flags, []) ++ Includes),
         strikead_file:mkdirs(OutDir),
-        case make:files(filelib:wildcard(SrcDir ++ "/*.erl"), [{outdir, OutDir} | Flags]) of
+        case make:files(filelib:wildcard(SrcDir ++ "/*.erl"), [{outdir, OutDir}, {i, SrcDir ++ "/../include"} | Flags]) of
             up_to_date -> io:format("...compiled~n");
             error -> {error, "Compilation failed!"}
         end
