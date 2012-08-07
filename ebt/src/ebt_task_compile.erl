@@ -48,8 +48,8 @@ update_app(AppSpec = {_, App, _}, EbinProdDir, Config) ->
 
 -spec compile/3 :: (file:name(), file:name(), ebt_config:config()) -> error_m:monad(ok).
 compile(SrcDir, OutDir, Config) ->
-    load_libraries(Config),
     do([error_m ||
+        ebt:load_libraries(Config),
         io:format("compiling ~s to ~s~n", [SrcDir, OutDir]),
         Includes <- return([{i, Lib} || Lib <- ebt_config:value(libraries, Config, [])]),
         Flags <- return(ebt_config:value(compile, Config, flags, []) ++ Includes),
@@ -59,12 +59,6 @@ compile(SrcDir, OutDir, Config) ->
             error -> {error, "Compilation failed!"}
         end
     ]).
-
--spec load_libraries/1 :: (ebt_config:config()) -> [file:name()].
-load_libraries(Config) ->
-    [code:add_path(Lib ++ "/ebin") ||
-        LibDir <- ebt_config:value(libraries, Config, []),
-        Lib <- filelib:wildcard(LibDir ++ "/*")].
 
 -spec copy_resources(file:name(), [string()], file:name()) -> error_m:monad(ok).
 copy_resources(BaseDir, Wildcards, DestDir) ->

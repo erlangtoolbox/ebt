@@ -2,7 +2,7 @@
 
 -compile({parse_transform, do}).
 
--export([main/1]).
+-export([main/1, load_libraries/1, load_library/1]).
 
 -define(OPTS, [
     {output, $o, outdir, {string, "out"}, "output directory"}
@@ -58,3 +58,17 @@ build(ContextDir, Config, Defaults) ->
         ),
         ebt_task:perform(perform, ebt_config:value(targets, Config, perform, ['otp-app']), ContextDir, Config, Defaults)
     ]).
+
+-spec load_libraries/1 :: (ebt_config:config()) -> [file:name()].
+load_libraries(Config) ->
+    strikead_lists:eforeach(fun load_library/1, [Lib ||
+        LibDir <- ebt_config:value(libraries, Config, []),
+        Lib <- filelib:wildcard(LibDir ++ "/*")]).
+
+-spec load_library/1 :: (file:name()) -> error_m:monad(ok).
+load_library(Path) ->
+    case code:add_path(filename:join(Path, "ebin")) of
+        true -> ok;
+        {error, bad_directory} -> ok; % ignore
+        {error, E} -> {error, {load_library, E, Path}}
+    end.

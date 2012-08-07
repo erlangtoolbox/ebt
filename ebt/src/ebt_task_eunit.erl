@@ -11,25 +11,28 @@
 perform(Dir, Config, Defaults) ->
     do([error_m ||
         TestDir <- ebt_config:app_test_outdir(Dir, Config, Defaults),
+        ProdDir <- ebt_config:app_production_outdir(Dir, Config, Defaults),
         EbinTestDir <- return(filename:join(TestDir, "ebin")),
-        return(code:add_path(EbinTestDir)),
         case filelib:wildcard(EbinTestDir ++ "/*.beam") of
             [] ->
                 io:format("no tests in ~s~n", [EbinTestDir]),
                 ok;
             L ->
-                strikead_lists:eforeach(fun(Module) ->
-                    io:format("test ~p~n", [Module]),
-                    case eunit:test(Module) of
-                        error -> {error, {test_failed, Module}};
-                        ok -> ok
-                    end
-                end, lists:map(fun(F) ->
-                    io:format("~s~n", [F]),
-                    list_to_atom(filename:basename(F, "_tests.beam"))
-                end, lists:filter(fun(F) ->
-                    lists:suffix("_tests.beam", F)
-                end, L)))
+                do([error_m ||
+                    ebt:load_library(TestDir),
+                    ebt:load_library(ProdDir),
+                    strikead_lists:eforeach(fun(Module) ->
+                        io:format("test ~p~n", [Module]),
+                        case eunit:test(Module) of
+                            error -> {error, {test_failed, Module}};
+                            ok -> ok
+                        end
+                    end, lists:map(fun(F) ->
+                        list_to_atom(filename:basename(F, "_tests.beam"))
+                    end, lists:filter(fun(F) ->
+                        lists:suffix("_tests.beam", F)
+                    end, L)))
+                ])
         end
     ]).
 
