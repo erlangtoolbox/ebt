@@ -69,6 +69,8 @@ load_libraries(Config) ->
 load_library(Path) ->
     case code:add_path(filename:join(Path, "ebin")) of
         true -> ok;
-        {error, bad_directory} -> ok; % ignore
+        {error, bad_directory} ->
+            io:format("failed to load ~s~n", [Path]),
+            ok; % ignore
         {error, E} -> {error, {load_library, E, Path}}
     end.
