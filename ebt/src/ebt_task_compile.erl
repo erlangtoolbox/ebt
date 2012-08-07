@@ -69,7 +69,7 @@ compile(Files, SrcDir, Flags, OutDir, Config) ->
         end
     ]).
 
-    -spec copy_resources(file:name(), [string()], file:name()) -> error_m:monad(ok).
+-spec copy_resources(file:name(), [string()], file:name()) -> error_m:monad(ok).
 copy_resources(BaseDir, Wildcards, DestDir) ->
     strikead_lists:eforeach(fun(F) ->
         io:format("copy ~s to ~s~n", [F, DestDir]),
