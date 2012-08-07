@@ -49,7 +49,6 @@ update_app(AppSpec = {_, App, _}, EbinProdDir, Config) ->
 -spec compile/3 :: (file:name(), file:name(), ebt_config:config()) -> error_m:monad(ok).
 compile(SrcDir, OutDir, Config) ->
     do([error_m ||
-        ebt:load_libraries(Config),
         io:format("compiling ~s to ~s~n", [SrcDir, OutDir]),
         Includes <- return([{i, Lib} || Lib <- ebt_config:value(libraries, Config, [])]),
         Flags <- return(ebt_config:value(compile, Config, flags, []) ++ Includes),
@@ -57,18 +56,20 @@ compile(SrcDir, OutDir, Config) ->
         FirstFiles <- return(lists:filter(fun(F) ->
             strikead_file:exists(F) == {ok, true}
         end, [SrcDir ++ "/" ++ F || F <- ebt_config:value(compile, Config, first, [])])),
-        case make:files(FirstFiles, [{outdir, OutDir}, {i, SrcDir ++ "/../include"} | Flags]) of
-            up_to_date -> io:format("...compiled~n");
-            error -> {error, "Compilation failed!"}
-        end,
+        compile(FirstFiles, SrcDir, Flags, OutDir, Config),
+        compile(filelib:wildcard(SrcDir ++ "/*.erl"), SrcDir, Flags, OutDir, Config)
+    ]).
+
+compile(Files, SrcDir, Flags, OutDir, Config) ->
+    do([error_m||
         ebt:load_libraries(Config),
-        case make:files(filelib:wildcard(SrcDir ++ "/*.erl"), [{outdir, OutDir}, {i, SrcDir ++ "/../include"} | Flags]) of
+        case make:files(Files, [{outdir, OutDir}, {i, SrcDir ++ "/../include"} | Flags]) of
             up_to_date -> io:format("...compiled~n");
             error -> {error, "Compilation failed!"}
         end
     ]).
 
--spec copy_resources(file:name(), [string()], file:name()) -> error_m:monad(ok).
+    -spec copy_resources(file:name(), [string()], file:name()) -> error_m:monad(ok).
 copy_resources(BaseDir, Wildcards, DestDir) ->
     strikead_lists:eforeach(fun(F) ->
         io:format("copy ~s to ~s~n", [F, DestDir]),
