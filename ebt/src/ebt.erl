@@ -30,7 +30,7 @@ build([{output, OutDir}]) ->
 
 -spec build/2 :: (file:name(), strikead_lists:kvlist_at()) -> error_m:monad(any()).
 build(ContextDir, Defaults) ->
-    ConfigFile = filename:join(ContextDir, "build.ebt"),
+    ConfigFile = filename:join(ContextDir, "ebt.config"),
     do([error_m ||
         Config <- ebt_config:read(ConfigFile),
         build(ContextDir, Config, Defaults)
