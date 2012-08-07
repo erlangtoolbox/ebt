@@ -53,8 +53,11 @@ compile(SrcDir, OutDir, Config) ->
         io:format("compiling ~s to ~s~n", [SrcDir, OutDir]),
         Includes <- return([{i, Lib} || Lib <- ebt_config:value(libraries, Config, [])]),
         Flags <- return(ebt_config:value(compile, Config, flags, []) ++ Includes),
+        FirstFiles <- return(lists:filter(fun(F) ->
+            strikead_file:exists(F) == {ok, true}
+        end, [SrcDir ++ "/" ++ F || F <- ebt_config:value(compile, Config, first, [])])),
         strikead_file:mkdirs(OutDir),
-        case make:files(filelib:wildcard(SrcDir ++ "/*.erl"), [{outdir, OutDir}, {i, SrcDir ++ "/../include"} | Flags]) of
+        case make:files(FirstFiles ++ filelib:wildcard(SrcDir ++ "/*.erl"), [{outdir, OutDir}, {i, SrcDir ++ "/../include"} | Flags]) of
             up_to_date -> io:format("...compiled~n");
             error -> {error, "Compilation failed!"}
         end
