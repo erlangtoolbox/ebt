@@ -51,6 +51,11 @@ Libraries
 
 EScript
 -------
+    {targets, [
+        {prepare, [clean]},
+        {perform, [escript, 'otp-app']}
+    ]}
+
     {escript, [
         {escript1, "-noshell -noinput"},
         {escript2, "-noshell -noinput"},
