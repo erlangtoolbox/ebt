@@ -6,9 +6,9 @@
 -export([perform/3]).
 
 perform(_Dir, Config, _Defaults) ->
+    DepsDir = ebt_config:value(depends, Config, dir, "./lib"),
     R = do([error_m ||
         inets:start(),
-        DepsDir <- return(ebt_config:value(depends, Config, dir, "./lib")),
         strikead_file:mkdirs(DepsDir),
         strikead_lists:eforeach(fun({Url, Libs}) ->
             strikead_lists:eforeach(fun({Name, Version}) ->
