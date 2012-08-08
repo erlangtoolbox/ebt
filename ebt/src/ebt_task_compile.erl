@@ -12,7 +12,7 @@ perform(Dir, Config, Defaults) ->
     SrcDir = Dir ++ "/src",
     TestDir = Dir ++ "/test",
     do([error_m ||
-        AppProdDir <- ebt_config:app_production_outdir(Dir, Config, Defaults),
+        AppProdDir <- ebt_config:app_outdir(production, Dir, Config, Defaults),
         EbinProdDir <- return(AppProdDir ++ "/ebin"),
         compile(SrcDir, EbinProdDir, Config),
         AppSpec <- ebt_applib:load(Dir),
@@ -22,7 +22,7 @@ perform(Dir, Config, Defaults) ->
         strikead_file:copy_if_exists(Dir ++ "/bin", AppProdDir),
         copy_resources(SrcDir,
             ebt_config:value(compile, Config, resources, []), EbinProdDir),
-        AppTestDir <- ebt_config:app_test_outdir(Dir, Config, Defaults),
+        AppTestDir <- ebt_config:app_outdir(test, Dir, Config, Defaults),
         EbinTestDir <- return(AppTestDir ++ "/ebin"),
         case strikead_file:exists(Dir ++ "/test") of
             {ok, true} ->

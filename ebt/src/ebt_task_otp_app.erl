@@ -8,8 +8,8 @@
 perform(Dir, Config, Defaults) ->
     do([error_m ||
         App <- ebt_config:appname(Dir, Config),
-        ProdDir <- ebt_config:production_outdir(Config, Defaults),
-        DistDir <- ebt_config:dist_outdir(Config, Defaults),
+        ProdDir <- ebt_config:outdir(production, Config, Defaults),
+        DistDir <- ebt_config:outdir(dist, Config, Defaults),
         Archive <- return(strikead_string:join([DistDir, "/", App, ".ez"],"")),
         io:format("Packing ~s~n", [Archive]),
         zip:create(Archive, [App], [

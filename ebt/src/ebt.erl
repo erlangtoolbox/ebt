@@ -5,7 +5,7 @@
 -export([main/1, load_libraries/1, load_library/1]).
 
 -define(OPTS, [
-    {output, $o, outdir, {string, "out"}, "output directory"}
+    {outdir, $o, outdir, {string, "out"}, "output directory"}
 ]).
 -spec main/1 :: ([string()]) -> ok.
 main(Args) ->
@@ -18,8 +18,8 @@ main(Args) ->
             halt(2)
     end.
 
-build([{output, OutDir}]) ->
-    Defaults = [{output, filename:absname(OutDir)}],
+build([{outdir, OutDir}]) ->
+    Defaults = [{outdir, filename:absname(OutDir)}],
     case build(".", Defaults) of
         {ok, _} ->
             io:format("BUILD SUCCESSFUL!~n");

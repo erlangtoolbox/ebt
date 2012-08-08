@@ -10,8 +10,8 @@
     error_m:monad(ok).
 perform(Dir, Config, Defaults) ->
     do([error_m ||
-        TestDir <- ebt_config:app_test_outdir(Dir, Config, Defaults),
-        ProdDir <- ebt_config:app_production_outdir(Dir, Config, Defaults),
+        TestDir <- ebt_config:app_outdir(test, Dir, Config, Defaults),
+        ProdDir <- ebt_config:app_outdir(production, Dir, Config, Defaults),
         EbinTestDir <- return(filename:join(TestDir, "ebin")),
         case filelib:wildcard(EbinTestDir ++ "/*.beam") of
             [] ->

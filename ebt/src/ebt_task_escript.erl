@@ -9,7 +9,7 @@
 
 perform(Dir, Config, Defaults) ->
     do([ error_m ||
-        AppProdDir <- ebt_config:app_production_outdir(Dir, Config, Defaults),
+        AppProdDir <- ebt_config:app_outdir(production, Dir, Config, Defaults),
         Libs <- return(lists:map(fun(L) -> L ++ "/*/ebin/*" end , ebt_config:value(libraries, Config, []))),
         Files <- strikead_file:read_files([AppProdDir ++ "/ebin/*" | Libs]),
         {"memory", Zip} <- zip:create("memory", Files, [memory]),

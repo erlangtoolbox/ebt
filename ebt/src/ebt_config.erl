@@ -6,8 +6,8 @@
 -type defaults() :: strikead_lists:kvlist_at().
 -export_types([config/0, defaults/0]).
 
--export([read/1, value/3, value/4, find_value/3, outdir/2, app_production_outdir/3,
-    production_outdir/2, dist_outdir/2, version/1, appname/2, app_test_outdir/3, test_outdir/2]).
+-export([read/1, value/3, value/4, find_value/3, outdir/2, version/1, appname/2,
+    app_outdir/4, outdir/3]).
 
 -spec read/1 :: (file:name()) -> error_m:monad(config()).
 read(Filename) ->
@@ -34,40 +34,26 @@ value(Key, Config, InnerKey, Default) ->
         undefined -> Default
     end.
 
--spec production_outdir/2 :: (config(), defaults()) -> error_m:monad(string()).
-production_outdir(Config, Defaults) -> outdir(Config, Defaults, "production").
-
--spec test_outdir/2 :: (config(), defaults()) -> error_m:monad(string()).
-test_outdir(Config, Defaults) -> outdir(Config, Defaults, "test").
-
--spec dist_outdir/2 :: (config(), defaults()) -> error_m:monad(string()).
-dist_outdir(Config, Defaults) -> outdir(Config, Defaults, "dist").
-
 -spec outdir/2 :: (config(), defaults()) -> error_m:monad(string()).
-outdir(Config, Defaults) -> outdir(Config, Defaults, "").
-
--spec outdir/3 :: (config(), defaults(), string()) -> error_m:monad(string()).
-outdir(Config, Defaults, Suffix) ->
-    case ebt_config:find_value(output, Config, Defaults) of
-        {ok, Dir} -> {ok, filename:absname(filename:join(Dir, Suffix))};
+outdir(Config, Defaults) ->
+    case ebt_config:find_value(outdir, Config, Defaults) of
+        Ok = {ok, _} -> Ok;
         _ -> {error, "unknown output directory"}
     end.
 
--spec app_production_outdir/3 :: (file:name(), config(), defaults()) ->
-    maybe_m:monad(string()).
-app_production_outdir(Dir, Config, Defaults) ->
-    do([error_m ||
-        App <- appname(Dir, Config),
-        OutDir <- production_outdir(Config, Defaults),
-        return(filename:join(OutDir, App))
-    ]).
+-spec outdir/3 :: (atom(), config(), defaults()) -> error_m:monad(string()).
+outdir(Kind, Config, Defaults) ->
+        case outdir(Config, Defaults) of
+            {ok, Dir} -> {ok, filename:absname(filename:join(Dir, atom_to_list(Kind)))};
+            E -> E
+        end.
 
--spec app_test_outdir/3 :: (file:name(), config(), defaults()) ->
-    maybe_m:monad(string()).
-app_test_outdir(Dir, Config, Defaults) ->
+
+-spec app_outdir/4 :: (atom(), file:name(), config(), defaults()) -> maybe_m:monad(string()).
+app_outdir(Kind, Dir, Config, Defaults) ->
     do([error_m ||
         App <- appname(Dir, Config),
-        OutDir <- test_outdir(Config, Defaults),
+        OutDir <- outdir(Kind, Config, Defaults),
         return(filename:join(OutDir, App))
     ]).
 
