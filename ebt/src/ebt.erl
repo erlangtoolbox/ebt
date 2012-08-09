@@ -28,21 +28,14 @@ build([{outdir, OutDir}]) ->
             halt(1)
     end.
 
--spec build/2 :: (file:name(), strikead_lists:kvlist_at()) -> error_m:monad(any()).
+-spec build/2 :: (file:name(), ebt_config:config()) -> error_m:monad(any()).
 build(ContextDir, Defaults) ->
     ConfigFile = filename:join(ContextDir, "ebt.config"),
     do([error_m ||
-        Config <- ebt_config:read(ConfigFile),
-        build(ContextDir, Config, Defaults)
-    ]).
-
--spec build/3 :: (file:name(), ebt_config:config(), strikead_lists:kvlist_at()) ->
-    error_m:monad(any()).
-build(ContextDir, Config, Defaults) ->
-    do([error_m ||
-        OutDir <- ebt_config:outdir(Config, Defaults),
-        ebt_task:perform(prepare, ebt_config:value(targets, Config, prepare, []), ContextDir, Config, Defaults),
-        strikead_lists:eforeach(
+        Config <- ebt_config:read(ConfigFile, Defaults),
+        OutDir <- ebt_config:outdir(Config),
+        ebt_task:perform(prepare, ebt_config:value(targets, Config, prepare, []), ContextDir, Config),
+        ebt_strikead_lists:eforeach(
             fun(Dir) ->
                 io:format("==> entering ~s~n", [Dir]),
                 {ExitCode, Stdout} = eunit_lib:command(
@@ -56,12 +49,12 @@ build(ContextDir, Config, Defaults) ->
             end,
             ebt_config:value(subdirs, Config, [])
         ),
-        ebt_task:perform(perform, ebt_config:value(targets, Config, perform, ['otp-app']), ContextDir, Config, Defaults)
+        ebt_task:perform(perform, ebt_config:value(targets, Config, perform, ['otp-app']), ContextDir, Config)
     ]).
 
 -spec load_libraries/1 :: (ebt_config:config()) -> [file:name()].
 load_libraries(Config) ->
-    strikead_lists:eforeach(fun load_library/1, [Lib ||
+    ebt_strikead_lists:eforeach(fun load_library/1, [Lib ||
         LibDir <- ebt_config:value(libraries, Config, []),
         Lib <- filelib:wildcard(LibDir ++ "/*")]).
 

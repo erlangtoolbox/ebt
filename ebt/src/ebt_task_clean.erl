@@ -3,16 +3,16 @@
 -compile({parse_transform, do}).
 -behaviour(ebt_task).
 
--export([perform/3]).
+-export([perform/2]).
 
-perform(_Dir, Config, Defaults) ->
+perform(_Dir, Config) ->
     do([ error_m ||
-        delete(ebt_config:outdir(production, Config, Defaults)),
-        delete(ebt_config:outdir(dist, Config, Defaults)),
-        delete(ebt_config:outdir(test, Config, Defaults))
+        delete(ebt_config:outdir(production, Config)),
+        delete(ebt_config:outdir(dist, Config)),
+        delete(ebt_config:outdir(test, Config))
     ]).
 
 delete({ok, Dir}) ->
     io:format("delete ~s~n", [Dir]),
-    strikead_file:delete(Dir);
+    ebt_strikead_file:delete(Dir);
 delete(E) -> E.
