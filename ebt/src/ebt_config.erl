@@ -5,8 +5,8 @@
 -type config() :: ebt_strikead_lists:kvlist_at().
 -export_types([config/0, defaults/0]).
 
--export([read/2, value/3, value/4, find_value/2, outdir/1, version/1, appname/2,
-    app_outdir/3, outdir/2]).
+-export([read/2, value/3, value/4, find_value/2, find_value/3,
+    outdir/1, version/1, appname/2, app_outdir/3, outdir/2]).
 
 -spec read/2 :: (file:name(), config()) -> error_m:monad(config()).
 read(Filename, Defaults) ->
@@ -20,8 +20,22 @@ read(Filename, Defaults) ->
         E -> E
     end.
 
--spec find_value/2 :: (atom(), config()) -> maybe_m:monad(any()).
-find_value(Key, Config) -> ebt_strikead_lists:kvfind(Key, Config).
+-spec find_value/2 :: (atom(), config()) -> error_m:monad(any()).
+find_value(Key, Config) ->
+    maybe_m:to_error_m(ebt_strikead_lists:kvfind(Key, Config),
+        ebt_strikead_string:format("~p not found", [Key])).
+
+-spec find_value/3 :: (atom(), config(), atom()) -> error_m:monad(any()).
+find_value(Key, Config, InnerKey) ->
+    Error = {error, ebt_strikead_string:format("~p/~p not found", [Key, InnerKey])},
+    case ebt_strikead_lists:kvfind(Key, Config) of
+        {ok, V} ->
+            case ebt_strikead_lists:kvfind(InnerKey, V) of
+                undefined -> Error;
+                X -> X
+            end;
+        undefined -> Error
+    end.
 
 -spec value/3 :: (atom(), config(), any()) -> any().
 value(Key, Config, Default) -> ebt_strikead_lists:kvfind(Key, Config, Default).
@@ -35,10 +49,7 @@ value(Key, Config, InnerKey, Default) ->
 
 -spec outdir/1 :: (config()) -> error_m:monad(string()).
 outdir(Config) ->
-    case ebt_config:find_value(outdir, Config) of
-        Ok = {ok, _} -> Ok;
-        _ -> {error, "unknown output directory"}
-    end.
+    ebt_config:find_value(outdir, Config).
 
 -spec outdir/2 :: (atom(), config()) -> error_m:monad(string()).
 outdir(Kind, Config) ->
@@ -73,5 +84,5 @@ appname(Dir, Config) ->
     do([error_m ||
         {_, Name, _} <- ebt_applib:load(Dir),
         Version <- ebt_config:version(Config),
-        return(ebt_strikead_string:join([Name, Version],"-"))
+        return(ebt_strikead_string:join([Name, Version], "-"))
     ]).

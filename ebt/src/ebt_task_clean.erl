@@ -6,10 +6,8 @@
 -export([perform/2]).
 
 perform(_Dir, Config) ->
-    do([ error_m ||
-        delete(ebt_config:outdir(production, Config)),
-        delete(ebt_config:outdir(dist, Config)),
-        delete(ebt_config:outdir(test, Config))
+    do([error_m ||
+        delete(ebt_config:outdir(Config))
     ]).
 
 delete({ok, Dir}) ->

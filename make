@@ -3,9 +3,9 @@
 -include_lib("kernel/include/file.hrl").
 
 -define(SOURCES, "ebt/src").
--define(BUILD_DIR, "out/bootstrap/production/ebin").
+-define(BUILD_DIR, "bootstrap/production/ebin").
 -define(LIB_DIRS, "lib/*/ebin").
--define(TARGET, "out/bootstrap/dist/ebt").
+-define(TARGET, "bootstrap/dist/ebt").
 
 main(_Args) ->
     ok = filelib:ensure_dir(?BUILD_DIR ++ "/x"),

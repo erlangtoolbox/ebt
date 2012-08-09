@@ -13,10 +13,7 @@ perform(Dir, Config) ->
         Libs <- return(lists:map(fun(L) -> L ++ "/*/ebin/*" end , ebt_config:value(libraries, Config, []))),
         Files <- ebt_strikead_file:read_files([AppProdDir ++ "/ebin/*" | Libs]),
         {"memory", Zip} <- zip:create("memory", Files, [memory]),
-        Scripts <- maybe_m:to_error_m(
-           ebt_config:find_value(escript, Config),
-            "no escript configuration"
-        ),
+        Scripts <- ebt_config:find_value(escript, Config),
         ebt_strikead_lists:eforeach(fun({Name, Params}) ->
             Path = ebt_strikead_string:join([AppProdDir, "/bin/", Name]),
             do([error_m ||
