@@ -38,13 +38,13 @@ build(ContextDir, Defaults) ->
         ebt_strikead_lists:eforeach(
             fun(Dir) ->
                 io:format("==> entering ~s~n", [Dir]),
-                {ExitCode, Stdout} = eunit_lib:command(
+                {Status, {_, Stdout}} = ebt_strikead_shell:command(
                     filename:absname(escript:script_name()) ++ " -o " ++ OutDir, Dir),
                 io:format(Stdout),
                 io:format("==> leaving ~s~n", [Dir]),
-                case ExitCode of
-                    0 -> ok;
-                    _ -> {error, "build in directory " ++ Dir ++ " failed"}
+                case Status of
+                    ok -> ok;
+                    error -> {error, "build in directory " ++ Dir ++ " failed"}
                 end
             end,
             ebt_config:value(subdirs, Config, [])

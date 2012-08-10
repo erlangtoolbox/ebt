@@ -6,7 +6,7 @@
 -export_types([config/0, defaults/0]).
 
 -export([read/2, value/3, value/4, find_value/2, find_value/3,
-    outdir/1, version/1, appname/2, app_outdir/3, outdir/2]).
+    outdir/1, outdir/3, version/1, appname/2, app_outdir/3, outdir/2]).
 
 -spec read/2 :: (file:name(), config()) -> error_m:monad(config()).
 read(Filename, Defaults) ->
@@ -49,32 +49,44 @@ value(Key, Config, InnerKey, Default) ->
 
 -spec outdir/1 :: (config()) -> error_m:monad(string()).
 outdir(Config) ->
-    ebt_config:find_value(outdir, Config).
+    do([error_m ||
+        Dir <- ebt_config:find_value(outdir, Config),
+        ebt_strikead_file:mkdirs(Dir),
+        return(Dir)
+    ]).
 
 -spec outdir/2 :: (atom(), config()) -> error_m:monad(string()).
 outdir(Kind, Config) ->
-        case outdir(Config) of
-            {ok, Dir} -> {ok, filename:absname(
-                filename:join(Dir, atom_to_list(Kind)))};
-            E -> E
-        end.
+    do([error_m ||
+        Parent <- outdir(Config),
+        Dir <- return(filename:absname(ebt_strikead_string:join([Parent, Kind], "/"))),
+        ebt_strikead_file:mkdirs(Dir),
+        return(Dir)
+    ]).
 
+-spec outdir/3 :: (atom(), config(), string()) -> error_m:monad(string()).
+outdir(Kind, Config, Suffix) ->
+    do([error_m ||
+        Parent <- outdir(Kind, Config),
+        Dir <- return(ebt_strikead_string:join([Parent, Suffix], "/")),
+        ebt_strikead_file:mkdirs(Dir),
+        return(Dir)
+    ]).
 
 -spec app_outdir/3 :: (atom(), file:name(), config()) -> maybe_m:monad(string()).
 app_outdir(Kind, Dir, Config) ->
     do([error_m ||
         App <- appname(Dir, Config),
-        OutDir <- outdir(Kind, Config),
-        return(filename:join(OutDir, App))
+        outdir(Kind, Config, App)
     ]).
 
 -spec version/1 :: (config()) -> error_m:monad(string()).
 version(Config) ->
     case ebt_strikead_lists:kvfind(version, Config) of
         {ok, {shell, Cmd}} ->
-            case eunit_lib:command(Cmd) of
-                {0, Out} -> {ok, Out};
-                E -> {error, E}
+            case ebt_strikead_shell:command(Cmd) of
+                {ok, {_, Out}} -> {ok, Out};
+                E -> E
             end;
         _ -> {ok, "0.0.1"}
     end.
