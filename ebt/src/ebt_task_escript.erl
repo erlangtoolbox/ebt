@@ -16,7 +16,6 @@ perform(Dir, Config) ->
         ebt_strikead_lists:eforeach(fun({Name, Params, Resources}) ->
             Path = ebt_strikead_string:join([AppProdDir, "/bin/", Name]),
             do([error_m ||
-                io:format(Dir),
                 ResourceFiles <- ebt_strikead_file:read_files(Resources, {base, Dir}),
                 {"memory", Zip} <- zip:create("memory", Files ++ ResourceFiles, [memory]),
                 ebt_strikead_file:ensure_dir(Path),
