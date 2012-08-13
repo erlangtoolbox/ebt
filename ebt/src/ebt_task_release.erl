@@ -22,8 +22,6 @@ perform(Dir, Config) ->
         ebt_strikead_file:copy_filtered(Dir,
             ebt_config:value(release, Config, resources, []), ReleaseDir),
         generate_runners(RelConfig, ReleaseDir),
-        ebt_strikead_file:copy_filtered(Dir,
-            ebt_config:value(release, Config, resources, []), ReleaseDir),
         pack(Config)
     ]).
 
