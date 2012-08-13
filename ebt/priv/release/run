@@ -1,0 +1,10 @@
+#!/bin/sh
+
+BASE=`dirname $0`/..
+APPNAME=`basename $0`
+
+DATA=`cat ${BASE}/releases/start_erl.data`
+ERTS_VSN=${DATA% *}
+APP_VSN=${DATA#* }
+
+${BASE}/erts-${ERTS_VSN}/bin/erl -args_file ${BASE}/etc/${APPNAME}.vm.args -boot ${BASE}/releases/${APP_VSN}/${APPNAME} -config ${BASE}/etc/${APPNAME}

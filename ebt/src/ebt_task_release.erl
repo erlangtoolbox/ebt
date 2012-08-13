@@ -9,7 +9,6 @@ perform(_Dir, Config) ->
     do([error_m ||
         RelConfig <- ebt_config:find_value(release, Config, config),
         Name <- ebt_config:find_value(release, Config, name),
-        DestDir <- ebt_config:outdir(releases, Config),
         ReleaseDir <- ebt_config:outdir(releases, Config, Name),
         io:format("release ~p to ~s~n", [Name, ReleaseDir]),
         RelTool <- reltool:start_server([{config, RelConfig}]),
@@ -18,8 +17,16 @@ perform(_Dir, Config) ->
         after
             reltool:stop(RelTool)
         end,
+        pack(Config)
+    ]).
+
+pack(Config) ->
+    do([error_m ||
+        Name <- ebt_config:find_value(release, Config, name),
+        DestDir <- ebt_config:outdir(releases, Config),
         DistDir <- ebt_config:outdir(dist, Config),
         Command <- return(ebt_strikead_string:join(["tar -czf ", DistDir, "/", Name, ".tar.gz ", Name])),
         io:format("cd ~s; ~s~n", [DestDir, Command]),
         ebt_strikead_shell:command(Command, DestDir)
     ]).
+
