@@ -20,7 +20,7 @@ perform(Dir, Config) ->
         ebt_strikead_file:copy_if_exists(Dir ++ "/include", AppProdDir),
         ebt_strikead_file:copy_if_exists(Dir ++ "/priv", AppProdDir),
         ebt_strikead_file:copy_if_exists(Dir ++ "/bin", AppProdDir),
-        copy_resources(SrcDir,
+        ebt_strikead_file:copy_filtered(SrcDir,
             ebt_config:value(compile, Config, resources, []), EbinProdDir),
         AppTestDir <- ebt_config:app_outdir(test, Dir, Config),
         EbinTestDir <- return(AppTestDir ++ "/ebin"),
@@ -28,7 +28,7 @@ perform(Dir, Config) ->
             {ok, true} ->
                 do([error_m ||
                     compile(TestDir, EbinTestDir, Config),
-                    copy_resources(TestDir,
+                    ebt_strikead_file:copy_filtered(TestDir,
                         ebt_config:value(compile, Config, resources, []), EbinTestDir)
                 ]);
             {ok, false} -> ok;
@@ -68,10 +68,3 @@ compile(Files, SrcDir, Flags, OutDir, Config) ->
             error -> {error, "Compilation failed!"}
         end
     ]).
-
--spec copy_resources(file:name(), [string()], file:name()) -> error_m:monad(ok).
-copy_resources(BaseDir, Wildcards, DestDir) ->
-    ebt_strikead_lists:eforeach(fun(F) ->
-        io:format("copy ~s to ~s~n", [F, DestDir]),
-        ebt_strikead_file:copy(F, DestDir)
-    end, [F || WC <- Wildcards, F <- filelib:wildcard(BaseDir ++ "/" ++ WC)]).

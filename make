@@ -27,6 +27,7 @@ main(_Args) ->
         {ok, {"memory", ZipBin}} ->
             Header =
                 "#!/usr/bin/env escript\n"
+                "%%"
                 "%%! -noshell -noinput\n",
             case file:write_file(?TARGET, iolist_to_binary([Header, ZipBin])) of
                 ok -> ok;

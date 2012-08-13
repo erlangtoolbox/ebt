@@ -2,7 +2,7 @@
 
 -export([find/2, first/1, emap/2, eforeach/2, mapfilter/2, index/2, split/2, keypsort/3,
     sublistmatch/2, substitute/3, keyfind/3, keyfind/4, keyreplace/3, kvfind/2,
-    kvfind/3, keyreplace_or_add/3]).
+    kvfind/3, keyreplace_or_add/3, eflatten/1]).
 
 -type kvlist(A,B) :: [{A, B}].
 -type kvlist_at() :: kvlist(atom(), atom() | binary() | string() | integer() | float()).
@@ -144,3 +144,5 @@ keyreplace(N, List, [R | ReplList]) ->
 split(Pos, List) when length(List) > Pos -> lists:split(Pos, List);
 split(_, List) -> {List, []}.
 
+eflatten({ok, List}) -> {ok, lists:flatten(List)};
+eflatten(E) -> E.

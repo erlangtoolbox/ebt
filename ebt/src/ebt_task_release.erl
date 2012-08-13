@@ -1,11 +1,13 @@
 -module(ebt_task_release).
 
+-include_lib("kernel/include/file.hrl").
+
 -compile({parse_transform, do}).
 -behaviour(ebt_task).
 
 -export([perform/2]).
 
-perform(_Dir, Config) ->
+perform(Dir, Config) ->
     do([error_m ||
         RelConfig <- ebt_config:find_value(release, Config, config),
         Name <- ebt_config:find_value(release, Config, name),
@@ -17,8 +19,28 @@ perform(_Dir, Config) ->
         after
             reltool:stop(RelTool)
         end,
+        ebt_strikead_file:copy_filtered(Dir,
+            ebt_config:value(release, Config, resources, []), ReleaseDir),
+        generate_runners(RelConfig, ReleaseDir),
+        ebt_strikead_file:copy_filtered(Dir,
+            ebt_config:value(release, Config, resources, []), ReleaseDir),
         pack(Config)
     ]).
+
+generate_runners(RelConfig, ReleaseDir) ->
+    do([error_m ||
+        Runner <- ebt_strikead_escript:read_file("priv/release/run"),
+        [{sys, L}] <- ebt_strikead_file:read_terms(RelConfig),
+        ebt_strikead_lists:eforeach(fun({rel, Name, _, _}) ->
+            Path = ebt_strikead_string:join([ReleaseDir, "bin", Name], "/"),
+            do([error_m ||
+                ebt_strikead_file:write_file(Path, Runner),
+                #file_info{mode = Mode} <- ebt_strikead_file:read_file_info(Path),
+                ebt_strikead_file:change_mode(Path, Mode bor 8#00100)
+            ])
+        end, lists:filter(fun(X) -> element(1, X) == rel end , L))
+    ]).
+
 
 pack(Config) ->
     do([error_m ||

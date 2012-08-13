@@ -57,8 +57,8 @@ EScript
     ]}
 
     {escript, [
-        {escript1, "-noshell -noinput"},
-        {escript2, "-noshell -noinput"},
-        {escript3, "-noshell -noinput"}
+        {escript1, "-noshell -noinput", ["priv/*"]},
+        {escript2, "-noshell -noinput", ["priv/*"]},
+        {escript3, "-noshell -noinput", ["priv/*"]}
     ]}.
 
