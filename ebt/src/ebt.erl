@@ -40,7 +40,7 @@ build(ContextDir, Defaults) ->
                 io:format("==> entering ~s~n", [Dir]),
                 {Status, {_, Stdout}} = ebt_strikead_shell:command(
                     filename:absname(escript:script_name()) ++ " -o " ++ OutDir, Dir),
-                io:format(Stdout),
+                io:format("~s", [Stdout]),
                 io:format("==> leaving ~s~n", [Dir]),
                 case Status of
                     ok -> ok;
