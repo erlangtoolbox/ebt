@@ -60,7 +60,7 @@ load_libraries(Config) ->
 
 -spec load_library/1 :: (file:name()) -> error_m:monad(ok).
 load_library(Path) ->
-    case code:add_path(filename:join(Path, "ebin")) of
+    case code:add_patha(filename:join(Path, "ebin")) of
         true -> ok;
         {error, bad_directory} ->
             io:format("failed to load ~s~n", [Path]),
