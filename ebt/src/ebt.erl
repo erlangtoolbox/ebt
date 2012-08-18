@@ -9,23 +9,27 @@
 ]).
 -spec main/1 :: ([string()]) -> ok.
 main(Args) ->
-    ok = application:load(ebt),
-    case getopt:parse(?OPTS, Args) of
-        {ok, {Opts, _}} -> build(Opts);
-        {error, X} ->
-            io:format(standard_error, "~p~n", [X]),
-            getopt:usage(?OPTS, "ebt"),
-            halt(2)
-    end.
+    do([error_m ||
+        application:load(ebt),
+        Vsn <- application:get_key(ebt, vsn),
+        io:format("Erlang Build Tool, v.~s~n", [Vsn]),
+        {Opts, _} <- getopt:parse(?OPTS, Args),
+        case build(Opts) of
+            {error, X} ->
+                io:format(standard_error, "~s~n", [X]),
+                halt(1);
+            {ok, X} ->
+                io:format("~s~n", [X])
+        end
+    ]).
 
 build([{outdir, OutDir}]) ->
     Defaults = [{outdir, filename:absname(OutDir)}],
     case build(".", Defaults) of
         {ok, _} ->
-            io:format("BUILD SUCCESSFUL!~n");
+            {ok, "BUILD SUCCESSFUL"};
         {error, E} ->
-            io:format(standard_error, "BUILD FAILED: ~p~n", [E]),
-            halt(1)
+            {error, strikead_string:format("BUILD FAILED: ~p~n", [E])}
     end.
 
 -spec build/2 :: (file:name(), ebt_config:config()) -> error_m:monad(any()).

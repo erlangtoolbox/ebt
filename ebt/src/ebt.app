@@ -1,6 +1,6 @@
 {application, ebt, [
     {description, "Erlang Build Tool"},
-    {vsn, "1"},
+    {vsn, "bootstrap"},
     {registered, []},
     {applications, [
         kernel,
