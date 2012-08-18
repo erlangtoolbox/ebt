@@ -60,6 +60,7 @@ compile(SrcDir, OutDir, Config) ->
         compile(filelib:wildcard(SrcDir ++ "/*.erl"), SrcDir, Flags, OutDir, Config)
     ]).
 
+compile([], _SrcDir, _Flags, _OutDir, _Config) -> ok;
 compile(Files, SrcDir, Flags, OutDir, Config) ->
     do([error_m||
         ebt:load_libraries(Config),
