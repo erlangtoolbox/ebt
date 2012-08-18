@@ -1,6 +1,7 @@
+VSN=1.0.1
 if [ -z $BUILD_NUMBER ]
 then
-	echo -n 0.1.0
+	echo -n $VSN
 else
-	echo -n 0.1.0.$BUILD_NUMBER
+	echo -n $VSN.$BUILD_NUMBER
 fi
