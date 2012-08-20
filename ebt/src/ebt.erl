@@ -29,7 +29,7 @@ build([{outdir, OutDir}]) ->
         {ok, _} ->
             {ok, "BUILD SUCCESSFUL"};
         {error, E} ->
-            {error, strikead_string:format("BUILD FAILED: ~p~n", [E])}
+            {error, ebt_strikead_string:format("BUILD FAILED: ~p~n", [E])}
     end.
 
 -spec build/2 :: (file:name(), ebt_config:config()) -> error_m:monad(any()).
