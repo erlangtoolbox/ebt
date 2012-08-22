@@ -7,8 +7,8 @@
 
 perform(_Dir, Config) ->
     DepsDir = ebt_config:value(depends, Config, dir, "./lib"),
-    R = do([error_m ||
-        inets:start(),
+    inets:start(),
+    do([error_m ||
         ebt_strikead_file:mkdirs(DepsDir),
         ebt_strikead_lists:eforeach(fun({Url, Libs}) ->
             ebt_strikead_lists:eforeach(fun({Name, Version}) ->
@@ -29,8 +29,6 @@ perform(_Dir, Config) ->
                 end
             end, Libs)
         end, ebt_config:value(depends, Config, repositories, []))
-    ]),
-    inets:stop(),
-    R.
+    ]).
 
 

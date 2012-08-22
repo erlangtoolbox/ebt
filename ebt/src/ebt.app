@@ -10,6 +10,8 @@
         {tasks, [
             {modules, [
                 {clean, ebt_task_clean},
+                {leex, ebt_task_leex},
+                {yecc, ebt_task_yecc},
                 {compile, ebt_task_compile},
                 {depends, ebt_task_depends},
                 {release, ebt_task_release},
@@ -18,6 +20,7 @@
                 {escript, ebt_task_escript}
             ]},
             {targets, [
+                {compile, [leex, yecc]},
                 {eunit, [compile]},
                 {'otp-app', [compile, eunit]},
                 {escript, [compile, eunit]}
