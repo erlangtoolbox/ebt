@@ -22,8 +22,8 @@
             {targets, [
                 {compile, [leex, yecc]},
                 {eunit, [compile]},
-                {'otp-app', [compile, eunit]},
-                {escript, [compile, eunit]}
+                {'otp-app', [eunit]},
+                {escript, [eunit]}
             ]}
         ]}
     ]}
