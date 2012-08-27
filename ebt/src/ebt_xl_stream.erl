@@ -1,4 +1,4 @@
--module(ebt_strikead_stream).
+-module(ebt_xl_stream).
 
 -export([stream/2, map/2, foreach/2, seq/2, foldl/3, filter/2, to_list/1,
     to_stream/1, to_pair/1, mapfind/2, empty/0]).
@@ -69,8 +69,8 @@ to_list(S) -> lists:reverse(foldl(fun(V, L) -> [V | L] end, [], S)).
 
 to_pair(S) -> S().
 
-to_stream(L) when is_list(L) ->
-    stream(L, fun
+to_stream(L) when is_list(L) -> stream(L,
+    fun
             ([]) -> empty;
             ([H | T]) -> {H, T}
     end).

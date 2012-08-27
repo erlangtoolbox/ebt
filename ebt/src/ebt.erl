@@ -29,7 +29,7 @@ build([{outdir, OutDir}]) ->
         {ok, _} ->
             {ok, "BUILD SUCCESSFUL"};
         {error, E} ->
-            {error, ebt_strikead_string:format("BUILD FAILED: ~p~n", [E])}
+            {error, ebt_xl_string:format("BUILD FAILED: ~p~n", [E])}
     end.
 
 -spec build/2 :: (file:name(), ebt_config:config()) -> error_m:monad(any()).
@@ -39,10 +39,10 @@ build(ContextDir, Defaults) ->
         Config <- ebt_config:read(ConfigFile, Defaults),
         OutDir <- ebt_config:outdir(Config),
         ebt_task:perform(prepare, ebt_config:value(targets, Config, prepare, []), ContextDir, Config),
-        ebt_strikead_lists:eforeach(
+        ebt_xl_lists:eforeach(
             fun(Dir) ->
                 io:format("==> entering ~s~n", [Dir]),
-                {Status, {_, Stdout}} = ebt_strikead_shell:command(
+                {Status, {_, Stdout}} = ebt_xl_shell:command(
                     filename:absname(escript:script_name()) ++ " -o " ++ OutDir, Dir),
                 io:format("~s", [Stdout]),
                 io:format("==> leaving ~s~n", [Dir]),
@@ -58,7 +58,7 @@ build(ContextDir, Defaults) ->
 
 -spec load_libraries/1 :: (ebt_config:config()) -> [file:name()].
 load_libraries(Config) ->
-    ebt_strikead_lists:eforeach(fun load_library/1, [Lib ||
+    ebt_xl_lists:eforeach(fun load_library/1, [Lib ||
         LibDir <- ebt_config:value(libraries, Config, []),
         Lib <- filelib:wildcard(LibDir ++ "/*")]).
 

@@ -1,4 +1,4 @@
--module(ebt_strikead_escript).
+-module(ebt_xl_escript).
 
 -compile({parse_transform, do}).
 
@@ -11,7 +11,7 @@ read_file(File) -> read_file(escript:script_name(), File).
 read_file(EscriptPath, File) ->
     do([error_m ||
         Sections <- escript:extract(EscriptPath, []),
-        case ebt_strikead_lists:find(fun(Section) ->
+        case ebt_xl_lists:find(fun(Section) ->
             element(1, Section) == archive
         end, Sections) of
             undefined -> {ok, undefined};

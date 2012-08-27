@@ -12,5 +12,5 @@ perform(_Dir, Config) ->
 
 delete({ok, Dir}) ->
     io:format("delete ~s~n", [Dir]),
-    ebt_strikead_file:delete(Dir);
+    ebt_xl_file:delete(Dir);
 delete(E) -> E.

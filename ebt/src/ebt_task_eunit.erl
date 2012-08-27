@@ -20,7 +20,7 @@ perform(Dir, Config) ->
                 do([error_m ||
                     ebt:load_library(TestDir),
                     ebt:load_library(ProdDir),
-                    ebt_strikead_lists:eforeach(fun(Module) ->
+                    ebt_xl_lists:eforeach(fun(Module) ->
                         io:format("test ~p~n", [Module]),
                         case eunit:test(Module) of
                             error -> {error, {test_failed, Module}};

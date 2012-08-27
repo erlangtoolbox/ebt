@@ -1,4 +1,4 @@
--module(ebt_strikead_lists).
+-module(ebt_xl_lists).
 
 -export([find/2, first/1, emap/2, eforeach/2, mapfilter/2, index/2, split/2, keypsort/3,
     sublistmatch/2, substitute/3, keyfind/3, keyfind/4, keyreplace/3, kvfind/2,
@@ -8,7 +8,8 @@
 -type kvlist_at() :: kvlist(atom(), atom() | binary() | string() | integer() | float()).
 -export_types([kvlist/2, kvlist_at/0]).
 
--spec find/2 :: (fun((term()) -> boolean()), [term()]) -> option_m:monad(term()).
+-spec find/2 :: (fun((term()) -> boolean()), [term()]) ->
+    option_m:monad(term()).
 find(_Pred, []) -> undefined;
 find(Pred, [H | T]) ->
     case Pred(H) of
@@ -20,12 +21,12 @@ find(Pred, [H | T]) ->
 first([]) -> undefined;
 first([H | _]) -> {ok, H}.
 
--spec emap/2 :: (fun((term()) -> error_m:monad(term())), [term()])
-        -> error_m:monad([term()]).
+-spec emap/2 :: (fun((term()) -> error_m:monad(term())), [term()]) ->
+    error_m:monad([term()]).
 emap(F, List) -> emap(F, [], List).
 
--spec emap/3 :: (fun((term()) -> error_m:monad(term())), [term()], [term()])
-        -> error_m:monad([term()]).
+-spec emap/3 :: (fun((term()) -> error_m:monad(term())), [term()], [term()]) ->
+    error_m:monad([term()]).
 emap(_F, Acc, []) -> {ok, lists:reverse(Acc)};
 emap(F, Acc, [H | T]) ->
     case F(H) of
@@ -45,8 +46,8 @@ eforeach(F, [H | T]) ->
 -spec mapfilter/2 :: (fun((term()) -> false | term()), [term()]) -> [term()].
 mapfilter(F, L) -> mapfilter([], F, L).
 
--spec mapfilter/3 :: ([term()], fun((term()) -> option_m:monad(term())), [term()]) ->
-    [term()].
+-spec mapfilter/3 :: ([term()],
+    fun((term()) -> option_m:monad(term())), [term()]) -> [term()].
 mapfilter(Acc, _F, []) -> lists:reverse(Acc);
 mapfilter(Acc, F, [H | T]) ->
     case F(H) of
@@ -69,8 +70,8 @@ keypsort(Keys, N, L) ->
 -spec index/2 :: (term(), [term()]) -> option_m:monad(integer()).
 index(X, L) -> index(X, 1, L).
 
--spec index/3 :: (term(), integer(), [term()]) ->
-    option_m:monad(integer()).
+-spec index/3 :: (term(), integer(), [term()])
+        -> option_m:monad(integer()).
 index(_X, _I, []) -> undefined;
 index(X, I, [X | _]) -> {ok, I};
 index(X, I, [_ | T]) -> index(X, I + 1, T).
@@ -143,5 +144,6 @@ keyreplace(N, List, [R | ReplList]) ->
 split(Pos, List) when length(List) > Pos -> lists:split(Pos, List);
 split(_, List) -> {List, []}.
 
+-spec eflatten/1 :: (error_m:monad([term()])) -> error_m:monad([term()]).
 eflatten({ok, List}) -> {ok, lists:flatten(List)};
 eflatten(E) -> E.

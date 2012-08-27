@@ -1,4 +1,4 @@
--module(ebt_strikead_zip).
+-module(ebt_xl_zip).
 
 -export([unzip/2]).
 
@@ -7,5 +7,5 @@ unzip(Name, Options) ->
     case zip:unzip(Name, Options) of
         Ok = {ok, _} -> Ok;
         E = {error, {_, _}} -> E;
-        E -> ebt_strikead_io:posix_error(E, {Name, Options})
+        E -> ebt_xl_io:posix_error(E, {Name, Options})
     end.

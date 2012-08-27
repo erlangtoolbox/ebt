@@ -1,4 +1,4 @@
--module(ebt_strikead_auto).
+-module(ebt_xl_auto).
 
 -export([using/3]).
 

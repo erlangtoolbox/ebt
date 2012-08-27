@@ -8,7 +8,7 @@
 perform(Dir, _Config) ->
     SrcDir = Dir ++ "/src",
     Files = filelib:wildcard(SrcDir ++ "/*.yrl"),
-    ebt_strikead_lists:eforeach(fun(F) ->
+    ebt_xl_lists:eforeach(fun(F) ->
         io:format("generating parser from ~p~n", [F]),
         yecc:file(F)
     end, Files).

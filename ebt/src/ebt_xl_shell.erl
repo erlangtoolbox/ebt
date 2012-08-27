@@ -1,4 +1,4 @@
--module(ebt_strikead_shell).
+-module(ebt_xl_shell).
 
 -export([command/1, command/2]).
 

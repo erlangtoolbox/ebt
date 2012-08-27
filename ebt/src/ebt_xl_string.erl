@@ -1,8 +1,9 @@
--module(ebt_strikead_string).
+-module(ebt_xl_string).
 
 -export([empty/1, not_empty/1, strip/1, quote/1, stripthru/1, format/2,
     to_float/1, substitute/2, to_string/1, mk_atom/1, to_upper/1, to_lower/1,
-    equal_ignore_case/2, join/2, join/1, to_atom/1, to_binary/1, to_integer/1]).
+    equal_ignore_case/2, join/2, join/1, to_atom/1, to_binary/1, to_integer/1,
+    generate_uuid/0]).
 
 -type iostring() :: string() | binary().
 -export_type([iostring/0]).
@@ -40,12 +41,12 @@ to_float(X) ->
         _:_ -> float(list_to_integer(X))
     end.
 
--spec substitute/2 :: (string(), ebt_strikead_lists:kvlist_at()) -> string().
+-spec substitute/2 :: (string(), ebt_xl_lists:kvlist_at()) -> string().
 substitute(Str, Map) ->
     Parts = re:split(Str, "(\\\{[a-zA-Z\\\-_\\\.]+\\\})", [{return, list}, trim]),
     lists:flatten([replace_macro(X, Map) || X <- Parts]).
 
--spec replace_macro/2 :: (string(), ebt_strikead_lists:kvlist_at()) -> string().
+-spec replace_macro/2 :: (string(), ebt_xl_lists:kvlist_at()) -> string().
 replace_macro([${ | T], Map) ->
     Key = list_to_atom(string:strip(T, right, $})),
     case lists:keyfind(Key, 1, Map) of
@@ -108,4 +109,10 @@ to_integer(X) when is_list(X) -> list_to_integer(X);
 to_integer(X) when is_atom(X) -> list_to_integer(atom_to_list(X));
 to_integer(X) when is_binary(X) -> list_to_integer(binary_to_list(X)).
 
-		      
+-spec generate_uuid/0 :: () -> binary().
+generate_uuid() ->
+    hd(flake_harness:generate(1, 62)).
+
+% Local Variables:
+% indent-tabs-mode: nil
+% End:

@@ -9,12 +9,12 @@ perform(_Dir, Config) ->
     DepsDir = ebt_config:value(depends, Config, dir, "./lib"),
     inets:start(),
     do([error_m ||
-        ebt_strikead_file:mkdirs(DepsDir),
-        ebt_strikead_lists:eforeach(fun({Url, Libs}) ->
-            ebt_strikead_lists:eforeach(fun({Name, Version}) ->
-                Lib = ebt_strikead_string:join([Name, "-", Version, ".ez"]),
+        ebt_xl_file:mkdirs(DepsDir),
+        ebt_xl_lists:eforeach(fun({Url, Libs}) ->
+            ebt_xl_lists:eforeach(fun({Name, Version}) ->
+                Lib = ebt_xl_string:join([Name, "-", Version, ".ez"]),
                 LocalFile = filename:join(DepsDir, Lib),
-                case ebt_strikead_file:exists(ebt_strikead_string:join([DepsDir, "/", Name, "-", Version])) of
+                case ebt_xl_file:exists(ebt_xl_string:join([DepsDir, "/", Name, "-", Version])) of
                     {ok, true} ->
                         io:format("already downloaded ~s~n", [Lib]);
                     {ok, false} ->
@@ -22,8 +22,8 @@ perform(_Dir, Config) ->
                         do([error_m ||
                             httpc:request(get, {Url ++ "/" ++ Lib, []}, [],
                                 [{stream, LocalFile}]),
-                            ebt_strikead_zip:unzip(LocalFile, [{cwd, DepsDir}, verbose]),
-                            ebt_strikead_file:delete(LocalFile)
+                            ebt_xl_zip:unzip(LocalFile, [{cwd, DepsDir}, verbose]),
+                            ebt_xl_file:delete(LocalFile)
                         ]);
                     E -> E
                 end
