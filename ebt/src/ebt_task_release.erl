@@ -36,7 +36,7 @@ generate_runners(RelConfig, ReleaseDir) ->
                 #file_info{mode = Mode} <- ebt_strikead_file:read_file_info(Path),
                 ebt_strikead_file:change_mode(Path, Mode bor 8#00100)
             ])
-        end, lists:filter(fun(X) -> element(1, X) == rel end , L))
+        end, lists:filter(fun(X) -> element(1, X) == rel end, L))
     ]).
 
 

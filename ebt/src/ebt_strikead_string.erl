@@ -16,7 +16,7 @@ not_empty(S) -> S /= "".
 -spec strip/1 :: (string()) -> string().
 strip(S) -> strip(S, forward).
 strip("", _) -> "";
-strip([$ | T], Dir) -> strip(T, Dir);
+strip([$  | T], Dir) -> strip(T, Dir);
 strip([$\t | T], Dir) -> strip(T, Dir);
 strip([$\r | T], Dir) -> strip(T, Dir);
 strip([$\n | T], Dir) -> strip(T, Dir);
@@ -46,7 +46,7 @@ substitute(Str, Map) ->
     lists:flatten([replace_macro(X, Map) || X <- Parts]).
 
 -spec replace_macro/2 :: (string(), ebt_strikead_lists:kvlist_at()) -> string().
-replace_macro([${|T], Map) ->
+replace_macro([${ | T], Map) ->
     Key = list_to_atom(string:strip(T, right, $})),
     case lists:keyfind(Key, 1, Map) of
         {_, V} -> to_string(V);
@@ -55,7 +55,7 @@ replace_macro([${|T], Map) ->
 replace_macro(X, _Map) -> X.
 
 -spec to_string/1 :: (atom() | binary() | string() | float() | integer())
-    -> string().
+        -> string().
 to_string(V) when is_binary(V) -> binary_to_list(V);
 to_string(V) when is_atom(V) -> atom_to_list(V);
 to_string(V) when is_list(V) -> V;
@@ -103,8 +103,8 @@ to_binary(X) when is_atom(X) -> atom_to_binary(X, utf8);
 to_binary(X) when is_list(X) -> list_to_binary(X);
 to_binary(X) when is_binary(X) -> X.
 
--spec to_integer/1 :: (iostring()|atom()|binary()) -> integer().
-to_integer(X) when is_list(X) ->  list_to_integer(X);
+-spec to_integer/1 :: (iostring() | atom() | binary()) -> integer().
+to_integer(X) when is_list(X) -> list_to_integer(X);
 to_integer(X) when is_atom(X) -> list_to_integer(atom_to_list(X));
 to_integer(X) when is_binary(X) -> list_to_integer(binary_to_list(X)).
 

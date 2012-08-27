@@ -4,39 +4,38 @@
     sublistmatch/2, substitute/3, keyfind/3, keyfind/4, keyreplace/3, kvfind/2,
     kvfind/3, keyreplace_or_add/3, eflatten/1]).
 
--type kvlist(A,B) :: [{A, B}].
+-type kvlist(A, B) :: [{A, B}].
 -type kvlist_at() :: kvlist(atom(), atom() | binary() | string() | integer() | float()).
 -export_types([kvlist/2, kvlist_at/0]).
 
--spec find/2 :: (fun((term()) -> boolean()), [term()])
-    -> maybe_m:monad(term()).
+-spec find/2 :: (fun((term()) -> boolean()), [term()]) -> option_m:monad(term()).
 find(_Pred, []) -> undefined;
-find(Pred, [H|T]) ->
+find(Pred, [H | T]) ->
     case Pred(H) of
         true -> {ok, H};
         _ -> find(Pred, T)
     end.
 
--spec first/1 :: ([term()]) -> maybe_m:monad(term()).
+-spec first/1 :: ([term()]) -> option_m:monad(term()).
 first([]) -> undefined;
-first([H|_]) -> {ok, H}.
+first([H | _]) -> {ok, H}.
 
 -spec emap/2 :: (fun((term()) -> error_m:monad(term())), [term()])
-    -> error_m:monad([term()]).
+        -> error_m:monad([term()]).
 emap(F, List) -> emap(F, [], List).
 
 -spec emap/3 :: (fun((term()) -> error_m:monad(term())), [term()], [term()])
-    -> error_m:monad([term()]).
+        -> error_m:monad([term()]).
 emap(_F, Acc, []) -> {ok, lists:reverse(Acc)};
-emap(F, Acc, [H|T]) ->
+emap(F, Acc, [H | T]) ->
     case F(H) of
-        {ok, R} -> emap(F, [R|Acc], T);
+        {ok, R} -> emap(F, [R | Acc], T);
         X -> X
     end.
 
 -spec eforeach(fun((any()) -> error_m:monad(any())), []) -> error_m:monad(ok).
 eforeach(_F, []) -> ok;
-eforeach(F, [H|T]) ->
+eforeach(F, [H | T]) ->
     case F(H) of
         ok -> eforeach(F, T);
         {ok, _} -> eforeach(F, T);
@@ -46,8 +45,8 @@ eforeach(F, [H|T]) ->
 -spec mapfilter/2 :: (fun((term()) -> false | term()), [term()]) -> [term()].
 mapfilter(F, L) -> mapfilter([], F, L).
 
--spec mapfilter/3 :: ([term()],
-    fun((term()) -> maybe_m:monad(term())), [term()]) -> [term()].
+-spec mapfilter/3 :: ([term()], fun((term()) -> option_m:monad(term())), [term()]) ->
+    [term()].
 mapfilter(Acc, _F, []) -> lists:reverse(Acc);
 mapfilter(Acc, F, [H | T]) ->
     case F(H) of
@@ -56,7 +55,7 @@ mapfilter(Acc, F, [H | T]) ->
     end.
 
 -spec keypsort/3 :: ([term()], integer(), kvlist(term(), term()))
-    -> [{term(), term()}].
+        -> [{term(), term()}].
 keypsort(Keys, N, L) ->
     C = fun(A, B) ->
         case {index(element(N, A), Keys), index(element(N, B), Keys)} of
@@ -67,11 +66,11 @@ keypsort(Keys, N, L) ->
     end,
     lists:sort(C, L).
 
--spec index/2 :: (term(), [term()]) -> maybe_m:monad(integer()).
+-spec index/2 :: (term(), [term()]) -> option_m:monad(integer()).
 index(X, L) -> index(X, 1, L).
 
--spec index/3 :: (term(), integer(), [term()])
-    -> maybe_m:monad(integer()).
+-spec index/3 :: (term(), integer(), [term()]) ->
+    option_m:monad(integer()).
 index(_X, _I, []) -> undefined;
 index(X, I, [X | _]) -> {ok, I};
 index(X, I, [_ | T]) -> index(X, I + 1, T).
@@ -99,14 +98,14 @@ substitute(Pattern, Map, StringHandler) ->
     end, Pattern).
 
 -spec keyfind/4 :: (term(), pos_integer(), [tuple()], tuple()) -> tuple().
-keyfind(Key, N , List, Default) ->
+keyfind(Key, N, List, Default) ->
     case keyfind(Key, N, List) of
         {ok, X} -> X;
         undefined -> Default
     end.
 
--spec keyfind/3 :: (term(), pos_integer(), [tuple()]) -> maybe_m:monad(tuple()).
-keyfind(Key, N , List) ->
+-spec keyfind/3 :: (term(), pos_integer(), [tuple()]) -> option_m:monad(tuple()).
+keyfind(Key, N, List) ->
     case lists:keyfind(Key, N, List) of
         false -> undefined;
         X -> {ok, X}
@@ -119,7 +118,7 @@ kvfind(Key, List, Default) ->
         undefined -> Default
     end.
 
--spec kvfind/2 :: (term(), kvlist(any(), any())) -> maybe_m:monad(any()).
+-spec kvfind/2 :: (term(), kvlist(any(), any())) -> option_m:monad(any()).
 kvfind(Key, List) ->
     case keyfind(Key, 1, List) of
         {ok, {_, Value}} -> {ok, Value};
@@ -136,7 +135,7 @@ keyreplace_or_add(N, List, Tuple) when is_tuple(Tuple) ->
     end.
 
 -spec keyreplace/3 :: (pos_integer(), [tuple()], [tuple()]) -> [tuple()].
-keyreplace(_N, List, [])  -> List;
+keyreplace(_N, List, []) -> List;
 keyreplace(N, List, [R | ReplList]) ->
     keyreplace(N, lists:keyreplace(element(N, R), N, List, R), ReplList).
 

@@ -8,9 +8,9 @@
 -export([perform/2]).
 
 perform(Dir, Config) ->
-    do([ error_m ||
+    do([error_m ||
         AppProdDir <- ebt_config:app_outdir(production, Dir, Config),
-        Libs <- return(lists:map(fun(L) -> L ++ "/*/ebin/*" end , ebt_config:value(libraries, Config, []))),
+        Libs <- return(lists:map(fun(L) -> L ++ "/*/ebin/*" end, ebt_config:value(libraries, Config, []))),
         Files <- ebt_strikead_file:read_files([AppProdDir ++ "/ebin/*" | Libs]),
         Scripts <- ebt_config:find_value(escript, Config),
         ebt_strikead_lists:eforeach(fun({Name, Params, Resources}) ->

@@ -44,7 +44,7 @@ update_app(AppSpec = {_, App, _}, EbinProdDir, Config) ->
         F <- filelib:wildcard(EbinProdDir ++ "/*.beam")],
     {ok, Version} = ebt_config:version(Config),
     ebt_strikead_file:write_terms(Filename,
-            ebt_applib:update(AppSpec, [{modules, Modules}, {vsn, Version}])).
+        ebt_applib:update(AppSpec, [{modules, Modules}, {vsn, Version}])).
 
 -spec compile/3 :: (file:name(), file:name(), ebt_config:config()) -> error_m:monad(ok).
 compile(SrcDir, OutDir, Config) ->
@@ -62,7 +62,7 @@ compile(SrcDir, OutDir, Config) ->
 
 compile([], _SrcDir, _Flags, _OutDir, _Config) -> ok;
 compile(Files, SrcDir, Flags, OutDir, Config) ->
-    do([error_m||
+    do([error_m ||
         ebt:load_libraries(Config),
         case make:files(Files, [{outdir, OutDir}, {i, SrcDir ++ "/../include"} | Flags]) of
             up_to_date -> io:format("...compiled~n");

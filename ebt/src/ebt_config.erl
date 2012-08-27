@@ -12,7 +12,7 @@
 read(Filename, Defaults) ->
     case ebt_strikead_file:exists(Filename) of
         {ok, true} ->
-            do([error_m||
+            do([error_m ||
                 Config <- ebt_strikead_file:read_terms(Filename),
                 return(ebt_strikead_lists:keyreplace_or_add(1, Defaults, Config))
             ]);
@@ -22,7 +22,7 @@ read(Filename, Defaults) ->
 
 -spec find_value/2 :: (atom(), config()) -> error_m:monad(any()).
 find_value(Key, Config) ->
-    maybe_m:to_error_m(ebt_strikead_lists:kvfind(Key, Config),
+    option_m:to_error_m(ebt_strikead_lists:kvfind(Key, Config),
         ebt_strikead_string:format("~p not found", [Key])).
 
 -spec find_value/3 :: (atom(), config(), atom()) -> error_m:monad(any()).
@@ -73,7 +73,7 @@ outdir(Kind, Config, Suffix) ->
         return(Dir)
     ]).
 
--spec app_outdir/3 :: (atom(), file:name(), config()) -> maybe_m:monad(string()).
+-spec app_outdir/3 :: (atom(), file:name(), config()) -> error_m:monad(string()).
 app_outdir(Kind, Dir, Config) ->
     do([error_m ||
         App <- appname(Dir, Config),

@@ -17,10 +17,10 @@ get(Target, Config) ->
     ]).
 
 system_mapping() ->
-        maybe_m:to_error_m(
-            application:get_env(ebt, tasks),
-            "cannot find task mapping"
-        ).
+    option_m:to_error_m(
+        application:get_env(ebt, tasks),
+        "cannot find task mapping"
+    ).
 
 mapping_to_tuple(E = {error, _}) -> E;
 mapping_to_tuple({ok, Mapping}) ->
@@ -30,7 +30,7 @@ mapping_to_tuple({ok, Mapping}) ->
     }}.
 
 get_module(Target, Modules) ->
-    maybe_m:to_error_m(
+    option_m:to_error_m(
         ebt_strikead_lists:kvfind(Target, Modules),
         ebt_strikead_string:format("cannot find module of ~p", [Target])
     ).

@@ -19,7 +19,7 @@ load(Dir) ->
     end.
 
 -spec update/2 :: (application:application_spec(), [application:application_opt()])
-    -> application:application_spec().
+        -> application:application_spec().
 update({application, App, Params}, Updates) ->
     {application, App, lists:foldl(fun(P, Ps) -> ebt_strikead_lists:keyreplace_or_add(1, Ps, P) end, Params, Updates)}.
 

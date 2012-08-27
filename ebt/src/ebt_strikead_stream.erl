@@ -9,8 +9,8 @@
 stream(Context, Next) ->
     fun() ->
         case Next(Context) of
-            empty     -> [];
-            {R, C}     -> [R | stream(C, Next)]
+            empty -> [];
+            {R, C} -> [R | stream(C, Next)]
         end
     end.
 
@@ -18,21 +18,21 @@ map(F, S) ->
     fun() ->
         case S() of
             [] -> [];
-            [H | T] -> [F(H) | map(F,T)]
+            [H | T] -> [F(H) | map(F, T)]
         end
     end.
 
 foreach(F, S) ->
     case S() of
         [] -> done;
-        [H | T] -> F(H), foreach(F,T)
+        [H | T] -> F(H), foreach(F, T)
     end.
 
 seq(From, To) ->
     stream(From, fun(X) ->
         if
-            X =< To -> {X, X+1};
-            true -> empty
+                X =< To -> {X, X + 1};
+                true -> empty
         end
     end).
 
@@ -69,13 +69,13 @@ to_list(S) -> lists:reverse(foldl(fun(V, L) -> [V | L] end, [], S)).
 
 to_pair(S) -> S().
 
-to_stream(L) when is_list(L) -> stream(L,
-    fun
-        ([]) -> empty;
-        ([H|T]) -> {H, T}
+to_stream(L) when is_list(L) ->
+    stream(L, fun
+            ([]) -> empty;
+            ([H | T]) -> {H, T}
     end).
 
--spec mapfind/2 :: (fun((any()) -> maybe_m:monad(any())), stream()) -> maybe_m:monad(any()).
+-spec mapfind/2 :: (fun((any()) -> option_m:monad(any())), stream()) -> option_m:monad(any()).
 mapfind(F, S) ->
     case S() of
         [] -> undefined;

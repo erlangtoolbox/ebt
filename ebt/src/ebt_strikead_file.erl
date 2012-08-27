@@ -25,7 +25,7 @@ list_dir(Dir) -> ebt_strikead_io:apply_io(file, list_dir, [Dir]).
 
 find(Dir, Mask) when is_list(Mask) ->
     case list_dir(Dir, Mask) of
-        {ok, [F|_]} -> {ok, F};
+        {ok, [F | _]} -> {ok, F};
         {ok, []} -> not_found;
         E -> E
     end.
@@ -55,14 +55,14 @@ ensure_dir(Path) -> ebt_strikead_io:apply_io(filelib, ensure_dir, [Path]).
 
 mkdirs(Path) -> ensure_dir(filename:join(Path, "X")).
 
--spec read_terms/1 :: (file:name()) ->   {ok, [term()]} | ebt_strikead_io:posix_error().
+-spec read_terms/1 :: (file:name()) -> {ok, [term()]} | ebt_strikead_io:posix_error().
 read_terms(Filename) -> ebt_strikead_io:apply_io(file, consult, [Filename]).
 
 write_terms(File, L) when is_list(L) ->
     R = do([error_m ||
         ensure_dir(File),
         using(File, [write], fun(F) ->
-            lists:foreach(fun(X) -> io:format(F, "~p.~n",[X]) end, L)
+            lists:foreach(fun(X) -> io:format(F, "~p.~n", [X]) end, L)
         end)
     ]),
     case R of
@@ -97,7 +97,7 @@ copy(Src, Dst) ->
 
 type(Path) ->
     case read_file_info(Path) of
-        {ok, #file_info{type=T}} -> {ok, T};
+        {ok, #file_info{type = T}} -> {ok, T};
         E -> E
     end.
 
@@ -144,7 +144,7 @@ read_files(Wildcards) -> read_files(Wildcards, name).
 -spec read_files/2 :: ([string()], name | {base, file:name()}) ->
     error_m:monad([{string(), binary()}]).
 read_files(Wildcards, Option) ->
-	ebt_strikead_lists:eflatten(ebt_strikead_lists:emap(fun(Name) ->
+    ebt_strikead_lists:eflatten(ebt_strikead_lists:emap(fun(Name) ->
         case type(Name) of
             {ok, directory} -> read_files([Name ++ "/*"], Option);
             {ok, regular} ->
@@ -158,14 +158,14 @@ read_files(Wildcards, Option) ->
                                 AbsName = absolute(Name),
                                 string:substr(AbsName, string:len(AbsBase) + 2);
                             _ -> {error, {badarg, Option}}
-                            end,
+                        end,
                         {ok, {N, Bin}};
                     E -> E
                 end;
             {ok, T} -> {error, {cannot_read, T, Name}};
             E -> E
         end
-	end, [Filename || Wildcard <- Wildcards, Filename <- filelib:wildcard(Wildcard)])).
+    end, [Filename || Wildcard <- Wildcards, Filename <- filelib:wildcard(Wildcard)])).
 
 %todo handle symlinks
 delete(Path) ->
@@ -187,6 +187,6 @@ delete(Path) ->
 %%
 % autoresource
 %%
-auto_open([File, Mode]) ->  open(File, Mode).
+auto_open([File, Mode]) -> open(File, Mode).
 auto_close(D) -> close(D).
 using(File, Mode, F) -> ebt_strikead_auto:using(?MODULE, [File, Mode], F).
