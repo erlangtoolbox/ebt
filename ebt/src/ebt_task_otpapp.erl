@@ -11,7 +11,7 @@ perform(Dir, Config) ->
         ProdDir <- ebt_config:outdir(production, Config),
         DistDir <- ebt_config:outdir(dist, Config),
         Archive <- return(ebt_xl_string:join([DistDir, "/", App, ".ez"], "")),
-        io:format("Packing ~s~n", [Archive]),
+        io:format("packing ~s~n", [Archive]),
         zip:create(Archive, [App], [
             {cwd, ProdDir},
             {compress, all}, {uncompress, [".beam", ".app"]}
