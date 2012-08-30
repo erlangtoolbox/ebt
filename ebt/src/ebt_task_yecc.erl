@@ -1,6 +1,5 @@
 -module(ebt_task_yecc).
 
--compile({parse_transform, do}).
 -behaviour(ebt_task).
 
 -export([perform/3]).
