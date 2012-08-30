@@ -28,6 +28,8 @@ build([{outdir, OutDir}]) ->
     case build(".", Defaults) of
         {ok, _} ->
             {ok, "BUILD SUCCESSFUL"};
+        {error, E} when is_list(E) ->
+            {error, ebt_xl_string:format("BUILD FAILED: ~s~n", [E])};
         {error, E} ->
             {error, ebt_xl_string:format("BUILD FAILED: ~p~n", [E])}
     end.
@@ -53,7 +55,7 @@ build(ContextDir, Defaults) ->
             end,
             ebt_config:value(subdirs, Config, [])
         ),
-        ebt_task:perform(perform, ebt_config:value(targets, Config, perform, ['otp-app']), ContextDir, Config)
+        ebt_task:perform(perform, ebt_config:value(targets, Config, perform, [otpapp]), ContextDir, Config)
     ]).
 
 -spec load_libraries/1 :: (ebt_config:config()) -> [file:name()].

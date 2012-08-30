@@ -1,4 +1,4 @@
--module(ebt_task_otp_app).
+-module(ebt_task_otpapp).
 
 -compile({parse_transform, do}).
 -behaviour(ebt_task).

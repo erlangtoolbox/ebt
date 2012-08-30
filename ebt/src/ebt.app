@@ -16,14 +16,14 @@
                 {depends, ebt_task_depends},
                 {release, ebt_task_release},
                 {eunit, ebt_task_eunit},
-                {'otp-app', ebt_task_otp_app},
+                {otpapp, ebt_task_otp_app},
                 {escript, ebt_task_escript},
                 {protoc, ebt_protoc}
             ]},
             {targets, [
                 {compile, [leex, yecc, protoc]},
                 {eunit, [compile]},
-                {'otp-app', [eunit]},
+                {otpapp, [eunit]},
                 {escript, [eunit]}
             ]}
         ]}
