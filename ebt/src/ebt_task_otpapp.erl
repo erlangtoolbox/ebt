@@ -3,9 +3,9 @@
 -compile({parse_transform, do}).
 -behaviour(ebt_task).
 
--export([perform/2]).
+-export([perform/3]).
 
-perform(Dir, Config) ->
+perform(_Target, Dir, Config) ->
     do([error_m ||
         App <- ebt_config:appname(Dir, Config),
         ProdDir <- ebt_config:outdir(production, Config),

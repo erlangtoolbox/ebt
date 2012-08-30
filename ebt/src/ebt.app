@@ -18,7 +18,7 @@
                 {eunit, ebt_task_eunit},
                 {otpapp, ebt_task_otpapp},
                 {escript, ebt_task_escript},
-                {protoc, ebt_protoc}
+                {protoc, ebt_task_protoc}
             ]},
             {targets, [
                 {compile, [leex, yecc, protoc]},

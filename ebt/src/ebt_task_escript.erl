@@ -5,14 +5,14 @@
 -compile({parse_transform, do}).
 -behaviour(ebt_task).
 
--export([perform/2]).
+-export([perform/3]).
 
-perform(Dir, Config) ->
+perform(Target, Dir, Config) ->
     do([error_m ||
         AppProdDir <- ebt_config:app_outdir(production, Dir, Config),
         Libs <- return(lists:map(fun(L) -> L ++ "/*/ebin/*" end, ebt_config:value(libraries, Config, []))),
         Files <- ebt_xl_file:read_files([AppProdDir ++ "/ebin/*" | Libs]),
-        Scripts <- ebt_config:find_value(escript, Config),
+        Scripts <- ebt_config:find_value(Target, Config),
         ebt_xl_lists:eforeach(fun({Name, Params, Resources}) ->
             Path = ebt_xl_string:join([AppProdDir, "/bin/", Name]),
             do([error_m ||

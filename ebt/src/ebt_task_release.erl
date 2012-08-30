@@ -5,12 +5,12 @@
 -compile({parse_transform, do}).
 -behaviour(ebt_task).
 
--export([perform/2]).
+-export([perform/3]).
 
-perform(Dir, Config) ->
+perform(Target, Dir, Config) ->
     do([error_m ||
-        RelConfig <- ebt_config:find_value(release, Config, config),
-        Name <- ebt_config:find_value(release, Config, name),
+        RelConfig <- ebt_config:find_value(Target, Config, config),
+        Name <- ebt_config:find_value(Target, Config, name),
         ReleaseDir <- ebt_config:outdir(releases, Config, Name),
         io:format("release ~p to ~s~n", [Name, ReleaseDir]),
         RelTool <- reltool:start_server([{config, RelConfig}]),
@@ -20,9 +20,9 @@ perform(Dir, Config) ->
             reltool:stop(RelTool)
         end,
         ebt_xl_file:copy_filtered(Dir,
-            ebt_config:value(release, Config, resources, []), ReleaseDir),
+            ebt_config:value(Target, Config, resources, []), ReleaseDir),
         generate_runners(RelConfig, ReleaseDir),
-        pack(Config)
+        pack(Target, Config)
     ]).
 
 generate_runners(RelConfig, ReleaseDir) ->
@@ -40,9 +40,9 @@ generate_runners(RelConfig, ReleaseDir) ->
     ]).
 
 
-pack(Config) ->
+pack(Target, Config) ->
     do([error_m ||
-        Name <- ebt_config:find_value(release, Config, name),
+        Name <- ebt_config:find_value(Target, Config, name),
         DestDir <- ebt_config:outdir(releases, Config),
         DistDir <- ebt_config:outdir(dist, Config),
         Command <- return(ebt_xl_string:join(["tar -czf ", DistDir, "/", Name, ".tar.gz ", Name])),

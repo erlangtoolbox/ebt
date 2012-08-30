@@ -7,7 +7,7 @@
 -export([perform/4]).
 
 behaviour_info(callbacks) ->
-    [{perform, 2}];
+    [{perform, 3}];
 
 behaviour_info(_) ->
     undefined.
@@ -30,7 +30,7 @@ perform(Level, [Target | Targets], Dir, Config, Acc) ->
                 DoneTargets <- perform(Level, Depends, Dir, Config, Acc),
                 io:format("~s:~n", [Target]),
                 ebt:load_libraries(Config),
-                Module:perform(Dir, Config),
+                Module:perform(Target, Dir, Config),
                 perform(Level, Targets, Dir, Config, [Target | Acc] ++ DoneTargets)
             ])
     end.

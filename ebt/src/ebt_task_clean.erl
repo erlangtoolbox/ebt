@@ -3,9 +3,9 @@
 -compile({parse_transform, do}).
 -behaviour(ebt_task).
 
--export([perform/2]).
+-export([perform/3]).
 
-perform(_Dir, Config) ->
+perform(_Target, _Dir, Config) ->
     do([error_m ||
         delete(ebt_config:outdir(Config))
     ]).

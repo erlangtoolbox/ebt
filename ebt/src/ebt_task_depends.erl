@@ -3,10 +3,10 @@
 -compile({parse_transform, do}).
 -behaviour(ebt_task).
 
--export([perform/2]).
+-export([perform/3]).
 
-perform(_Dir, Config) ->
-    DepsDir = ebt_config:value(depends, Config, dir, "./lib"),
+perform(Target, _Dir, Config) ->
+    DepsDir = ebt_config:value(Target, Config, dir, "./lib"),
     inets:start(),
     do([error_m ||
         ebt_xl_file:mkdirs(DepsDir),
@@ -28,7 +28,7 @@ perform(_Dir, Config) ->
                     E -> E
                 end
             end, Libs)
-        end, ebt_config:value(depends, Config, repositories, []))
+        end, ebt_config:value(Target, Config, repositories, []))
     ]).
 
 

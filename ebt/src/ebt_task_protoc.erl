@@ -1,12 +1,12 @@
--module(ebt_protoc).
+-module(ebt_task_protoc).
 
 -compile({parse_transform, do}).
 
 -behaviour(ebt_task).
 
--export([perform/2]).
+-export([perform/3]).
 
-perform(Dir, Config) ->
+perform(_Target, Dir, Config) ->
     Sources = filelib:wildcard(Dir ++ "/src/*.proto"),
     IncludeDir = Dir ++ "/include",
     do([error_m ||

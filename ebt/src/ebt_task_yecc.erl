@@ -3,9 +3,9 @@
 -compile({parse_transform, do}).
 -behaviour(ebt_task).
 
--export([perform/2]).
+-export([perform/3]).
 
-perform(Dir, _Config) ->
+perform(_Target, Dir, _Config) ->
     SrcDir = Dir ++ "/src",
     Files = filelib:wildcard(SrcDir ++ "/*.yrl"),
     ebt_xl_lists:eforeach(fun(F) ->

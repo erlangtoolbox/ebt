@@ -4,32 +4,32 @@
 
 -behaviour(ebt_task).
 
--export([perform/2]).
+-export([perform/3]).
 
--spec perform/2 :: (file:name(), ebt_config:config()) ->
+-spec perform/3 :: (atom(), file:name(), ebt_config:config()) ->
     error_m:monad(ok).
-perform(Dir, Config) ->
+perform(Target, Dir, Config) ->
     SrcDir = Dir ++ "/src",
     TestDir = Dir ++ "/test",
     do([error_m ||
         AppProdDir <- ebt_config:app_outdir(production, Dir, Config),
         EbinProdDir <- return(AppProdDir ++ "/ebin"),
-        compile(SrcDir, EbinProdDir, Config),
+        compile(Target, SrcDir, EbinProdDir, Config),
         AppSpec <- ebt_applib:load(Dir),
         update_app(AppSpec, EbinProdDir, Config),
         ebt_xl_file:copy_if_exists(Dir ++ "/include", AppProdDir),
         ebt_xl_file:copy_if_exists(Dir ++ "/priv", AppProdDir),
         ebt_xl_file:copy_if_exists(Dir ++ "/bin", AppProdDir),
         ebt_xl_file:copy_filtered(SrcDir,
-            ebt_config:value(compile, Config, resources, []), EbinProdDir),
+            ebt_config:value(Target, Config, resources, []), EbinProdDir),
         AppTestDir <- ebt_config:app_outdir(test, Dir, Config),
         EbinTestDir <- return(AppTestDir ++ "/ebin"),
         case ebt_xl_file:exists(Dir ++ "/test") of
             {ok, true} ->
                 do([error_m ||
-                    compile(TestDir, EbinTestDir, Config),
+                    compile(Target, TestDir, EbinTestDir, Config),
                     ebt_xl_file:copy_filtered(TestDir,
-                        ebt_config:value(compile, Config, resources, []), EbinTestDir)
+                        ebt_config:value(Target, Config, resources, []), EbinTestDir)
                 ]);
             {ok, false} -> ok;
             E -> E
@@ -46,16 +46,17 @@ update_app(AppSpec = {_, App, _}, EbinProdDir, Config) ->
     ebt_xl_file:write_terms(Filename,
         ebt_applib:update(AppSpec, [{modules, Modules}, {vsn, Version}])).
 
--spec compile/3 :: (file:name(), file:name(), ebt_config:config()) -> error_m:monad(ok).
-compile(SrcDir, OutDir, Config) ->
+-spec compile/4 :: (atom(), file:name(), file:name(), ebt_config:config()) ->
+    error_m:monad(ok).
+compile(Target, SrcDir, OutDir, Config) ->
     do([error_m ||
         io:format("compiling ~s to ~s~n", [SrcDir, OutDir]),
         Includes <- return([{i, Lib} || Lib <- ebt_config:value(libraries, Config, [])]),
-        Flags <- return(ebt_config:value(compile, Config, flags, []) ++ Includes),
+        Flags <- return(ebt_config:value(Target, Config, flags, []) ++ Includes),
         ebt_xl_file:mkdirs(OutDir),
         FirstFiles <- return(lists:filter(fun(F) ->
             ebt_xl_file:exists(F) == {ok, true}
-        end, [SrcDir ++ "/" ++ F || F <- ebt_config:value(compile, Config, first, [])])),
+        end, [SrcDir ++ "/" ++ F || F <- ebt_config:value(Target, Config, first, [])])),
         compile(FirstFiles, SrcDir, Flags, OutDir, Config),
         compile(filelib:wildcard(SrcDir ++ "/*.erl"), SrcDir, Flags, OutDir, Config)
     ]).

@@ -4,10 +4,10 @@
 
 -behaviour(ebt_task).
 
--export([perform/2]).
+-export([perform/3]).
 
--spec perform/2 :: (file:name(), ebt_config:config()) -> error_m:monad(ok).
-perform(Dir, Config) ->
+-spec perform/3 :: (atom(), file:name(), ebt_config:config()) -> error_m:monad(ok).
+perform(_Target, Dir, Config) ->
     do([error_m ||
         TestDir <- ebt_config:app_outdir(test, Dir, Config),
         ProdDir <- ebt_config:app_outdir(production, Dir, Config),
