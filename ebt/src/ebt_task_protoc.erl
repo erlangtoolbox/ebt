@@ -13,11 +13,13 @@ perform(_Target, Dir, Config) ->
         OutDir <- ebt_config:app_outdir(production, Dir, Config),
         EbinDir <- return(OutDir ++ "/ebin"),
         ebt_xl_file:mkdirs(EbinDir),
-        ebt_xl_file:mkdirs(IncludeDir),
         ebt_xl_lists:eforeach(fun(File) ->
-            protobuffs_compile:scan_file(File, [
-                {output_ebin_dir, EbinDir},
-                {output_include_dir, IncludeDir}
+            do([error_m ||
+                ebt_xl_file:mkdirs(IncludeDir),
+                protobuffs_compile:scan_file(File, [
+                    {output_ebin_dir, EbinDir},
+                    {output_include_dir, IncludeDir}
+                ])
             ])
         end, Sources)
     ]).
