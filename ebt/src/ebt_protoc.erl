@@ -8,14 +8,16 @@
 
 perform(Dir, Config) ->
     Sources = filelib:wildcard(Dir ++ "/src/*.proto"),
+    IncludeDir = Dir ++ "/include",
     do([error_m ||
         OutDir <- ebt_config:app_outdir(production, Dir, Config),
         EbinDir <- return(OutDir ++ "/ebin"),
         ebt_xl_file:mkdirs(EbinDir),
+        ebt_xl_file:mkdirs(IncludeDir),
         ebt_xl_lists:eforeach(fun(File) ->
             protobuffs_compile:scan_file(File, [
                 {output_ebin_dir, EbinDir},
-                {output_include_dir, Dir ++ "/include"}
+                {output_include_dir, IncludeDir}
             ])
         end, Sources)
     ]).
