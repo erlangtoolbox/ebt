@@ -5,11 +5,12 @@
 -export([main/1, load_libraries/1, load_library/1]).
 
 -define(OPTS, [
-    {outdir, $o, outdir, {string, "out"}, "output directory"}
+    {outdir, $o, outdir, {string, "out"}, "output directory"},
+    {profile, $p, profile, {atom, default}, "build profile"}
 ]).
 -spec main/1 :: ([string()]) -> ok.
 main(Args) ->
-    do([error_m ||
+    R = do([error_m ||
         application:load(ebt),
         Vsn <- application:get_key(ebt, vsn),
         io:format("Erlang Build Tool, v.~s~n", [Vsn]),
@@ -21,11 +22,18 @@ main(Args) ->
             {ok, X} ->
                 io:format("~s~n", [X])
         end
-    ]).
+    ]),
+    case R of
+        {error, X} ->
+            io:format(standard_error, "~p~n", [X]);
+        _ -> ok
+    end.
 
-build([{outdir, OutDir}]) ->
+build(Opts) ->
+    {ok, OutDir} = ebt_xl_lists:kvfind(outdir, Opts),
+    {ok, Profile} = ebt_xl_lists:kvfind(profile, Opts),
     Defaults = [{outdir, filename:absname(OutDir)}],
-    case build(".", Defaults) of
+    case build(Profile, ".", Defaults) of
         {ok, _} ->
             {ok, "BUILD SUCCESSFUL"};
         {error, E} when is_list(E) ->
@@ -34,18 +42,21 @@ build([{outdir, OutDir}]) ->
             {error, ebt_xl_string:format("BUILD FAILED: ~p~n", [E])}
     end.
 
--spec build/2 :: (file:name(), ebt_config:config()) -> error_m:monad(any()).
-build(ContextDir, Defaults) ->
+-spec build/3 :: (atom(), file:name(), ebt_config:config()) -> error_m:monad(any()).
+build(Profile, ContextDir, Defaults) ->
+    io:format("==> build profile: ~p~n", [Profile]),
     ConfigFile = filename:join(ContextDir, "ebt.config"),
     do([error_m ||
         Config <- ebt_config:read(ConfigFile, Defaults),
         OutDir <- ebt_config:outdir(Config),
-        ebt_task:perform(prepare, ebt_config:value(targets, Config, prepare, []), ContextDir, Config),
+        ProfileConfig <- ebt_config:find_value(profiles, Config, Profile),
+        ebt_task:perform(prepare, ebt_xl_lists:kvfind(prepare, ProfileConfig, []), ContextDir, Config),
         ebt_xl_lists:eforeach(
             fun(Dir) ->
                 io:format("==> entering ~s~n", [Dir]),
-                {Status, {_, Stdout}} = ebt_xl_shell:command(
-                    filename:absname(escript:script_name()) ++ " -o " ++ OutDir, Dir),
+                Cmd = ebt_xl_string:format("~s -o ~p -p ~s", [filename:absname(escript:script_name()), OutDir, Profile]),
+                io:format("==> ~s~n", [Cmd]),
+                {Status, {_, Stdout}} = ebt_xl_shell:command(Cmd, Dir),
                 io:format("~s", [Stdout]),
                 io:format("==> leaving ~s~n", [Dir]),
                 case Status of
@@ -55,7 +66,7 @@ build(ContextDir, Defaults) ->
             end,
             ebt_config:value(subdirs, Config, [])
         ),
-        ebt_task:perform(perform, ebt_config:value(targets, Config, perform, [otpapp]), ContextDir, Config)
+        ebt_task:perform(perform, ebt_xl_lists:kvfind(perform, ProfileConfig, [otpapp]), ContextDir, Config)
     ]).
 
 -spec load_libraries/1 :: (ebt_config:config()) -> [file:name()].
