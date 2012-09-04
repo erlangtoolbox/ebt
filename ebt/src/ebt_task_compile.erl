@@ -24,15 +24,15 @@ perform(Target, Dir, Config) ->
             ebt_config:value(Target, Config, resources, []), EbinProdDir),
         AppTestDir <- ebt_config:app_outdir(test, Dir, Config),
         EbinTestDir <- return(AppTestDir ++ "/ebin"),
-        case ebt_xl_file:exists(Dir ++ "/test") of
-            {ok, true} ->
+        HasTests <- ebt_xl_file:exists(Dir ++ "/test"),
+        case HasTests of
+            true ->
                 do([error_m ||
                     compile(Target, TestDir, EbinTestDir, Config),
                     ebt_xl_file:copy_filtered(TestDir,
                         ebt_config:value(Target, Config, resources, []), EbinTestDir)
                 ]);
-            {ok, false} -> ok;
-            E -> E
+            false -> ok
         end
     ]).
 
