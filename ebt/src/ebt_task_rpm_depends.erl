@@ -14,7 +14,7 @@ perform(Target, _Dir, Config) ->
         ebt_task_rpm:prepare_environment(Config),
         LibDir <- ebt_config:find_value(Target, Config, dir),
         Libs <- return(filelib:wildcard(LibDir ++ "/*")),
-        ebt_xl_lists:eforeach(fun(Lib) -> build_rpm(Config, Lib) end, Libs)
+        ebt_xl_lists:eforeach(fun(Lib) -> build_rpm(Config, filename:absname(Lib)) end, Libs)
     ]).
 
 build_rpm(Config, Lib) ->
