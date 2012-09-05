@@ -91,7 +91,7 @@ resolve_requires(H = {'Requires', Package}, RPMSDir) ->
         undefined ->
             case lists:reverse(lists:sort(filelib:wildcard(ebt_xl_string:join([RPMSDir, "/*/", Package, "*"])))) of
                 [File | _] ->
-                    case try_detect(ebt_xl_string:format("rpm -q -p '~s' --qf '%{version}-%{release}'", File), Package) of
+                    case try_detect(ebt_xl_string:format("rpm -q -p '~s' --qf '%{version}-%{release}'", [File]), Package) of
                         {ok, Header} -> Header;
                         undefined -> H
                     end;
