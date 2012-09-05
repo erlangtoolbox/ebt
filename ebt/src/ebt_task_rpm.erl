@@ -105,5 +105,7 @@ try_detect(Command, Package) ->
         {ok, Version} ->
             io:format("detected ~s-~s~n", [Package, Version]),
             {ok, {'Requires', ebt_xl_string:join([Package, "=", Version], " ")}};
-        _ -> undefined
+        {error, Stdout} ->
+            io:format("failed detection ~s: ~s~n", [Package, Stdout]),
+            undefined
     end.
