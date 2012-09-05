@@ -89,9 +89,9 @@ resolve_requires(H = {'Requires', Package}, RPMSDir) ->
     case try_detect(ebt_xl_string:format("rpm -q ~s --qf '%{version}-%{release}'", [Package]), Package) of
         {ok, Header} -> Header;
         undefined ->
-            case lists:reverse(lists:sort(filelib:wildcard(ebt_xl_string:join([RPMSDir, "/", Package, "-*"])))) of
+            case lists:reverse(lists:sort(filelib:wildcard(ebt_xl_string:join([RPMSDir, "/*/", Package, "*"])))) of
                 [File | _] ->
-                    case try_detect(ebt_xl_string:format("rpm -q -p '~s/~s' --qf '%{version}-%{release}'", [RPMSDir, File]), Package) of
+                    case try_detect(ebt_xl_string:format("rpm -q -p '~s' --qf '%{version}-%{release}'", File), Package) of
                         {ok, Header} -> Header;
                         undefined -> H
                     end;
@@ -107,6 +107,6 @@ try_detect(Command, Package) ->
             io:format("detected ~s-~s~n", [Package, Version]),
             {ok, {'Requires', ebt_xl_string:join([Package, "=", Version], " ")}};
         {error, Stdout} ->
-            io:format("failed detection ~s: ~s~n", [Package, Stdout]),
+            io:format("failed detection ~s: ~s", [Package, Stdout]),
             undefined
     end.
