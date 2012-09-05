@@ -7,7 +7,7 @@
 
 perform(_Target, Dir, Config) ->
     do([error_m ||
-        App <- ebt_config:appname(Dir, Config),
+        App <- ebt_config:appname_full(Dir, Config),
         ProdDir <- ebt_config:outdir(production, Config),
         DistDir <- ebt_config:outdir(dist, Config),
         Archive <- return(ebt_xl_string:join([DistDir, "/", App, ".ez"], "")),

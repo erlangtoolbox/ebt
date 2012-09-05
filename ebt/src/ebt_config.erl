@@ -6,7 +6,8 @@
 -export_types([config/0, defaults/0]).
 
 -export([read/2, value/3, value/4, find_value/2, find_value/3,
-    outdir/1, outdir/3, version/1, appname/2, app_outdir/3, outdir/2]).
+    outdir/1, outdir/3, version/1, appname_full/2, appname/1, app_outdir/3,
+    outdir/2, build_number/1]).
 
 -spec read/2 :: (file:name(), config()) -> error_m:monad(config()).
 read(Filename, Defaults) ->
@@ -76,7 +77,7 @@ outdir(Kind, Config, Suffix) ->
 -spec app_outdir/3 :: (atom(), file:name(), config()) -> error_m:monad(string()).
 app_outdir(Kind, Dir, Config) ->
     do([error_m ||
-        App <- appname(Dir, Config),
+        App <- appname_full(Dir, Config),
         outdir(Kind, Config, App)
     ]).
 
@@ -91,10 +92,29 @@ version(Config) ->
         _ -> {ok, "0.0.1"}
     end.
 
--spec appname/2 :: (file:name(), config()) -> error_m:monad(string()).
-appname(Dir, Config) ->
+-spec build_number/1 :: (config()) -> error_m:monad(string()).
+build_number(Config) ->
+    case ebt_xl_lists:kvfind(build, Config) of
+        {ok, {shell, Cmd}} ->
+            case ebt_xl_shell:command(Cmd) of
+                {ok, {_, Out}} -> {ok, Out};
+                E -> E
+            end;
+        _ -> {ok, "0"}
+    end.
+
+-spec appname_full/2 :: (file:name(), config()) -> error_m:monad(string()).
+appname_full(Dir, Config) ->
     do([error_m ||
         {_, Name, _} <- ebt_applib:load(Dir),
         Version <- ebt_config:version(Config),
         return(ebt_xl_string:join([Name, Version], "-"))
     ]).
+
+-spec appname/1 :: (file:name()) -> error_m:monad(string()).
+appname(Dir) ->
+    do([error_m ||
+        {_, Name, _} <- ebt_applib:load(Dir),
+        return(atom_to_list(Name))
+    ]).
+

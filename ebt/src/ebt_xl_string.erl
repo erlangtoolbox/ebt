@@ -1,7 +1,7 @@
 -module(ebt_xl_string).
 
 -export([empty/1, not_empty/1, strip/1, quote/1, stripthru/1, format/2,
-    to_float/1, substitute/2, to_string/1, mk_atom/1, to_upper/1, to_lower/1,
+    to_float/1, substitute/2, substitute/3, to_string/1, mk_atom/1, to_upper/1, to_lower/1,
     equal_ignore_case/2, join/2, join/1, to_atom/1, to_binary/1, to_integer/1,
     generate_uuid/0]).
 
@@ -42,18 +42,21 @@ to_float(X) ->
     end.
 
 -spec substitute/2 :: (string(), ebt_xl_lists:kvlist_at()) -> string().
-substitute(Str, Map) ->
-    Parts = re:split(Str, "(\\\{[a-zA-Z\\\-_\\\.]+\\\})", [{return, list}, trim]),
-    lists:flatten([replace_macro(X, Map) || X <- Parts]).
+substitute(Str, Map) -> substitute(Str, Map, {${, $}}).
 
--spec replace_macro/2 :: (string(), ebt_xl_lists:kvlist_at()) -> string().
-replace_macro([${ | T], Map) ->
-    Key = list_to_atom(string:strip(T, right, $})),
+-spec substitute/3 :: (string(), ebt_xl_lists:kvlist_at(), {char(), char()}) -> string().
+substitute(Str, Map, {Open, Close}) ->
+    Parts = re:split(Str, format("(\\\~s[a-zA-Z\\\-_\\\.]+\\\~s)", [[Open], [Close]]), [{return, list}, trim]),
+    lists:flatten([replace_macro(X, Map, {Open, Close}) || X <- Parts]).
+
+-spec replace_macro/3 :: (string(), ebt_xl_lists:kvlist_at(), {char(), char()}) -> string().
+replace_macro([Open | T], Map, {Open, Close}) ->
+    Key = list_to_atom(string:strip(T, right, Close)),
     case lists:keyfind(Key, 1, Map) of
         {_, V} -> to_string(V);
         _ -> ""
     end;
-replace_macro(X, _Map) -> X.
+replace_macro(X, _Map, _) -> X.
 
 -spec to_string/1 :: (atom() | binary() | string() | float() | integer())
         -> string().
