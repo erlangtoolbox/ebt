@@ -3,13 +3,13 @@
 @DESCRIPTION@
 
 %define _erlang_lib /usr/%{_lib}/erlang/lib/@APPNAME@
-%install
+%define _target %{buildroot}%{_erlang_lib}
 
-TARGET=%{buildroot}%{_erlang_lib}
-mkdir -p $TARGET
+%install
+mkdir -p %{_target}
 for f in %{_builddir}/*
 do
-    cp -r $f $TARGET
+    cp -r $f %{_target}
 done
 
 if [ -d  %{_builddir}/bin ]

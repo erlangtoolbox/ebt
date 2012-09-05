@@ -7,7 +7,7 @@
 
 -export([read/2, value/3, value/4, find_value/2, find_value/3,
     outdir/1, outdir/3, version/1, appname_full/2, appname/1, app_outdir/3,
-    outdir/2, build_number/1]).
+    outdir/2, build_number/1, info_outdir/2]).
 
 -spec read/2 :: (file:name(), config()) -> error_m:monad(config()).
 read(Filename, Defaults) ->
@@ -79,6 +79,15 @@ app_outdir(Kind, Dir, Config) ->
     do([error_m ||
         App <- appname_full(Dir, Config),
         outdir(Kind, Config, App)
+    ]).
+
+-spec info_outdir/2 :: (file:name(), config()) -> error_m:monad(string()).
+info_outdir(Dir, Config) ->
+    do([error_m ||
+        AppProdDir <- app_outdir(production, Dir, Config),
+        InfoDir <- return(ebt_xl_string:join([AppProdDir, ".ebt-info"], "/")),
+        ebt_xl_file:mkdirs(InfoDir),
+        return(InfoDir)
     ]).
 
 -spec version/1 :: (config()) -> error_m:monad(string()).
