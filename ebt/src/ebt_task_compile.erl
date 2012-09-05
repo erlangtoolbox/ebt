@@ -15,7 +15,7 @@ perform(Target, Dir, Config) ->
         AppProdDir <- ebt_config:app_outdir(production, Dir, Config),
         EbinProdDir <- return(AppProdDir ++ "/ebin"),
         compile(Target, SrcDir, EbinProdDir, Config),
-        AppSpec <- ebt_applib:load(Dir),
+        AppSpec <- ebt_applib:load(SrcDir),
         update_app(AppSpec, EbinProdDir, Config),
         ebt_xl_file:copy_if_exists(Dir ++ "/include", AppProdDir),
         ebt_xl_file:copy_if_exists(Dir ++ "/priv", AppProdDir),

@@ -106,7 +106,7 @@ build_number(Config) ->
 -spec appname_full/2 :: (file:name(), config()) -> error_m:monad(string()).
 appname_full(Dir, Config) ->
     do([error_m ||
-        {_, Name, _} <- ebt_applib:load(Dir),
+        {_, Name, _} <- ebt_applib:load(Dir ++ "/src"),
         Version <- ebt_config:version(Config),
         return(ebt_xl_string:join([Name, Version], "-"))
     ]).
@@ -114,7 +114,7 @@ appname_full(Dir, Config) ->
 -spec appname/1 :: (file:name()) -> error_m:monad(string()).
 appname(Dir) ->
     do([error_m ||
-        {_, Name, _} <- ebt_applib:load(Dir),
+        {_, Name, _} <- ebt_applib:load(Dir ++ "/src"),
         return(atom_to_list(Name))
     ]).
 
