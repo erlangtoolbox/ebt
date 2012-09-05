@@ -56,7 +56,7 @@ build(Profile, ContextDir, Defaults) ->
                 io:format("==> entering ~s~n", [Dir]),
                 Cmd = ebt_xl_string:format("~s -o ~p -p ~s", [filename:absname(escript:script_name()), OutDir, Profile]),
                 io:format("==> ~s~n", [Cmd]),
-                {Status, {_, Stdout}} = ebt_xl_shell:command(Cmd, Dir),
+                {Status, Stdout} = ebt_xl_shell:command(Cmd, Dir),
                 io:format("~s", [Stdout]),
                 io:format("==> leaving ~s~n", [Dir]),
                 case Status of

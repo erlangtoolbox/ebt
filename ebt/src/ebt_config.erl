@@ -84,22 +84,14 @@ app_outdir(Kind, Dir, Config) ->
 -spec version/1 :: (config()) -> error_m:monad(string()).
 version(Config) ->
     case ebt_xl_lists:kvfind(version, Config) of
-        {ok, {shell, Cmd}} ->
-            case ebt_xl_shell:command(Cmd) of
-                {ok, {_, Out}} -> {ok, Out};
-                E -> E
-            end;
+        {ok, {shell, Cmd}} -> ebt_xl_shell:command(Cmd);
         _ -> {ok, "0.0.1"}
     end.
 
 -spec build_number/1 :: (config()) -> error_m:monad(string()).
 build_number(Config) ->
     case ebt_xl_lists:kvfind(build, Config) of
-        {ok, {shell, Cmd}} ->
-            case ebt_xl_shell:command(Cmd) of
-                {ok, {_, Out}} -> {ok, Out};
-                E -> E
-            end;
+        {ok, {shell, Cmd}} -> ebt_xl_shell:command(Cmd);
         _ -> {ok, "0"}
     end.
 

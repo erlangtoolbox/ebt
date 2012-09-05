@@ -61,10 +61,11 @@ spec_file(Config, AppName) ->
 header(Config, Spec, AppName, Version) ->
     do([error_m ||
         Build <- ebt_config:build_number(Config),
+        RPMSDir <- ebt_config:outdir(rpmbuild, Config, "RPMS"),
         Values <- return([
             {'Name', AppName},
             {'Release', Build ++ "%{?dist}"},
-            {'Version', Version} | ebt_xl_lists:kvfind(header, Spec, [])
+            {'Version', Version} | resolve_requires(ebt_xl_lists:kvfind(header, Spec, []), RPMSDir)
         ]),
         return(ebt_xl_string:join([ebt_xl_string:format("~s: ~s~n", [N, V]) || {N, V} <- Values]))
     ]).
@@ -81,3 +82,28 @@ rpmbuild(Config, AppName) ->
 
         end
     ]).
+
+resolve_requires(Headers, RPMSDir) when is_list(Headers) ->
+    [resolve_requires(H, RPMSDir) || H <- Headers];
+resolve_requires(H = {'Requires', Package}, RPMSDir) ->
+    case try_detect(ebt_xl_string:join(["rpm -q ", Package, " --qf '%{version}-%{release}'"]), Package) of
+        {ok, Header} -> Header;
+        undefined ->
+            case lists:reverse(lists:sort(filelib:wildcard(ebt_xl_string:join([RPMSDir, "/", Package, "-*"])))) of
+                [File | _] ->
+                    case try_detect(ebt_xl_string:join(["rpm -q -p ", File, " --qf '%{version}-%{release}'"]), Package) of
+                        {ok, Header} -> Header;
+                        undefined -> H
+                    end;
+                _ -> H
+            end
+    end;
+resolve_requires(X, _RRPMDir) -> X.
+
+try_detect(Command, Package) ->
+    case ebt_xl_shell:command(Command) of
+        {ok, Version} ->
+            io:format("detected ~s-~s~n", [Package, Version]),
+            {ok, {'Requires', ebt_xl_string:join([Package, "=", Version], " ")}};
+        _ -> undefined
+    end.
