@@ -91,7 +91,7 @@ header(Config, Spec, AppName, Version) ->
 rpmbuild(SpecFile) ->
     case ebt_xl_shell:command(ebt_xl_string:format("rpmbuild -v -bb ~p", [SpecFile])) of
         {ok, Stdout} -> io:format("~s", [Stdout]);
-        {error, {_, Stdout}} ->
+        {error, Stdout} ->
             io:format("~s", [Stdout]),
             {error, "rpmbuild failed"}
     end.
