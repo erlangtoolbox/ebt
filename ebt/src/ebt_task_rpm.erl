@@ -14,7 +14,7 @@ perform(Target, Dir, Config) ->
         prepare_environment(Config),
         Spec <- ebt_config:find_value(Target, Config, spec),
         AppProdDir <- ebt_config:app_outdir(production, Dir, Config),
-        AppName <- ebt_config:appname_full(Dir, Config),
+        AppName <- ebt_config:appname(Dir),
         Version <- ebt_config:version(Config),
         prepare_spec(Config, Spec, AppProdDir, AppName, Version),
         rpmbuild(Config, AppName)
