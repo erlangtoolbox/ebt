@@ -1,6 +1,6 @@
 Name: erlandox
 Release: 0%{?dist}
-Version: 1.0.2
+Version: 1.0.3
 Summary: ErlandoX
 License: Erlang Public License
 Group: Development
@@ -10,7 +10,7 @@ Requires: erlang = R15B01-1.1
 %description
 ErlandoX
 
-%define _erlang_lib /usr/%{_lib}/erlang/lib/erlandox
+%define _erlang_lib /usr/%{_lib}/erlang/lib/erlandox-1.0.3
 %define _target %{buildroot}%{_erlang_lib}
 
 %install
