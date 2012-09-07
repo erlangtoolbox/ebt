@@ -33,6 +33,6 @@ build_rpm(Config, Lib) ->
                 ])),
                 ebt_task_rpm:rpmbuild(SpecFile)
             ]);
-        {ok, false} -> io:format("ignore: no ~p~n", [SpecTemplate]);
+        {ok, false} -> io:format("ignore: no ~p~n", [SpecTemplatePath]);
         E -> E
     end.
