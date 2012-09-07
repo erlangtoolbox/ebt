@@ -2,3 +2,4 @@
 - recursive ez dependencies
 - fileset manipulation
 - defines/substitution
+- separate rpm.spec generation from rpmbuild
