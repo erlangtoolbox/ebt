@@ -3,3 +3,4 @@
 - fileset manipulation
 - defines/substitution
 - separate rpm.spec generation from rpmbuild
+- different rpm.spec profiles
