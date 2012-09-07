@@ -66,7 +66,7 @@ build(Profile, ContextDir, Defaults) ->
             end,
             ebt_config:value(subdirs, Config, [])
         ),
-        ebt_task:perform(perform, ebt_xl_lists:kvfind(perform, ProfileConfig, [otpapp]), ContextDir, Config)
+        ebt_task:perform(perform, ebt_xl_lists:kvfind(perform, ProfileConfig, [package]), ContextDir, Config)
     ]).
 
 -spec load_libraries/1 :: (ebt_config:config()) -> [file:name()].

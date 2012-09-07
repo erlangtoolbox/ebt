@@ -16,7 +16,7 @@
                 {depends, ebt_task_depends},
                 {release, ebt_task_release},
                 {eunit, ebt_task_eunit},
-                {otpapp, ebt_task_otpapp},
+                {package, ebt_task_package},
                 {escript, ebt_task_escript},
                 {protoc, ebt_task_protoc},
                 {rpm, ebt_task_rpm},
@@ -25,7 +25,7 @@
             {targets, [
                 {compile, [leex, yecc, protoc]},
                 {eunit, [compile]},
-                {otpapp, [eunit]},
+                {package, [eunit]},
                 {escript, [eunit]},
                 {rpm, [eunit]},
                 {rpm_depends, [depends]}
