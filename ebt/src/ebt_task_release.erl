@@ -27,11 +27,14 @@ perform(Target, Dir, Config) ->
 
 generate_runners(RelConfig, ReleaseDir) ->
     do([error_m ||
-        Runner <- ebt_xl_escript:read_file("priv/release/run"),
+        RunnerTemplate <- ebt_xl_escript:read_file("priv/release/run"),
         [{sys, L}] <- ebt_xl_file:read_terms(RelConfig),
         ebt_xl_lists:eforeach(fun({rel, Name, _, _}) ->
             Path = ebt_xl_string:join([ReleaseDir, "bin", Name], "/"),
             do([error_m ||
+                Runner <- return(ebt_xl_string:substitute(binary_to_list(RunnerTemplate), [
+                    {'APPNAME', Name}
+                ], {$@, $@})),
                 ebt_xl_file:write_file(Path, Runner),
                 #file_info{mode = Mode} <- ebt_xl_file:read_file_info(Path),
                 ebt_xl_file:change_mode(Path, Mode bor 8#00100)

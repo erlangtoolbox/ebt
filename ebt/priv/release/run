@@ -1,10 +1,103 @@
 #!/bin/sh
 
+### BEGIN INIT INFO
+# Provides:          @APPNAME@
+# Required-Start:    $local_fs $remote_fs $network
+# Required-Stop:     $local_fs $remote_fs $network
+# Default-Start:     3 5
+# Default-Stop:      0 1 2 6
+# Description        @APPNAME@
+# Short-Description: @APPNAME@
+### END INIT INFO
+
+. /etc/rc.status
+
 BASE=`dirname $0`/..
 APPNAME=`basename $0`
 
-DATA=`cat ${BASE}/releases/start_erl.data`
+. $BASE/etc/$APPNAME.rc
+
+DATA=`cat $BASE/releases/start_erl.data`
 ERTS_VSN=${DATA% *}
 APP_VSN=${DATA#* }
+ERL_BIN=$BASE/erts-$ERTS_VSN/bin/erl
 
-${BASE}/erts-${ERTS_VSN}/bin/erl -args_file ${BASE}/etc/${APPNAME}.vm.args -boot ${BASE}/releases/${APP_VSN}/${APPNAME} -config ${BASE}/etc/${APPNAME}
+rc_reset
+
+function is_running
+{
+    PING=`$ERL_BIN -name clean_$RANDOM@127.0.0.1 -setcookie $COOKIE \
+        -boot $BASE/releases/$APP_VSN/$CLEAN_BOOT -noshell -s init stop \
+        -eval "net_kernel:hidden_connect_node('$NODE_NAME'),
+            R = net_adm:ping('$NODE_NAME'),
+            io:format(\"~p~n\", [R])."`
+    [ "x$PING" = "xpong" ]
+}
+
+case "$1" in
+    run)
+        if is_running
+        then
+            echo -n "$APPNAME is already running"
+            rs_status -v
+        else
+            $ERL_BIN -args_file $BASE/etc/$APPNAME.vm.args -setcookie $COOKIE \
+                -name $NODE_NAME -boot $BASE/releases/$APP_VSN/$APPNAME \
+                -config $BASE/etc/$APPNAME
+        fi
+        ;;
+    start)
+        if is_running
+        then
+            echo -n "$APPNAME is already running"
+        else
+            echo -n "Starting $APPNAME "
+            rc_reset
+            $ERL_BIN -args_file $BASE/etc/$APPNAME.vm.args -setcookie $COOKIE \
+                -name $NODE_NAME -boot $BASE/releases/$APP_VSN/$APPNAME \
+                -config $BASE/etc/$APPNAME -noshell -detached
+        fi
+        rc_status -v
+        ;;
+    attach)
+        echo -n "Attaching to $APPNAME "
+        if is_running
+        then
+            echo
+            $ERL_BIN -name clean_$RANDOM@127.0.0.1 -setcookie $COOKIE \
+                -boot $BASE/releases/$APP_VSN/$CLEAN_BOOT -remsh $NODE_NAME
+        else
+            rc_failed 3
+            rc_status -v
+        fi
+        ;;
+    stop)
+        echo -n "Stopping $APPNAME "
+        if is_running
+        then
+            $ERL_BIN -name clean_$RANDOM@127.0.0.1 -setcookie $COOKIE \
+                -boot $BASE/releases/$APP_VSN/$CLEAN_BOOT \
+                -noshell -s init stop -eval "rpc:call('$NODE_NAME', init, stop, [])"
+        else
+            rc_failed 3
+        fi
+        rc_status -v
+        ;;
+    status)
+        echo -n "Checking for $APPNAME"
+        if is_running
+        then
+            #running
+            :
+        else
+            rc_failed 3
+        fi
+        rc_status -v
+        ;;
+    *)
+        echo "Usage: $APPNAME {run|start|stop|attach|status}"
+        exit 1
+        ;;
+esac
+rc_exit
+
