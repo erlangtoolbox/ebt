@@ -19,15 +19,16 @@
                 {package, ebt_task_package},
                 {escript, ebt_task_escript},
                 {protoc, ebt_task_protoc},
+                {rpm_spec, ebt_task_rpm_spec},
                 {rpm, ebt_task_rpm},
                 {rpm_depends, ebt_task_rpm_depends}
             ]},
             {targets, [
                 {compile, [leex, yecc, protoc]},
                 {eunit, [compile]},
-                {package, [eunit]},
+                {package, [eunit, rpm_spec]},
                 {escript, [eunit]},
-                {rpm, [eunit]},
+                {rpm, [eunit, rpm_spec]},
                 {rpm_depends, [depends]}
             ]}
         ]}

@@ -34,7 +34,4 @@ fi
 %files
 /
 
-
-
-
 %changelog

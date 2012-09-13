@@ -10,7 +10,8 @@
     read_terms/1, read_files/1, read_files/2, copy_if_exists/2, copy_filtered/3,
     absolute/1]).
 -export([read_file/1, delete/1, make_symlink/2, write_file/2, ensure_dir/1,
-    list_dir/1, copy/2, open/2, close/1, change_mode/2, read_file_info/1]).
+    list_dir/1, copy/2, open/2, close/1, change_mode/2, read_file_info/1,
+    read_link_info/1]).
 
 
 list_dir(Dir, Filter) when is_function(Filter) ->
@@ -96,7 +97,7 @@ copy(Src, Dst) ->
     end.
 
 type(Path) ->
-    case read_file_info(Path) of
+    case read_link_info(Path) of
         {ok, #file_info{type = T}} -> {ok, T};
         E -> E
     end.
@@ -125,6 +126,7 @@ open(File, Mode) -> ebt_xl_io:apply_io(file, open, [File, Mode]).
 close(Fd) -> ebt_xl_io:apply_io(file, close, [Fd]).
 make_symlink(Target, Link) -> ebt_xl_io:apply_io(file, make_symlink, [Target, Link]).
 read_file_info(Path) -> ebt_xl_io:apply_io(file, read_file_info, [Path]).
+read_link_info(Path) -> ebt_xl_io:apply_io(file, read_link_info, [Path]).
 change_mode(Path, Mode) -> ebt_xl_io:apply_io(file, change_mode, [Path, Mode]).
 
 absolute(Path) ->
@@ -167,10 +169,11 @@ read_files(Wildcards, Option) ->
         end
     end, [Filename || Wildcard <- Wildcards, Filename <- filelib:wildcard(Wildcard)])).
 
-%todo handle symlinks
 delete(Path) ->
     case type(Path) of
         {ok, regular} ->
+            ebt_xl_io:apply_io(file, delete, [Path]);
+        {ok, symlink} ->
             ebt_xl_io:apply_io(file, delete, [Path]);
         {ok, directory} ->
             do([error_m ||
