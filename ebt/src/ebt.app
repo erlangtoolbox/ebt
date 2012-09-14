@@ -19,6 +19,7 @@
                 {package, ebt_task_package},
                 {escript, ebt_task_escript},
                 {protoc, ebt_task_protoc},
+                {shell, ebt_task_shell},
                 {rpm_spec, ebt_task_rpm_spec},
                 {rpm, ebt_task_rpm},
                 {rpm_depends, ebt_task_rpm_depends}

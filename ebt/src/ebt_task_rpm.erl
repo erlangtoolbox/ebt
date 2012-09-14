@@ -23,10 +23,4 @@ perform(_Target, Dir, Config) ->
 
 
 
-rpmbuild(SpecFile) ->
-    case ebt_xl_shell:command(ebt_xl_string:format("rpmbuild -v -bb ~p", [SpecFile])) of
-        {ok, Stdout} -> io:format("~s", [Stdout]);
-        {error, Stdout} ->
-            io:format("~s", [Stdout]),
-            {error, "rpmbuild failed"}
-    end.
+rpmbuild(SpecFile) -> ebt_cmdlib:exec({"rpmbuild -v -bb ~p", [SpecFile]}).

@@ -48,7 +48,7 @@ resolve_requires(H = {'Requires', Package}, RPMSDir) ->
 resolve_requires(X, _RRPMDir) -> X.
 
 try_detect(Command, Package) ->
-    io:format("detect version: ~s~n", [Command]),
+    io:format("detecting version: ~s~n", [Command]),
     case ebt_xl_shell:command(Command) of
         {ok, Version} ->
             io:format("detected ~s-~s~n", [Package, Version]),

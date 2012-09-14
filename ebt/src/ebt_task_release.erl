@@ -48,8 +48,6 @@ pack(Target, Config) ->
         Name <- ebt_config:find_value(Target, Config, name),
         DestDir <- ebt_config:outdir(releases, Config),
         DistDir <- ebt_config:outdir(dist, Config),
-        Command <- return(ebt_xl_string:join(["tar -czf ", DistDir, "/", Name, ".tar.gz ", Name])),
-        io:format("cd ~s; ~s~n", [DestDir, Command]),
-        ebt_xl_shell:command(Command, DestDir)
+        ebt_cmdlib:exec(ebt_xl_string:join(["tar -czf ", DistDir, "/", Name, ".tar.gz ", Name]), DestDir)
     ]).
 

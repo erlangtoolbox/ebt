@@ -54,14 +54,11 @@ build(Profile, ContextDir, Defaults) ->
         ebt_xl_lists:eforeach(
             fun(Dir) ->
                 io:format("==> entering ~s~n", [Dir]),
-                Cmd = ebt_xl_string:format("~s -o ~p -p ~s", [filename:absname(escript:script_name()), OutDir, Profile]),
-                io:format("==> ~s~n", [Cmd]),
-                {Status, Stdout} = ebt_xl_shell:command(Cmd, Dir),
-                io:format("~s", [Stdout]),
+                Result = ebt_cmdlib:exec({"~s -o ~p -p ~s", [filename:absname(escript:script_name()), OutDir, Profile]}, Dir),
                 io:format("==> leaving ~s~n", [Dir]),
-                case Status of
+                case Result of
                     ok -> ok;
-                    error -> {error, "build in directory " ++ Dir ++ " failed"}
+                    {error, _} -> {error, "build in directory " ++ Dir ++ " failed"}
                 end
             end,
             ebt_config:value(subdirs, Config, [])
