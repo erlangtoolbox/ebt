@@ -21,4 +21,4 @@ process_result(_Command, {ok, Stdout}) ->
     io:format("~s", [Stdout]);
 process_result(Command, {error, Stdout}) ->
     io:format("~s", [Stdout]),
-    {error, ebt_xl_string:format("failed: ~s", Command)}.
+    {error, ebt_xl_string:format("failed: ~s", [Command])}.
