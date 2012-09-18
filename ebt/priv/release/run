@@ -39,7 +39,7 @@ case "$1" in
         if is_running
         then
             echo -n "$APPNAME is already running"
-            rs_status -v
+            rc_status -v
         else
             $ERL_BIN -args_file $BASE/etc/$APPNAME.vm.args -setcookie $COOKIE \
                 -name $NODE_NAME -boot $BASE/releases/$APP_VSN/$APPNAME \
