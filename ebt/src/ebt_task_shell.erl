@@ -10,8 +10,7 @@
 perform(Target, Dir, Config) ->
     do([error_m ||
         Command <- ebt_config:find_value(Target, Config, command),
-        WorkingDir <- ebt_config:value(Target, Config, dir, Dir),
-        ebt_cmdlib:exec(Command, WorkingDir)
+        ebt_cmdlib:exec(Command, ebt_config:value(Target, Config, dir, Dir))
     ]).
 
 
