@@ -14,10 +14,10 @@ perform(_Target, Dir, Config) ->
         RPMBuildDir <- ebt_config:outdir(rpmbuild, Config),
         ebt_rpmlib:prepare_environment(RPMBuildDir),
         AppName <- ebt_config:appname_full(Dir, Config),
-        SpecFile <- ebt_task_rpm_spec:build_spec_file(Config, AppName),
         AppProdDir <- ebt_config:app_outdir(production, Dir, Config),
         SpecTemplatePath <- ebt_task_rpm_spec:info_spec_file(Dir, Config),
         ebt_task_rpm_spec:generate_spec_for_build(Config, SpecTemplatePath, AppName, AppProdDir),
+        SpecFile <- ebt_task_rpm_spec:build_spec_file(Config, AppName),
         rpmbuild(SpecFile)
     ]).
 

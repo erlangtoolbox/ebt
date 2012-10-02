@@ -2,14 +2,15 @@
 %description
 @DESCRIPTION@
 
-%define _erlang_lib /usr/%{_lib}/erlang/lib/@APPNAME@
-%define _target %{buildroot}%{_erlang_lib}
-
 %install
-mkdir -p %{_target}
+APPNAME=`basename %{_builddir}`
+ERLANG_LIB=/usr/%{_lib}/erlang/lib/$APPNAME
+TARGET=%{buildroot}$ERLANG_LIB
+
+mkdir -p $TARGET
 for f in %{_builddir}/*
 do
-    cp -r $f %{_target}
+    cp -r $f $TARGET
 done
 
 if [ -d  %{_builddir}/bin ]
@@ -18,7 +19,7 @@ then
     for f in %{_builddir}/bin/*
     do
         FILE=`basename $f`
-        ln -s %{_erlang_lib}/bin/$FILE %{buildroot}%{_bindir}/$FILE
+        ln -s $ERLANG_LIB/bin/$FILE %{buildroot}%{_bindir}/$FILE
     done
 fi
 
