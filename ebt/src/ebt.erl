@@ -49,7 +49,7 @@ build(Profile, ContextDir, Defaults) ->
     do([error_m ||
         Config <- ebt_config:read(ConfigFile, Defaults),
         OutDir <- ebt_config:outdir(Config),
-        ProfileConfig <- return(ebt_config:value(profiles, Config, Profile, [])),
+        ProfileConfig <- return(ebt_config:value(profiles, Config, Profile, ebt_config:value(profiles, Config, default, []))),
         ebt_task:perform(prepare, ebt_xl_lists:kvfind(prepare, ProfileConfig, []), ContextDir, Config),
         ebt_xl_lists:eforeach(
             fun(Dir) ->
