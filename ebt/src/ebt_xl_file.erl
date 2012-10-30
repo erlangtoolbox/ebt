@@ -44,7 +44,7 @@ compile_mask([$* | T], Acc) -> compile_mask(T, Acc ++ ".*");
 compile_mask([$? | T], Acc) -> compile_mask(T, Acc ++ ".");
 compile_mask([H | T], Acc) -> compile_mask(T, Acc ++ [H]).
 
--spec exists/1 :: (file:name()) -> error_m:monad(boolean()).
+-spec(exists(file:name()) -> error_m:monad(boolean())).
 exists(Path) ->
     case ebt_xl_io:apply_io(file, read_file_info, [Path]) of
         {ok, _} -> {ok, true};
@@ -56,7 +56,7 @@ ensure_dir(Path) -> ebt_xl_io:apply_io(filelib, ensure_dir, [Path]).
 
 mkdirs(Path) -> ensure_dir(filename:join(Path, "X")).
 
--spec read_terms/1 :: (file:name()) -> {ok, [term()]} | ebt_xl_io:posix_error().
+-spec(read_terms(file:name()) -> {ok, [term()]} | ebt_xl_io:posix_error()).
 read_terms(Filename) -> ebt_xl_io:apply_io(file, consult, [Filename]).
 
 write_terms(File, L) when is_list(L) ->
@@ -73,7 +73,7 @@ write_terms(File, L) when is_list(L) ->
 
 write_terms(File, L) -> write_terms(File, [L]).
 
--spec copy(file:filename(), file:filename()) -> error_m:monad(ok).
+-spec(copy(file:filename(), file:filename()) -> error_m:monad(ok)).
 copy(Src, Dst) ->
     case type(Src) of
         {ok, regular} ->
@@ -102,13 +102,13 @@ type(Path) ->
         E -> E
     end.
 
--spec copy_filtered(file:name(), [string()], file:name()) -> error_m:monad(ok).
+-spec(copy_filtered(file:name(), [string()], file:name()) -> error_m:monad(ok)).
 copy_filtered(SrcDir, Wildcards, DstDir) ->
     ebt_xl_lists:eforeach(fun(F) ->
         ebt_xl_file:copy(F, DstDir)
     end, [F || WC <- Wildcards, F <- filelib:wildcard(SrcDir ++ "/" ++ WC)]).
 
--spec copy_if_exists/2 :: (file:name(), file:name()) -> error_m:monad(ok).
+-spec(copy_if_exists(file:name(), file:name()) -> error_m:monad(ok)).
 copy_if_exists(Src, Dst) ->
     case ebt_xl_file:exists(Src) of
         {ok, true} -> copy(Src, Dst);
@@ -140,11 +140,11 @@ absolute([H | T], Acc, 0) -> absolute(T, [H | Acc], 0);
 absolute(["/"], Acc, _) -> ["/" | Acc];
 absolute([_ | T], Acc, Skip) -> absolute(T, Acc, Skip - 1).
 
--spec read_files/1 :: ([string()]) -> error_m:monad([{string(), binary()}]).
+-spec(read_files([string()]) -> error_m:monad([{string(), binary()}])).
 read_files(Wildcards) -> read_files(Wildcards, name).
 
--spec read_files/2 :: ([string()], name | {base, file:name()}) ->
-    error_m:monad([{string(), binary()}]).
+-spec(read_files([string()], name | {base, file:name()}) ->
+    error_m:monad([{string(), binary()}])).
 read_files(Wildcards, Option) ->
     ebt_xl_lists:eflatten(ebt_xl_lists:emap(fun(Name) ->
         case type(Name) of

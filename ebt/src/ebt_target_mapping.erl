@@ -4,7 +4,7 @@
 
 -export([get/2]).
 
--spec get/2 :: (atom(), ebt_config:config()) -> error_m:monad({module(), [atom()]}).
+-spec(get(atom(), ebt_config:config()) -> error_m:monad({module(), [atom()]})).
 get(Target, Config) ->
     do([error_m ||
         {Modules, Targets} <- mapping_to_tuple(system_mapping()),

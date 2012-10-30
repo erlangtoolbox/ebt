@@ -75,7 +75,7 @@ to_stream(L) when is_list(L) -> stream(L,
             ([H | T]) -> {H, T}
     end).
 
--spec mapfind/2 :: (fun((any()) -> option_m:monad(any())), stream()) -> option_m:monad(any()).
+-spec(mapfind(fun((any()) -> option_m:monad(any())), stream()) -> option_m:monad(any())).
 mapfind(F, S) ->
     case S() of
         [] -> undefined;

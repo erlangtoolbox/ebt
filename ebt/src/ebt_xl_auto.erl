@@ -2,10 +2,10 @@
 
 -export([using/3]).
 
--spec using(Module, Params, Callback) -> term() when
+-spec(using(Module, Params, Callback) -> term() when
     Module :: module(),
     Params :: term(),
-    Callback :: fun().
+    Callback :: fun()).
 
 using(Module, Params, F) ->
     case Module:auto_open(Params) of

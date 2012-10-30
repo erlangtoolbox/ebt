@@ -6,7 +6,7 @@
 
 -export([perform/3]).
 
--spec perform/3 :: (atom(), file:name(), ebt_config:config()) -> error_m:monad(ok).
+-spec(perform(atom(), file:name(), ebt_config:config()) -> error_m:monad(ok)).
 perform(_Target, Dir, Config) ->
     do([error_m ||
         TestDir <- ebt_config:app_outdir(test, Dir, Config),

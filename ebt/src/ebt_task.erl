@@ -2,18 +2,12 @@
 
 -compile({parse_transform, do}).
 
--export([behaviour_info/1]).
-
 -export([perform/4]).
 
-behaviour_info(callbacks) ->
-    [{perform, 3}];
+-callback(perform(atom(), file:name(), ebt_config:config()) -> error_m:monad(any())).
 
-behaviour_info(_) ->
-    undefined.
-
--spec perform/4 :: (atom(), [atom()], file:name(), ebt_config:config()) ->
-    error_m:monad([atom()]).
+-spec(perform(atom(), [atom()], file:name(), ebt_config:config()) ->
+    error_m:monad([atom()])).
 perform(Level, Targets, Dir, Config) ->
     perform(Level, Targets, Dir, Config, []).
 

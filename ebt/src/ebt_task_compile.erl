@@ -6,8 +6,8 @@
 
 -export([perform/3]).
 
--spec perform/3 :: (atom(), file:name(), ebt_config:config()) ->
-    error_m:monad(ok).
+-spec(perform(atom(), file:name(), ebt_config:config()) ->
+    error_m:monad(ok)).
 perform(Target, Dir, Config) ->
     SrcDir = Dir ++ "/src",
     TestDir = Dir ++ "/test",
@@ -36,8 +36,8 @@ perform(Target, Dir, Config) ->
         end
     ]).
 
--spec update_app/3 :: (application:application_spec(), file:name(), ebt_config:config()) ->
-    error_m:monad(ok).
+-spec(update_app(application:application_spec(), file:name(), ebt_config:config()) ->
+    error_m:monad(ok)).
 update_app(AppSpec = {_, App, _}, EbinProdDir, Config) ->
     Filename = ebt_xl_string:join([EbinProdDir, "/", App, ".app"], ""),
     Modules = [list_to_atom(filename:basename(F, ".beam")) ||
@@ -46,8 +46,8 @@ update_app(AppSpec = {_, App, _}, EbinProdDir, Config) ->
     ebt_xl_file:write_terms(Filename,
         ebt_applib:update(AppSpec, [{modules, Modules}, {vsn, Version}])).
 
--spec compile/4 :: (atom(), file:name(), file:name(), ebt_config:config()) ->
-    error_m:monad(ok).
+-spec(compile(atom(), file:name(), file:name(), ebt_config:config()) ->
+    error_m:monad(ok)).
 compile(Target, SrcDir, OutDir, Config) ->
     do([error_m ||
         io:format("compiling ~s to ~s~n", [SrcDir, OutDir]),

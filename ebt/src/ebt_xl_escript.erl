@@ -4,10 +4,10 @@
 
 -export([read_file/2, read_file/1]).
 
--spec read_file/1 :: (file:name()) -> error_m:monad(binary()).
+-spec(read_file(file:name()) -> error_m:monad(binary())).
 read_file(File) -> read_file(escript:script_name(), File).
 
--spec read_file/2 :: (file:name(), file:name()) -> error_m:monad(binary()).
+-spec(read_file(file:name(), file:name()) -> error_m:monad(binary())).
 read_file(EscriptPath, File) ->
     do([error_m ||
         Sections <- escript:extract(EscriptPath, []),

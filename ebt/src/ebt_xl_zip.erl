@@ -2,7 +2,7 @@
 
 -export([unzip/2]).
 
--spec unzip/2 :: (file:name(), [term()]) -> error_m:monad(file:name()).
+-spec(unzip(file:name(), [term()]) -> error_m:monad(file:name())).
 unzip(Name, Options) ->
     case zip:unzip(Name, Options) of
         Ok = {ok, _} -> Ok;

@@ -8,7 +8,7 @@
     {outdir, $o, outdir, {string, "out"}, "output directory"},
     {profile, $p, profile, {atom, default}, "build profile"}
 ]).
--spec main/1 :: ([string()]) -> ok.
+-spec(main([string()]) -> ok).
 main(Args) ->
     R = do([error_m ||
         application:load(ebt),
@@ -42,7 +42,7 @@ build(Opts) ->
             {error, ebt_xl_string:format("BUILD FAILED: ~p~n", [E])}
     end.
 
--spec build/3 :: (atom(), file:name(), ebt_config:config()) -> error_m:monad(any()).
+-spec(build(atom(), file:name(), ebt_config:config()) -> error_m:monad(any())).
 build(Profile, ContextDir, Defaults) ->
     io:format("==> build profile: ~p~n", [Profile]),
     ConfigFile = filename:join(ContextDir, "ebt.config"),
@@ -66,13 +66,13 @@ build(Profile, ContextDir, Defaults) ->
         ebt_task:perform(perform, ebt_xl_lists:kvfind(perform, ProfileConfig, [package]), ContextDir, Config)
     ]).
 
--spec load_libraries/1 :: (ebt_config:config()) -> [file:name()].
+-spec(load_libraries(ebt_config:config()) -> [file:name()]).
 load_libraries(Config) ->
     ebt_xl_lists:eforeach(fun load_library/1, [Lib ||
         LibDir <- ebt_config:value(libraries, Config, []),
         Lib <- filelib:wildcard(LibDir ++ "/*")]).
 
--spec load_library/1 :: (file:name()) -> error_m:monad(ok).
+-spec(load_library(file:name()) -> error_m:monad(ok)).
 load_library(Path) ->
     case code:add_patha(filename:join(Path, "ebin")) of
         true -> ok;
