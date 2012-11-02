@@ -23,10 +23,11 @@
                 {git_info, ebt_task_git_info},
                 {rpm_spec, ebt_task_rpm_spec},
                 {rpm, ebt_task_rpm},
-                {rpm_depends, ebt_task_rpm_depends}
+                {rpm_depends, ebt_task_rpm_depends},
+                {gcc, ebt_task_gcc}
             ]},
             {targets, [
-                {compile, [leex, yecc, protoc]},
+                {compile, [leex, yecc, protoc, gcc]},
                 {eunit, [compile]},
                 {package, [eunit, rpm_spec, git_info]},
                 {escript, [eunit]},
