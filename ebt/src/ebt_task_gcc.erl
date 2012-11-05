@@ -9,7 +9,8 @@ perform(Target, Dir, Config) ->
     case ebt_config:find_value(Target, Config) of
         {ok, _} ->
             CC = ebt_config:value(Target, Config, cc, "gcc"),
-            Sources = filelib:wildcard(filename:join([Dir, ebt_config:value(Target, Config, sources, "c_src"), "*.c"])),
+            CSourceDir = ebt_config:value(Target, Config, sources, "c_src"),
+            Sources = lists:append([filelib:wildcard(filename:join([Dir, CSourceDir, WC])) || WC <- ["*.c", "*.cc", "*.cpp"]]),
             Includes = "-I" ++ hd(filelib:wildcard(code:lib_dir() ++ "/erl_interface-*/include"))
                 ++ " -I" ++ hd(filelib:wildcard(code:root_dir() ++ "/erts-*/include")),
             CFlags = "-g -Wall -fPIC " ++ ebt_config:value(Target, Config, cflags, ""),
@@ -17,7 +18,7 @@ perform(Target, Dir, Config) ->
             do([error_m ||
                 NativeOut <- ebt_config:outdir(native, Config),
                 ebt_xl_lists:eforeach(fun(File) ->
-                    Name = filename:basename(File, ".c"),
+                    Name = filename:basename(filename:rootname(File)),
                     Command = ebt_xl_string:format("~s ~s ~s -c ~s -o ~s/~s.o", [CC, CFlags, Includes, File, NativeOut, Name]),
                     io:format("~s~n", [Command]),
                     ebt_xl_shell:command(Command)
