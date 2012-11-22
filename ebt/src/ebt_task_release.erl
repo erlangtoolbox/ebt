@@ -9,11 +9,13 @@
 
 perform(Target, Dir, Config) ->
     do([error_m ||
-        RelConfig <- ebt_config:find_value(Target, Config, config),
+        RelConfigFile <- ebt_config:find_value(Target, Config, config),
+        [RelConfig] <- xl_file:read_terms(RelConfigFile),
+        RelConfigUpdated <- update_release_config(RelConfig, Config),
         Name <- ebt_config:find_value(Target, Config, name),
         ReleaseDir <- ebt_config:outdir(releases, Config, Name),
         io:format("release ~p to ~s~n", [Name, ReleaseDir]),
-        RelTool <- reltool:start_server([{config, RelConfig}]),
+        RelTool <- reltool:start_server([{config, RelConfigUpdated}]),
         try
             reltool:create_target(RelTool, ReleaseDir)
         after
@@ -21,14 +23,13 @@ perform(Target, Dir, Config) ->
         end,
         ebt_xl_file:copy_filtered(Dir,
             ebt_config:value(Target, Config, resources, []), ReleaseDir),
-        generate_runners(RelConfig, ReleaseDir),
+        generate_runners(RelConfigUpdated, ReleaseDir),
         pack(Target, Config)
     ]).
 
-generate_runners(RelConfig, ReleaseDir) ->
+generate_runners({sys, L}, ReleaseDir) ->
     do([error_m ||
         RunnerTemplate <- ebt_xl_escript:read_file("priv/release/run"),
-        [{sys, L}] <- ebt_xl_file:read_terms(RelConfig),
         ebt_xl_lists:eforeach(fun({rel, Name, _, _}) ->
             Path = ebt_xl_string:join([ReleaseDir, "bin", Name], "/"),
             do([error_m ||
@@ -51,3 +52,11 @@ pack(Target, Config) ->
         ebt_cmdlib:exec(ebt_xl_string:join(["tar -czf ", DistDir, "/", Name, ".tar.gz ", Name]), DestDir)
     ]).
 
+update_release_config({sys, Opts}, Config) ->
+    do([error_m ||
+        Version <- ebt_config:version(Config),
+        return({sys, lists:map(fun
+            ({rel, Name, _, Apps}) -> {rel, Name, Version, Apps};
+            (X) -> X
+        end, Opts)})
+    ]).
