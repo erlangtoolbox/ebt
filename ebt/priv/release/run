@@ -12,7 +12,8 @@
 
 . /etc/rc.status
 
-BASE=`dirname $0`/..
+cd `dirname $0`/..
+BASE=`pwd`
 APPNAME=`basename $0`
 
 . $BASE/etc/$APPNAME.rc
