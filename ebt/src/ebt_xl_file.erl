@@ -92,6 +92,13 @@ copy(Src, Dst) ->
                     copy(filename:join(Src, F), NewDst)
                 end, Files)
             ]);
+        {ok, symlink} ->
+            DestinationFile = filename:join(Dst, filename:basename(Src)),
+            do([error_m ||
+                ensure_dir(DestinationFile),
+                ebt_xl_io:apply_io(file, copy, [Src, DestinationFile]),
+                ok
+            ]);
         {ok, T} -> {error, {cannot_copy, T, [Src, Dst]}};
         E -> E
     end.
