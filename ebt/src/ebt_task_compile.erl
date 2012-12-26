@@ -6,8 +6,7 @@
 
 -export([perform/3]).
 
--spec(perform(atom(), file:name(), ebt_config:config()) ->
-    error_m:monad(ok)).
+-spec(perform(atom(), file:name(), ebt_config:config()) -> error_m:monad(ok)).
 perform(Target, Dir, Config) ->
     SrcDir = Dir ++ "/src",
     TestDir = Dir ++ "/test",
@@ -17,11 +16,11 @@ perform(Target, Dir, Config) ->
         compile(Target, SrcDir, EbinProdDir, Config),
         AppSpec <- ebt_applib:load(SrcDir),
         update_app(AppSpec, EbinProdDir, Config),
+        ebt_xl_file:copy_if_exists(Dir ++ "/src", AppProdDir),
         ebt_xl_file:copy_if_exists(Dir ++ "/include", AppProdDir),
         ebt_xl_file:copy_if_exists(Dir ++ "/priv", AppProdDir),
         ebt_xl_file:copy_if_exists(Dir ++ "/bin", AppProdDir),
-        ebt_xl_file:copy_filtered(SrcDir,
-            ebt_config:value(Target, Config, resources, []), EbinProdDir),
+        ebt_xl_file:copy_filtered(SrcDir, ebt_config:value(Target, Config, resources, []), EbinProdDir),
         AppTestDir <- ebt_config:app_outdir(test, Dir, Config),
         EbinTestDir <- return(AppTestDir ++ "/ebin"),
         HasTests <- ebt_xl_file:exists(Dir ++ "/test"),
