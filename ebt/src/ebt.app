@@ -31,7 +31,7 @@
                 {eunit, [compile]},
                 {package, [eunit, rpm_spec, git_info]},
                 {escript, [eunit]},
-                {rpm, [eunit, rpm_spec]},
+                {rpm, [rpm_spec]},
                 {rpm_depends, [depends]}
             ]}
         ]}

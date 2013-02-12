@@ -26,7 +26,7 @@ build_rpm(Config, Lib) ->
         {ok, true} ->
             AppName = filename:basename(Lib),
             do([error_m ||
-                SpecFile <- ebt_task_rpm_spec:build_spec_file(Config, AppName),
+                SpecFile <- ebt_task_rpm_spec:spec_file_path(Config, AppName),
                 ebt_task_rpm_spec:generate_spec_for_build(Config, SpecTemplatePath, AppName, Lib),
                 ebt_task_rpm:rpmbuild(SpecFile)
             ]);

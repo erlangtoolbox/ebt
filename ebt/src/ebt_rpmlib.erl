@@ -19,10 +19,10 @@ prepare_environment(RPMBuildDir) ->
     ]).
 
 
-spec_header(AppName, Version, BuildNumber, Headers, RPMSDir) ->
+spec_header(Name, Version, BuildNumber, Headers, RPMSDir) ->
     do([error_m ||
         Values <- return([
-            {'Name', AppName},
+            {'Name', Name},
             {'Release', BuildNumber ++ "%{?dist}"},
             {'Version', Version} | resolve_requires(Headers, RPMSDir)
         ]),
