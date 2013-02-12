@@ -10,7 +10,7 @@
 perform(Target, Dir, Config) ->
     do([error_m ||
         RelConfigFile <- ebt_config:find_value(Target, Config, config),
-        [RelConfig] <- xl_file:read_terms(RelConfigFile),
+        [RelConfig] <- ebt_xl_file:read_terms(RelConfigFile),
         RelConfigUpdated <- update_release_config(RelConfig, Config),
         Name <- ebt_config:find_value(Target, Config, name),
         ReleaseDir <- ebt_config:outdir(releases, Config, Name),
