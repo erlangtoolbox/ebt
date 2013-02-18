@@ -3,7 +3,7 @@
 
 Name:          strikead-erlang-%{realname}
 Version:       {{VERSION}}
-Release:       1
+Release:       {{RELEASE}}
 License:       Proprietary
 Vendor:        StrikeAd
 Packager:      Aleksey Morarash <aleksey.morarash@strikead.com>
@@ -22,7 +22,7 @@ Erlang build tool
 %setup -n strikead-%{realname}-%{revision}
 
 %build
-./make
+BUILD_NUMBER=%{release}./make
 
 %install
 install --mode=755 --directory %{buildroot}/usr/bin
