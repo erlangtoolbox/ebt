@@ -22,7 +22,7 @@ Erlang build tool
 %setup -n strikead-%{realname}-%{revision}
 
 %build
-BUILD_NUMBER=%{release}./make
+BUILD_NUMBER=%{release} ./make
 
 %install
 install --mode=755 --directory %{buildroot}/usr/bin
