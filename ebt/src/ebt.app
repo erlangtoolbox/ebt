@@ -20,6 +20,7 @@
                 {escript, ebt_task_escript},
                 {protoc, ebt_task_protoc},
                 {shell, ebt_task_shell},
+                {template, ebt_task_template},
                 {git_info, ebt_task_git_info},
                 {rpm_spec, ebt_task_rpm_spec},
                 {rpm, ebt_task_rpm},
@@ -27,7 +28,7 @@
                 {cc, ebt_task_cc}
             ]},
             {targets, [
-                {compile, [leex, yecc, protoc, cc]},
+                {compile, [template, leex, yecc, protoc, cc]},
                 {eunit, [compile]},
                 {package, [eunit, rpm_spec, git_info]},
                 {escript, [eunit]},

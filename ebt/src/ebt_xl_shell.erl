@@ -1,6 +1,6 @@
 -module(ebt_xl_shell).
 
--export([command/1, command/2]).
+-export([command/1, command/2, getenv/0]).
 
 -spec(command(string()) -> error_m:monad(string())).
 command(Command) ->
@@ -15,3 +15,10 @@ command(Command, Dir) ->
         {0, Out} -> {ok, Out};
         {_, Out} -> {error, Out}
     end.
+
+-spec(getenv() -> [{atom(), string()}]).
+getenv() ->
+    lists:map(fun(V) ->
+        {H, [_ | T]} = lists:splitwith(fun(X) -> X /= $= end, V),
+        {list_to_atom(H), T}
+    end, os:getenv()).
