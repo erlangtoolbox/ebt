@@ -1,0 +1,38 @@
+%define realname ebt
+%define revision {{REVISION}}
+
+Name:          strikead-erlang-%{realname}
+Version:       {{VERSION}}
+Release:       {{RELEASE}}
+License:       Proprietary
+Vendor:        StrikeAd
+Packager:      Dmitry Kasimtsev <dmitry.kasimtsev@strikead.com>
+
+Group:         Development/Languages/Erlang
+Source:        strikead-%{realname}.tar.gz
+Summary:       Erlang build tool
+URL:           https://github.com/strikead/%{realname}/tarball/%{revision}
+Requires:      erlang >= R15B03_1
+BuildRequires: erlang >= R15B03_1 make
+BuildArch:     x86_64
+
+%description
+Erlang build tool - to build erlang projects
+
+%prep
+%setup -n strikead-%{realname}-%{revision}
+
+%build
+BUILD_NUMBER=%{release} ./make
+
+%install
+install --mode=755 --directory %{buildroot}/usr/bin
+install --mode=755 out/production/ebt-%{version}/bin/ebt %{buildroot}/usr/bin
+
+%files
+/usr/bin/*
+
+%changelog
+* Mon Feb 18 2013 Dmitry Kasimtsev <dmitry.kasimtsev@strikead.com> 1.1.0
+- Initial package for OpenSUSE.
+
