@@ -1,9 +1,9 @@
 %define realname ebt
-%define revision {{REVISION}}
+%define revision @EBT_BUILD@
 
 Name:          strikead-erlang-%{realname}
-Version:       {{VERSION}}
-Release:       {{RELEASE}}
+Version:       @EBT_VERSION@
+Release:       @EBT_BUILD@
 License:       Proprietary
 Vendor:        StrikeAd
 Packager:      Dmitry Kasimtsev <dmitry.kasimtsev@strikead.com>
