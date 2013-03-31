@@ -39,9 +39,9 @@ perform(Target, Dir, Config) ->
             {_, Os} = os:type(),
             io:format("os is ~s~n", [Os]),
             OsConfig = ebt_config:value(Target, Config, Os, []),
-            CSourceDir = ebt_config:value(Target, Config, sources, "c_src"),
+            CSourceDirs = ebt_config:value(Target, Config, sources, ["c_src"]),
             CC = ebt__xl_lists:kvfind(cc, OsConfig, "gcc"),
-            Sources = lists:append([filelib:wildcard(filename:join([Dir, CSourceDir, WC])) || WC <- ["*.c", "*.cc", "*.cpp"]]),
+            Sources = lists:append([filelib:wildcard(filename:join([Dir, CSourceDir, WC])) || CSourceDir <- CSourceDirs, WC <- ["*.c", "*.cc", "*.cpp"]]),
             Includes = "-I" ++ hd(filelib:wildcard(code:lib_dir() ++ "/erl_interface-*/include"))
                 ++ " -I" ++ hd(filelib:wildcard(code:root_dir() ++ "/erts-*/include")),
             CFlags = "-g -Wall -fPIC " ++ ebt__xl_lists:kvfind(cflags, OsConfig, ""),
