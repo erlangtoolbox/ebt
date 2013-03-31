@@ -2,3 +2,5 @@ out
 .idea/workspace.xml
 bootstrap
 strikead-ebt.spec
+ebt__*
+.deps

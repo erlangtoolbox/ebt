@@ -2,7 +2,7 @@
 -module(ebt_task_rpm).
 -author("Volodymyr Kyrychenko <vladimirk.kirichenko@gmail.com>").
 
--compile({parse_transform, do}).
+-compile({parse_transform, ebt__do}).
 
 -behaviour(ebt_task).
 
@@ -10,7 +10,7 @@
 -export([perform/3, rpmbuild/1]).
 
 perform(_Target, Dir, Config) ->
-    do([error_m ||
+    ebt__do([ebt__error_m ||
         RPMBuildDir <- ebt_config:outdir(rpmbuild, Config),
         ebt_rpmlib:prepare_environment(RPMBuildDir),
         AppName <- ebt_config:appname_full(Dir, Config),

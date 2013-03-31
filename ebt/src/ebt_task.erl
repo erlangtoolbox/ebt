@@ -1,13 +1,13 @@
 -module(ebt_task).
 
--compile({parse_transform, do}).
+-compile({parse_transform, ebt__do}).
 
 -export([perform/4]).
 
--callback(perform(atom(), file:name(), ebt_config:config()) -> error_m:monad(any())).
+-callback(perform(atom(), file:name(), ebt_config:config()) -> ebt__error_m:monad(any())).
 
 -spec(perform(atom(), [atom()], file:name(), ebt_config:config()) ->
-    error_m:monad([atom()])).
+    ebt__error_m:monad([atom()])).
 perform(Level, Targets, Dir, Config) ->
     perform(Level, Targets, Dir, Config, []).
 
@@ -19,7 +19,7 @@ perform(Level, [Target | Targets], Dir, Config, Acc) ->
             perform(Level, Targets, Dir, Config, Acc);
         false ->
             io:format("~p => ~s at ~s~n", [Level, Target, Dir]),
-            do([error_m ||
+            ebt__do([ebt__error_m ||
                 {Module, Depends} <- ebt_target_mapping:get(Target, Config),
                 DoneTargets <- perform(Level, Depends, Dir, Config, Acc),
                 io:format("~s:~n", [Target]),
