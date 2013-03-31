@@ -1,3 +1,4 @@
+%% Copyright
 {application, ebt, [
     {description, "Erlang Build Tool"},
     {vsn, "bootstrap"},
