@@ -36,19 +36,6 @@ function is_running
 }
 
 case "$1" in
-    hup)
-        echo -n "Calling $APPNAME $2:hup"
-        if is_running
-        then
-            $ERL_BIN -name clean_$RANDOM@127.0.0.1 -setcookie $COOKIE \
-                -boot $BASE/releases/$APP_VSN/$CLEAN_BOOT \
-                -noshell -s init stop -eval "rpc:call('$NODE_NAME', '$2', hup, [])"
-        else
-            rc_failed 3
-        fi
-        rc_status -v
-        ;;
-
     run)
         if is_running
         then
@@ -108,8 +95,20 @@ case "$1" in
         fi
         rc_status -v
         ;;
+    hup)
+        echo -n "Calling $APPNAME $2:hup"
+        if is_running
+        then
+            $ERL_BIN -name clean_$RANDOM@127.0.0.1 -setcookie $COOKIE \
+                -boot $BASE/releases/$APP_VSN/$CLEAN_BOOT \
+                -noshell -s init stop -eval "rpc:call('$NODE_NAME', '$2', hup, [])"
+        else
+            rc_failed 3
+        fi
+        rc_status -v
+        ;;
     *)
-        echo "Usage: $APPNAME {run|start|stop|attach|status}"
+        echo "Usage: $APPNAME {run|start|stop|attach|status|hup <module>}"
         exit 1
         ;;
 esac
