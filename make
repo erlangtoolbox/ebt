@@ -2,7 +2,7 @@
 
 -include_lib("kernel/include/file.hrl").
 
--define(SOURCES_FIRST, ["ebt/src/ebt__do.erl", "ebt/src/ebt__xl_autoresource.erl"]).
+-define(SOURCES_FIRST, ["ebt/src/ebt__do.erl", "ebt/src/ebt__monad.erl", "ebt/src/ebt__monad_plus.erl", "ebt/src/ebt__xl_autoresource.erl"]).
 -define(SOURCES, "ebt/src").
 -define(INCLUDES, "ebt/include").
 -define(BUILD_DIR, "bootstrap/production/ebin").
