@@ -45,7 +45,7 @@ perform(Target, Dir, Config) ->
             Includes = "-I" ++ hd(filelib:wildcard(code:lib_dir() ++ "/erl_interface-*/include"))
                 ++ " -I" ++ hd(filelib:wildcard(code:root_dir() ++ "/erts-*/include")),
             CFlags = "-g -Wall -fPIC " ++ ebt__xl_lists:kvfind(cflags, OsConfig, ""),
-            LDFlags = "-shared -L" ++ hd(filelib:wildcard(code:lib_dir() ++ "/erl_interface-*/lib")) ++ " -lei -lerl_interface " ++ ebt__xl_lists:kvfind(ldflags, Config, ""),
+            LDFlags = "-shared -L" ++ hd(filelib:wildcard(code:lib_dir() ++ "/erl_interface-*/lib")) ++ " -lei -lerl_interface " ++ ebt__xl_lists:kvfind(ldflags, OsConfig, ""),
             ebt__do([ebt__error_m ||
                 NativeOut <- ebt_config:outdir(native, Config),
                 ebt__xl_lists:eforeach(fun(File) ->
