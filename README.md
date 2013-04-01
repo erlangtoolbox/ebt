@@ -1,6 +1,7 @@
 Erlang Build Tool
 =================
 Respects OTP Design Principles.
+Public Repository http://code.google.com/p/erlang-build-tool/downloads/list
 
 Version
 -------
@@ -21,26 +22,29 @@ Subdirs
 Targets
 -------
 Do default target for phase 'prepare'. Default target for phase 'perform'
-is 'otp-app'.
-    {targets, [
-        {prepare, [clean]},
-        {perform, [escript, 'otp-app']}
-    ]}
+is 'package'.
+    {profiles, [
+        {default, [
+            {perform, [package]}
+        ]}
+    ]}.
 
 Dependencies
 ------------
 Add target 'depends' to prepare phase
-    {targets, [
-        {prepare, [depends]},
+    {profiles, [
+        {default, [
+            {prepare, [depends]},
+            {perform, [compile]}
+        ]}
     ]}.
 
 Configure dependencies:
     {depends, [
         {dir, "./lib"},
         {repositories, [
-            {"http://build.strikead.com:8081/repo", [
-                {erlando, "2.0.0.vk-13"},
-                {ktuo, "0.5.0.0-9"}
+            {"http://erlang-build-tool.googlecode.com/files", [
+                {erlandox, "1.0.4"}
             ]}
         ]}
     ]}.
@@ -51,10 +55,11 @@ Libraries
 
 EScript
 -------
-    {targets, [
-        {prepare, [clean]},
-        {perform, [escript, 'otp-app']}
-    ]}
+    {profiles, [
+        {default, [
+            {perform, [escript]}
+        ]}
+    ]}.
 
     {escript, [
         {escript1, "-noshell -noinput", ["priv/*"]},
