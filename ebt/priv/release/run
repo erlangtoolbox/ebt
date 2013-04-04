@@ -28,10 +28,10 @@ rc_reset
 function is_running
 {
     PING=`$ERL_BIN -name clean_$RANDOM@127.0.0.1 -setcookie $COOKIE \
-        -boot $BASE/releases/$APP_VSN/$CLEAN_BOOT -noshell -s init stop \
+        -boot $BASE/releases/$APP_VSN/$CLEAN_BOOT -noshell \
         -eval "net_kernel:hidden_connect_node('$NODE_NAME'),
             R = net_adm:ping('$NODE_NAME'),
-            io:format(\"~p~n\", [R])."`
+            io:format(\"~p~n\", [R])." -s init stop`
     [ "x$PING" = "xpong" ]
 }
 
@@ -78,7 +78,7 @@ case "$1" in
         then
             $ERL_BIN -name clean_$RANDOM@127.0.0.1 -setcookie $COOKIE \
                 -boot $BASE/releases/$APP_VSN/$CLEAN_BOOT \
-                -noshell -s init stop -eval "rpc:call('$NODE_NAME', init, stop, [])"
+                -noshell -eval "rpc:call('$NODE_NAME', init, stop, [])" -s init stop
         else
             rc_failed 3
         fi
@@ -101,14 +101,49 @@ case "$1" in
         then
             $ERL_BIN -name clean_$RANDOM@127.0.0.1 -setcookie $COOKIE \
                 -boot $BASE/releases/$APP_VSN/$CLEAN_BOOT \
-                -noshell -s init stop -eval "rpc:call('$NODE_NAME', '$2', hup, [])"
+                -noshell -eval "rpc:call('$NODE_NAME', '$2', hup, [])" -s init stop
         else
             rc_failed 3
         fi
         rc_status -v
         ;;
+    profile)
+        case "$2" in
+            start)
+                echo -n "Starting profiling"
+                if is_running
+                then
+                    $ERL_BIN -name clean_$RANDOM@127.0.0.1 -setcookie $COOKIE \
+                        -boot $BASE/releases/$APP_VSN/$CLEAN_BOOT \
+                        -noshell -eval "ok=rpc:call('$NODE_NAME', fprof, trace, [[start, {procs, all}, {file, \"/tmp/$NODE_NAME.trace\"}]])" -s init stop
+                else
+                    rc_failed 3
+                fi
+            ;;
+            stop)
+                echo "Stopping profiling"
+                if is_running
+                then
+                    $ERL_BIN -name clean_$RANDOM@127.0.0.1 -setcookie $COOKIE \
+                        -boot $BASE/releases/$APP_VSN/$CLEAN_BOOT \
+                        -noshell -eval "\
+                            ok=rpc:call('$NODE_NAME', fprof, trace, [stop]),\
+                            ok=fprof:profile(file, \"/tmp/$NODE_NAME.trace\"),\
+                            ok=fprof:analyse(dest, \"/tmp/$NODE_NAME.analyse\")\
+                        " -s init stop
+                else
+                    rc_failed 3
+                fi
+            ;;
+            *)
+                echo "Usage: $APPNAME profile {start|stop}"
+                exit 1
+                ;;
+        esac
+        rc_status -v
+        ;;
     *)
-        echo "Usage: $APPNAME {run|start|stop|attach|status|hup <module>}"
+        echo "Usage: $APPNAME {run|start|stop|attach|status|profile <start|stop>|hup <module>}"
         exit 1
         ;;
 esac
