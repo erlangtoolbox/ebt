@@ -1,0 +1,13 @@
+@author Volodymyr Kyrychenko <volodymyr.kyrychenko@strikead.com>
+@copyright 2013 StrikeAd
+@version {EBT_VERSION}
+@title Erlang Build Tool
+@doc == Contents ==
+
+<ol>
+ <li>{@section Summary}</li>
+</ol>
+
+== Summary ==
+
+Erlang Build Tool is build and packaging system for Erlang/OTP .

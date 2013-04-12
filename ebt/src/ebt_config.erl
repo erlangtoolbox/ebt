@@ -140,10 +140,10 @@ appname_full(Dir, Config) ->
         return(ebt__xl_string:join([Name, Version], "-"))
     ]).
 
--spec(appname(file:name()) -> ebt__error_m:monad(string())).
+-spec(appname(file:name()) -> ebt__error_m:monad(atom())).
 appname(Dir) ->
     ebt__do([ebt__error_m ||
         {_, Name, _} <- ebt_applib:load(Dir ++ "/src"),
-        return(atom_to_list(Name))
+        return(Name)
     ]).
 

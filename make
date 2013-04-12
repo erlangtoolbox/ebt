@@ -17,9 +17,9 @@
     ], ["do", "monad", "cut", "option_m", "error_m"]
     },
     {"https://github.com/strikead/erlangxl/archive/develop.zip", "erlangxl.zip", "erlangxl-develop",[
-        {"xl_stdlib", ["xl_auto.erl", "xl_autoresource.erl", "xl_convert.erl", "xl_lists.erl", "xl_stream.erl", "xl_string.erl"], []},
+        {"xl_stdlib", ["xl_auto.erl", "xl_autoresource.erl", "xl_convert.erl", "xl_lists.erl", "xl_stream.erl", "xl_string.erl", "xl_re.erl", "xl_state.erl"], []},
         {"xl_io", ["xl_escript.erl", "xl_file.erl", "xl_io.erl", "xl_shell.erl", "xl_zip.erl"], []}
-    ], ["xl_auto", "xl_convert", "xl_escript", "xl_file", "xl_io", "xl_lists", "xl_shell",
+    ], ["xl_auto", "xl_convert", "xl_escript", "xl_file", "xl_io", "xl_lists", "xl_shell", "xl_re", "xl_state",
         "xl_stream", "xl_string", "xl_zip", "do", "error_m", "option_m"]
     }
 ]).

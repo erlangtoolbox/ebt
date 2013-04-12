@@ -26,26 +26,27 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
--module(ebt_task_template).
+-module(ebt_task_edoc).
 -author("volodymyr.kyrychenko@strikead.com").
 
 -compile({parse_transform, ebt__do}).
-
--behaviour(ebt_task).
-
 %% API
--export([perform/3, substitute_file/5]).
+-export([perform/3]).
 
-perform(Target, _Dir, Config) ->
-    ebt__xl_lists:eforeach(fun({In, Out, Map, Braces}) ->
-        substitute_file(Config, In, Out, Map, Braces)
-    end, ebt_config:value(Target, Config, [])).
-
-substitute_file(Config, Src, Dst, Map, Braces) ->
+perform(Target, Dir, Config) ->
     ebt__do([ebt__error_m ||
-        Version <- ebt_config:version(Config),
-        Build <- ebt_config:build_number(Config),
-        CommonMap <- return([{'EBT_VERSION', Version}, {'EBT_BUILD', Build} | ebt__xl_shell:getenv()]),
-        InFile <- ebt__xl_file:read_file(Src),
-        ebt__xl_file:write_file(Dst, ebt__xl_string:substitute(InFile, Map ++ CommonMap, Braces))
+        App <- ebt_config:appname(Dir),
+        ProdDir <- ebt_config:app_outdir(production, Dir, Config),
+        DocDir <- return(filename:join(ProdDir, "doc")),
+        ebt__xl_file:copy_if_exists("doc", ProdDir),
+        OverviewPath <- return(filename:join(DocDir, "overview.edoc")),
+        HasOverview <- ebt_xl_file:exists(OverviewPath),
+        case HasOverview of
+            true -> ebt_task_template:substitute_file(Config, OverviewPath, OverviewPath, [], {${, $}});
+            _ -> ok
+        end,
+        FileMasks <- return(["src/*.erl" | ebt_config:value(Target, Config, files, [])]),
+        ExcludeMasks <- return(ebt_config:value(Target, Config, exclude, [])),
+        Files <- return(lists:subtract(ebt__xl_file:wildcards(FileMasks), ebt__xl_file:wildcards(ExcludeMasks))),
+        edoc:run([], Files, [{dir, DocDir}, {application, App} | ebt_config:value(Target, Config, [])])
     ]).

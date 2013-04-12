@@ -23,18 +23,20 @@
                 {shell, ebt_task_shell},
                 {template, ebt_task_template},
                 {git_info, ebt_task_git_info},
-                {rpm_spec, ebt_task_rpm_spec},
-                {rpm, ebt_task_rpm},
-                {rpm_depends, ebt_task_rpm_depends},
+                {edoc, ebt_task_edoc},
+%%                 {rpm_spec, ebt_task_rpm_spec},
+%%                 {rpm, ebt_task_rpm},
+%%                 {rpm_depends, ebt_task_rpm_depends},
                 {cc, ebt_task_cc}
             ]},
             {targets, [
                 {compile, [template, leex, yecc, protoc, cc]},
                 {eunit, [compile]},
-                {package, [eunit, rpm_spec, git_info]},
-                {escript, [eunit]},
-                {rpm, [rpm_spec]},
-                {rpm_depends, [depends]}
+%%                 {package, [eunit, rpm_spec, git_info]},
+                {package, [eunit, edoc, git_info]},
+                {escript, [eunit]}
+%%                 {rpm, [rpm_spec]},
+%%                 {rpm_depends, [depends]}
             ]}
         ]}
     ]}

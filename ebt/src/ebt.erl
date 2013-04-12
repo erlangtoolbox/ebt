@@ -39,6 +39,9 @@
 ]).
 -spec(main([string()]) -> ok).
 main(Args) ->
+%%     todo make proper unpacking and compilation of dependencies in make with normal app dependecies
+    ebt__xl_state:start_link(),
+    ebt__xl_re:start(),
     R = ebt__do([ebt__error_m ||
         application:load(ebt),
         Vsn <- application:get_key(ebt, vsn),
