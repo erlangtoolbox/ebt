@@ -40,7 +40,7 @@ perform(Target, Dir, Config) ->
         DocDir <- return(filename:join(ProdDir, "doc")),
         ebt__xl_file:copy_if_exists("doc", ProdDir),
         OverviewPath <- return(filename:join(DocDir, "overview.edoc")),
-        HasOverview <- ebt_xl_file:exists(OverviewPath),
+        HasOverview <- ebt__xl_file:exists(OverviewPath),
         case HasOverview of
             true -> ebt_task_template:substitute_file(Config, OverviewPath, OverviewPath, [], {${, $}});
             _ -> ok
