@@ -29,10 +29,10 @@
                 {cc, ebt_task_cc}
             ]},
             {targets, [
-                {dialyze, [build_plt]},
+                {dialyze, [build_plt, compile]},
                 {compile, [template, leex, yecc, protoc, cc]},
                 {eunit, [compile]},
-                {package, [eunit, edoc, git_info, dialyze]},
+                {package, [eunit, edoc, git_info]},
                 {escript, [eunit]}
             ]}
         ]}

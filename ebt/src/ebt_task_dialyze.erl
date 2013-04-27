@@ -42,11 +42,10 @@ perform(Target, Dir, Config) ->
             {ok, false} -> {ok, []};
             E -> E
         end,
-        Files <- ebt_config:files(Target, Config, ["src/*.erl"]),
         display_warnings(dialyzer:run(Includes ++ [
             {init_plt, Plt},
             {from, src_code},
-            {files, Files} |
+            {files, ebt_config:files(Target, Config, ["src/*.erl"], [])} |
                 ebt_config:value(Target, Config, options, [
                     {warnings, [error_handling, race_conditions, unmatched_returns]}
                 ])

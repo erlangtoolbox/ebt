@@ -35,7 +35,7 @@
 
 -export([read/2, value/3, value/4, find_value/2, find_value/3,
     outdir/1, outdir/3, version/1, appname_full/2, appname/1, app_outdir/3,
-    outdir/2, build_number/1, info_outdir/2, files/3]).
+    outdir/2, build_number/1, info_outdir/2, files/3, files/4]).
 
 -spec(read(file:name(), config()) -> ebt__error_m:monad(config())).
 read(Filename, Defaults) ->
@@ -147,10 +147,13 @@ appname(Dir) ->
         return(Name)
     ]).
 
--spec(files(atom(), config(), [string()]) -> ebt__error_m:monad([string()])).
-files(Target, Config, DefaultMasks) ->
-    ebt__do([ebt__error_m ||
-        IncludeMasks <- return(DefaultMasks ++ ebt_config:value(Target, Config, includes, [])),
-        ExcludeMasks <- return(ebt_config:value(Target, Config, exclude, [])),
-        return(lists:subtract(ebt__xl_file:wildcards(IncludeMasks), ebt__xl_file:wildcards(ExcludeMasks)))
-    ]).
+-spec(files(atom(), config(), [string()], [string()]) -> [string()]).
+files(Target, Config, AdditionalMasks, DefaultMasks) ->
+    files(ebt_config:value(Target, Config, []), AdditionalMasks, DefaultMasks).
+
+-spec(files([{atom(), term()}], [string()], [string()]) -> [string()]).
+files(Config, AdditionalMasks, DefaultMasks) ->
+    Files = ebt__xl_lists:kvfind(files, Config, []),
+    IncludeMasks = AdditionalMasks ++ ebt__xl_lists:kvfind(include, Files, DefaultMasks),
+    ExcludeMasks = ebt__xl_lists:kvfind(exclude, Files, []),
+    lists:subtract(ebt__xl_file:wildcards(IncludeMasks), ebt__xl_file:wildcards(ExcludeMasks)).
