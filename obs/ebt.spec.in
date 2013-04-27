@@ -3,7 +3,7 @@
 Name:          erlang-%{realname}
 Version:       @EBT_VERSION@
 Release:       @EBT_BUILD@
-License:       BSDL
+License:       BSD3c
 Packager:      Vladimir Kirichenko <vladimir.kirichenko@gmail.com>
 Group:         Development/Languages/Erlang
 Source:        %{realname}.zip
