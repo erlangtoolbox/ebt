@@ -1,6 +1,6 @@
 %define realname ebt
 
-Name:          erlang-%{realname}
+Name:          %{realname}
 Version:       @EBT_VERSION@
 Release:       0
 License:       BSD 3-clause
