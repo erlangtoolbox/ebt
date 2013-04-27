@@ -1,7 +1,7 @@
 %% Copyright
 {application, ebt, [
     {description, "Erlang Build Tool"},
-    {vsn, "bootstrap"},
+    {vsn, "0.0.0"},
     {registered, []},
     {applications, [
         kernel,
@@ -24,19 +24,16 @@
                 {template, ebt_task_template},
                 {git_info, ebt_task_git_info},
                 {edoc, ebt_task_edoc},
-%%                 {rpm_spec, ebt_task_rpm_spec},
-%%                 {rpm, ebt_task_rpm},
-%%                 {rpm_depends, ebt_task_rpm_depends},
+                {build_plt, ebt_task_build_plt},
+                {dialyze, ebt_task_dialyze},
                 {cc, ebt_task_cc}
             ]},
             {targets, [
+                {dialyze, [build_plt]},
                 {compile, [template, leex, yecc, protoc, cc]},
                 {eunit, [compile]},
-%%                 {package, [eunit, rpm_spec, git_info]},
-                {package, [eunit, edoc, git_info]},
+                {package, [eunit, edoc, git_info, dialyze]},
                 {escript, [eunit]}
-%%                 {rpm, [rpm_spec]},
-%%                 {rpm_depends, [depends]}
             ]}
         ]}
     ]}

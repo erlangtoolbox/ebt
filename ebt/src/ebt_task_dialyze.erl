@@ -26,37 +26,42 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
--module(ebt_task_rpm_depends).
+-module(ebt_task_dialyze).
 -author("Volodymyr Kyrychenko <vladimirk.kirichenko@gmail.com>").
 
 -compile({parse_transform, ebt__do}).
-
--behaviour(ebt_task).
-
 %% API
--export([perform/3]).
+-export([perform/3, display_warnings/1]).
 
-perform(Target, _Dir, Config) ->
+perform(Target, Dir, Config) ->
     ebt__do([ebt__error_m ||
-        RPMBuildDir <- ebt_config:outdir(rpmbuild, Config),
-        ebt_rpmlib:prepare_environment(RPMBuildDir),
-        LibDir <- ebt_config:find_value(Target, Config, dir),
-        Libs <- return(filelib:wildcard(LibDir ++ "/*")),
-        ebt__xl_lists:eforeach(fun(Lib) ->
-            build_rpm(Config, filename:absname(Lib))
-        end, Libs)
+        Plt <- ebt_task_build_plt:initial_plt_path(Target, Config),
+%%         AppPlt <- app_plt_path(Dir, Config),
+        Includes <- case ebt__xl_file:exists(Dir ++ "/include") of
+            {ok, true} -> {ok, [{include_dirs, [Dir ++ "/include"]}]};
+            {ok, false} -> {ok, []};
+            E -> E
+        end,
+        Files <- ebt_config:files(Target, Config, ["src/*.erl"]),
+        display_warnings(dialyzer:run(Includes ++ [
+            {init_plt, Plt},
+            {from, src_code},
+            {files, Files} |
+                ebt_config:value(Target, Config, options, [
+                    {warnings, [error_handling, race_conditions, unmatched_returns]}
+                ])
+        ]))
     ]).
 
-build_rpm(Config, Lib) ->
-    SpecTemplatePath = Lib ++ "/.ebt-info/rpm.spec",
-    case ebt__xl_file:exists(SpecTemplatePath) of
-        {ok, true} ->
-            AppName = filename:basename(Lib),
-            ebt__do([ebt__error_m ||
-                SpecFile <- ebt_task_rpm_spec:spec_file_path(Config, AppName),
-                ebt_task_rpm_spec:generate_spec_for_build(Config, SpecTemplatePath, AppName, Lib),
-                ebt_task_rpm:rpmbuild(SpecFile)
-            ]);
-        {ok, false} -> io:format("ignore: no ~p~n", [SpecTemplatePath]);
-        E -> E
-    end.
+display_warnings([]) -> ok;
+display_warnings(Warnings) ->
+    lists:foreach(fun(Warning) -> io:format(dialyzer:format_warning(Warning)) end, Warnings).
+
+%% app_plt_path(Dir, Config) ->
+%%     ebt__do([ebt__error_m ||
+%%         OutDir <- ebt_config:app_outdir(dialyzer, Dir, Config),
+%%         App <- ebt_config:appname(Dir),
+%%         return(ebt__xl_string:join([OutDir, "/", App, ".plt"]))
+%%     ]).
+%%
+%%

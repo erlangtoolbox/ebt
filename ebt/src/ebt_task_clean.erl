@@ -33,9 +33,12 @@
 
 -export([perform/3]).
 
-perform(_Target, _Dir, Config) ->
+perform(Target, _Dir, Config) ->
     ebt__do([ebt__error_m ||
-        delete(ebt_config:outdir(Config))
+        delete(ebt_config:outdir(Config)),
+        ebt__xl_lists:eforeach(fun(Path) ->
+            ebt__xl_file:delete(Path)
+        end, ebt__xl_file:wildcards(ebt_config:value(Target, Config, [])))
     ]).
 
 delete({ok, Dir}) ->

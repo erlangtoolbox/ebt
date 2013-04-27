@@ -45,8 +45,6 @@ perform(Target, Dir, Config) ->
             true -> ebt_task_template:substitute_file(Config, OverviewPath, OverviewPath, [], {${, $}});
             _ -> ok
         end,
-        FileMasks <- return(["src/*.erl" | ebt_config:value(Target, Config, files, [])]),
-        ExcludeMasks <- return(ebt_config:value(Target, Config, exclude, [])),
-        Files <- return(lists:subtract(ebt__xl_file:wildcards(FileMasks), ebt__xl_file:wildcards(ExcludeMasks))),
+        Files <- ebt_config:files(Target, Config, ["src/*.erl"]),
         edoc:run([], Files, [{dir, DocDir}, {application, App} | ebt_config:value(Target, Config, [])])
     ]).

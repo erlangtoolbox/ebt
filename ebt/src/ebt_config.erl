@@ -35,7 +35,7 @@
 
 -export([read/2, value/3, value/4, find_value/2, find_value/3,
     outdir/1, outdir/3, version/1, appname_full/2, appname/1, app_outdir/3,
-    outdir/2, build_number/1, info_outdir/2]).
+    outdir/2, build_number/1, info_outdir/2, files/3]).
 
 -spec(read(file:name(), config()) -> ebt__error_m:monad(config())).
 read(Filename, Defaults) ->
@@ -52,7 +52,7 @@ read(Filename, Defaults) ->
 -spec(find_value(atom(), config()) -> ebt__error_m:monad(any())).
 find_value(Key, Config) ->
     ebt__option_m:to_ebt__error_m(ebt__xl_lists:kvfind(Key, Config),
-            ebt__xl_string:format("~p not found", [Key])).
+        ebt__xl_string:format("~p not found", [Key])).
 
 -spec(find_value(atom(), config(), atom()) -> ebt__error_m:monad(any())).
 find_value(Key, Config, InnerKey) ->
@@ -147,3 +147,10 @@ appname(Dir) ->
         return(Name)
     ]).
 
+-spec(files(atom(), config(), [string()]) -> ebt__error_m:monad([string()])).
+files(Target, Config, DefaultMasks) ->
+    ebt__do([ebt__error_m ||
+        IncludeMasks <- return(DefaultMasks ++ ebt_config:value(Target, Config, includes, [])),
+        ExcludeMasks <- return(ebt_config:value(Target, Config, exclude, [])),
+        return(lists:subtract(ebt__xl_file:wildcards(IncludeMasks), ebt__xl_file:wildcards(ExcludeMasks)))
+    ]).

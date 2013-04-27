@@ -1,1 +1,1 @@
-printf '1.1.1.%d' $BUILD_NUMBER
+printf '1.1.2.%d' $BUILD_NUMBER

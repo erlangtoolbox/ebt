@@ -26,28 +26,30 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
--module(ebt_task_rpm).
+-module(ebt_task_build_plt).
 -author("Volodymyr Kyrychenko <vladimirk.kirichenko@gmail.com>").
 
 -compile({parse_transform, ebt__do}).
-
--behaviour(ebt_task).
-
 %% API
--export([perform/3, rpmbuild/1]).
+-export([perform/3, initial_plt_path/2]).
 
-perform(_Target, Dir, Config) ->
+perform(Target, _Dir, Config) ->
     ebt__do([ebt__error_m ||
-        RPMBuildDir <- ebt_config:outdir(rpmbuild, Config),
-        ebt_rpmlib:prepare_environment(RPMBuildDir),
-        AppName <- ebt_config:appname_full(Dir, Config),
-        AppProdDir <- ebt_config:app_outdir(production, Dir, Config),
-        SpecTemplatePath <- ebt_task_rpm_spec:info_spec_file_path(Dir, Config),
-        ebt_task_rpm_spec:generate_spec_for_build(Config, SpecTemplatePath, AppName, AppProdDir),
-        SpecFile <- ebt_task_rpm_spec:spec_file_path(Config, AppName),
-        rpmbuild(SpecFile)
+        Plt <- initial_plt_path(Target, Config),
+        case ebt__xl_file:exists(Plt) of
+            {ok, false} ->
+                io:format("building PLT: ~s~n", [Plt]),
+                Options = [{analysis_type, plt_build}, {output_plt, Plt} |
+                    ebt_config:value(Target, Config, options, [{apps, [kernel, stdlib]}])],
+                ebt_task_dialyze:display_warnings(dialyzer:run(Options));
+            {ok, true} -> io:format("PLT is already built: ~s~n", [Plt]);
+            E -> E
+        end
     ]).
 
+initial_plt_path(Target, Config) ->
+    ebt__do([ebt__error_m ||
+        OutDir <- ebt_config:outdir(dialyzer, Config),
+        return(ebt_config:value(Target, Config, plt_path, filename:join(OutDir, "erlang.plt")))
+    ]).
 
-
-rpmbuild(SpecFile) -> ebt_cmdlib:exec({"rpmbuild -v -bb ~p", [SpecFile]}).

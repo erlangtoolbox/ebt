@@ -70,8 +70,7 @@ update_app(AppSpec = {_, App, _}, EbinProdDir, Config) ->
     Modules = [list_to_atom(filename:basename(F, ".beam")) ||
         F <- filelib:wildcard(EbinProdDir ++ "/*.beam")],
     {ok, Version} = ebt_config:version(Config),
-    ebt__xl_file:write_terms(Filename,
-        ebt_applib:update(AppSpec, [{modules, Modules}, {vsn, Version}])).
+    ebt__xl_file:write_term(Filename, ebt_applib:update(AppSpec, [{modules, Modules}, {vsn, Version}])).
 
 -spec(compile(atom(), file:name(), file:name(), ebt_config:config()) ->
     ebt__error_m:monad(ok)).

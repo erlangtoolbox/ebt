@@ -110,6 +110,5 @@ load_library(Path) ->
         true -> ok;
         {error, bad_directory} ->
             io:format("failed to load ~s~n", [Path]),
-            ok; % ignore
-        {error, E} -> {error, {load_library, E, Path}}
+            ok
     end.

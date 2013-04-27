@@ -13,7 +13,7 @@
     ],["getopt"]
     },
     {"https://github.com/vladimirk/erlandox/archive/master.zip", "erlandox.zip", "erlandox-master",[
-        {".", ["do.erl", "cut.erl", "monad.erl", "monad_plus.erl", "option_m.erl", "error_m.erl"], ["monad_specs.hrl"]}
+        {".", ["do.erl", "cut.erl", "monad.erl", "monad_plus.erl", "option_m.erl", "error_m.erl"], []}
     ], ["do", "monad", "cut", "option_m", "error_m"]
     },
     {"https://github.com/strikead/erlangxl/archive/develop.zip", "erlangxl.zip", "erlangxl-develop",[
