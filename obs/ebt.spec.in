@@ -3,7 +3,7 @@
 Name:          %{realname}
 Version:       @EBT_VERSION@
 Release:       0
-License:       BSD 3-clause
+License:       BSD-3-Clause
 Group:         Development/Tools/Building
 Source:        %{realname}-%{version}.zip
 Summary:       Erlang Build Tool
