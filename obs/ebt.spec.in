@@ -11,7 +11,7 @@ Summary:       Erlang Build Tool
 URL:           https://github.com/strikead/%{realname}
 Requires:      erlang >= R15B03_erlang-dialyzer erlang-reltool
 BuildRequires: unzip
-Arch:     noarch
+BuildArch:     noarch
 
 %description
 Erlang Build Tool - build system for erlang projects
