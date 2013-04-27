@@ -4,8 +4,7 @@ Name:          erlang-%{realname}
 Version:       @EBT_VERSION@
 Release:       @EBT_BUILD@
 License:       BSD 3-clause
-Packager:      Vladimir Kirichenko <vladimir.kirichenko@gmail.com>
-Group:         Development/Languages/Erlang
+Group:         Development/Tools/Building
 Source:        %{realname}.zip
 Summary:       Erlang Build Tool
 URL:           https://github.com/strikead/%{realname}
@@ -27,6 +26,7 @@ install --mode=755 --directory %{buildroot}/usr/bin
 install --mode=755 bin/ebt %{buildroot}/usr/bin
 
 %files
+%defattr(-,root,root)
 /usr/bin/*
 
 %changelog
