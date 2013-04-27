@@ -5,7 +5,7 @@ Version:       @EBT_VERSION@
 Release:       @EBT_BUILD@
 License:       BSD 3-clause
 Group:         Development/Tools/Building
-Source:        %{realname}.zip
+Source:        %{realname}-%{version}.zip
 Summary:       Erlang Build Tool
 URL:           https://github.com/strikead/%{realname}
 Requires:      erlang >= R15B03_erlang-dialyzer erlang-reltool
