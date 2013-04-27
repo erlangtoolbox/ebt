@@ -2,7 +2,7 @@
 
 Name:          erlang-%{realname}
 Version:       @EBT_VERSION@
-Release:       @EBT_BUILD@
+Release:       0
 License:       BSD 3-clause
 Group:         Development/Tools/Building
 Source:        %{realname}-%{version}.zip
