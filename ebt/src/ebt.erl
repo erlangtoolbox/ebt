@@ -57,7 +57,8 @@ main(Args) ->
     ]),
     case R of
         {error, X} ->
-            io:format(standard_error, "~p~n", [X]);
+            io:format(standard_error, "~p~n", [X]),
+            halt(1);
         _ -> ok
     end.
 
