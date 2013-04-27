@@ -1,0 +1,36 @@
+%define realname ebt
+
+Name:          erlang-%{realname}
+Version:       @EBT_VERSION@
+Release:       @EBT_BUILD@
+License:       BSDL
+Packager:      Vladimir Kirichenko <vladimir.kirichenko@gmail.com>
+Group:         Development/Languages/Erlang
+Source:        %{realname}.zip
+Summary:       Erlang Build Tool
+URL:           https://github.com/strikead/%{realname}
+Requires:      erlang >= R15B03_erlang-dialyzer erlang-reltool
+BuildRequires: unzip
+Arch:     noarch
+
+%description
+Erlang Build Tool - build system for erlang projects
+
+%prep
+%setup -n %{realname}-%{version}
+
+%build
+echo tnx for playing...
+
+%install
+install --mode=755 --directory %{buildroot}/usr/bin
+install --mode=755 bin/ebt %{buildroot}/usr/bin
+
+%files
+/usr/bin/*
+
+%changelog
+* Sat Apr 27 2013 Vladimir Kirichenko <vladimir.kirichenko@gmail.com> 1.1.4.1
+- Initial package for OpenSUSE.
+
+
