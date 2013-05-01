@@ -63,36 +63,37 @@ perform(Target, Dir, Config) ->
         end
     ]).
 
--spec(update_app(application:application_spec(), file:name(), ebt_config:config()) ->
-    ebt__error_m:monad(ok)).
+-spec(update_app(application:application_spec(), file:name(), ebt_config:config()) -> ebt__error_m:monad(ok)).
 update_app(AppSpec = {_, App, _}, EbinProdDir, Config) ->
     Filename = ebt__xl_string:join([EbinProdDir, "/", App, ".app"], ""),
-    Modules = [list_to_atom(filename:basename(F, ".beam")) ||
-        F <- filelib:wildcard(EbinProdDir ++ "/*.beam")],
-    {ok, Version} = ebt_config:version(Config),
-    ebt__xl_file:write_term(Filename, ebt_applib:update(AppSpec, [{modules, Modules}, {vsn, Version}])).
+    Modules = [list_to_atom(filename:basename(F, ".beam")) || F <- filelib:wildcard(EbinProdDir ++ "/*.beam")],
+    ebt__do([ebt__error_m ||
+        Version <- ebt_config:version(Config),
+        ebt__xl_file:write_term(Filename, ebt_applib:update(AppSpec, [{modules, Modules}, {vsn, Version}]))
+    ]).
 
--spec(compile(atom(), file:name(), file:name(), ebt_config:config()) ->
-    ebt__error_m:monad(ok)).
-compile(Target, SrcDir, OutDir, Config) ->
+-spec(compile(atom(), file:name(), file:name(), ebt_config:config()) -> ebt__error_m:monad(ok)).
+compile(Target, SrcDir, OutDir, Config) when is_atom(Target) ->
     ebt__do([ebt__error_m ||
         io:format("compiling ~s to ~s~n", [SrcDir, OutDir]),
         Includes <- return([{i, Lib} || Lib <- ebt_config:value(libraries, Config, [])]),
         Flags <- return(ebt_config:value(Target, Config, flags, []) ++ Includes),
         ebt__xl_file:mkdirs(OutDir),
-        FirstFiles <- return(lists:filter(fun(F) ->
-            ebt__xl_file:exists(F) == {ok, true}
-        end, [SrcDir ++ "/" ++ F || F <- ebt_config:value(Target, Config, first, [])])),
-        compile(FirstFiles, SrcDir, Flags, OutDir, Config),
-        compile(filelib:wildcard(SrcDir ++ "/*.erl"), SrcDir, Flags, OutDir, Config)
+        ebt__xl_lists:eforeach(fun(Files) ->
+            compile_files(ebt__xl_file:wildcards(Files), Flags, OutDir, Config)
+        end, ebt_config:value(Target, Config, sources, [["src/*.erl"]]))
     ]).
 
-compile([], _SrcDir, _Flags, _OutDir, _Config) -> ok;
-compile(Files, SrcDir, Flags, OutDir, Config) ->
+compile_files(Files, Flags, OutDir, Config) ->
+    Options = [{outdir, OutDir}, {i, "./include"}, report | Flags],
     ebt__do([ebt__error_m ||
         ebt:load_libraries(Config),
-        case make:files(Files, [{outdir, OutDir}, {i, SrcDir ++ "/../include"} | Flags]) of
-            up_to_date -> io:format("...compiled~n");
-            error -> {error, "Compilation failed!"}
-        end
+        lists:foldl(fun(File, Status) ->
+            io:format("compile ~s~n", [File]),
+            case compile:file(File, Options) of
+                {ok, _} -> Status;
+                error -> {error, "...compilation failed!"}
+            end
+        end, ok, Files)
     ]).
+

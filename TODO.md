@@ -1,6 +1,2 @@
-- strict/non-strict rpm dependency check
 - recursive ez dependencies
 - fileset manipulation
-- defines/substitution
-- separate rpm.spec generation from rpmbuild
-- different rpm.spec profiles
