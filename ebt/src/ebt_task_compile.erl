@@ -41,7 +41,7 @@ perform(Target, Dir, Config) ->
     ebt__do([ebt__error_m ||
         AppProdDir <- ebt_config:app_outdir(production, Dir, Config),
         EbinProdDir <- return(AppProdDir ++ "/ebin"),
-        compile(Target, SrcDir, EbinProdDir, Config),
+        compile(Target, SrcDir, EbinProdDir, Config, {sources, [["src/*.erl"]]}),
         AppSpec <- ebt_applib:load(SrcDir),
         update_app(AppSpec, EbinProdDir, Config),
         ebt__xl_file:copy_if_exists(Dir ++ "/src", AppProdDir),
@@ -55,7 +55,7 @@ perform(Target, Dir, Config) ->
         case HasTests of
             true ->
                 ebt__do([ebt__error_m ||
-                    compile(Target, TestDir, EbinTestDir, Config),
+                    compile(Target, TestDir, EbinTestDir, Config, {tests, [["test/*.erl"]]}),
                     ebt__xl_file:copy_filtered(TestDir,
                         ebt_config:value(Target, Config, resources, []), EbinTestDir)
                 ]);
@@ -72,8 +72,8 @@ update_app(AppSpec = {_, App, _}, EbinProdDir, Config) ->
         ebt__xl_file:write_term(Filename, ebt_applib:update(AppSpec, [{modules, Modules}, {vsn, Version}]))
     ]).
 
--spec(compile(atom(), file:name(), file:name(), ebt_config:config()) -> ebt__error_m:monad(ok)).
-compile(Target, SrcDir, OutDir, Config) when is_atom(Target) ->
+-spec(compile(atom(), file:name(), file:name(), ebt_config:config(), {atom(), [[string()]]}) -> ebt__error_m:monad(ok)).
+compile(Target, SrcDir, OutDir, Config, {Key, Defaults}) when is_atom(Target) ->
     ebt__do([ebt__error_m ||
         io:format("compiling ~s to ~s~n", [SrcDir, OutDir]),
         Includes <- return([{i, Lib} || Lib <- ebt_config:value(libraries, Config, [])]),
@@ -81,7 +81,7 @@ compile(Target, SrcDir, OutDir, Config) when is_atom(Target) ->
         ebt__xl_file:mkdirs(OutDir),
         ebt__xl_lists:eforeach(fun(Files) ->
             compile_files(ebt__xl_file:wildcards(Files), Flags, OutDir, Config)
-        end, ebt_config:value(Target, Config, sources, [["src/*.erl"]]))
+        end, ebt_config:value(Target, Config, Key, Defaults))
     ]).
 
 compile_files(Files, Flags, OutDir, Config) ->
