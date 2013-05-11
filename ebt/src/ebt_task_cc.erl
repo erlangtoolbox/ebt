@@ -47,7 +47,7 @@ perform(Target, Dir, Config) ->
                 CFlags = "-g -Wall -fPIC " ++ ebt__xl_lists:kvfind(cflags, OsConfig, ""),
                 LDFlags = "-shared -L" ++ hd(filelib:wildcard(code:lib_dir() ++ "/erl_interface-*/lib")) ++ " -lei -lerl_interface " ++ ebt__xl_lists:kvfind(ldflags, OsConfig, ""),
                 ebt__do([ebt__error_m ||
-                    NativeOut <- ebt_config:outdir(native, Config),
+                    NativeOut <- ebt_config:app_outdir(native, Dir, Config),
                     ebt__xl_lists:eforeach(fun(File) ->
                         Name = filename:basename(filename:rootname(File)),
                         Command = ebt__xl_string:format("~s ~s ~s -c ~s -o ~s/~s.o", [CC, CFlags, Includes, File, NativeOut, Name]),

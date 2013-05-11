@@ -107,9 +107,10 @@ load_libraries(Config) ->
 
 -spec(load_library(file:name()) -> ebt__error_m:monad(ok)).
 load_library(Path) ->
-    case code:add_pathz(filename:join(Path, "ebin")) of
+    case code:add_patha(filename:join(Path, "ebin")) of
         true -> ok;
         {error, bad_directory} ->
-            io:format("failed to load ~s~n", [Path]),
+            io:format("WARNING: failed to load ~s~n", [Path]),
             ok
     end.
+
