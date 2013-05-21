@@ -29,14 +29,14 @@
 -module(ebt_task_build_plt).
 -author("Volodymyr Kyrychenko <vladimirk.kirichenko@gmail.com>").
 
--compile({parse_transform, ebt__do}).
+-compile({parse_transform, do}).
 %% API
 -export([perform/3, initial_plt_path/2]).
 
 perform(Target, _Dir, Config) ->
-    ebt__do([ebt__error_m ||
+    do([error_m ||
         Plt <- initial_plt_path(Target, Config),
-        case ebt__xl_file:exists(Plt) of
+        case xl_file:exists(Plt) of
             {ok, false} ->
                 io:format("building PLT: ~s~n", [Plt]),
                 Options = [{analysis_type, plt_build}, {output_plt, Plt} |
@@ -48,7 +48,7 @@ perform(Target, _Dir, Config) ->
     ]).
 
 initial_plt_path(Target, Config) ->
-    ebt__do([ebt__error_m ||
+    do([error_m ||
         OutDir <- ebt_config:outdir(dialyzer, Config),
         return(ebt_config:value(Target, Config, plt_path, filename:join(OutDir, "erlang.plt")))
     ]).

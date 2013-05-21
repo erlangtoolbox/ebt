@@ -5,7 +5,11 @@
     {registered, []},
     {applications, [
         kernel,
-        stdlib
+        stdlib,
+        xl_stdlib,
+        xl_io,
+        getopt,
+        erlandox
     ]},
     {env, [
         {tasks, [

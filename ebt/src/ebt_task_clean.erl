@@ -28,20 +28,20 @@
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -module(ebt_task_clean).
 
--compile({parse_transform, ebt__do}).
+-compile({parse_transform, do}).
 -behaviour(ebt_task).
 
 -export([perform/3]).
 
 perform(Target, _Dir, Config) ->
-    ebt__do([ebt__error_m ||
+    do([error_m ||
         delete(ebt_config:outdir(Config)),
-        ebt__xl_lists:eforeach(fun(Path) ->
-            ebt__xl_file:delete(Path)
-        end, ebt__xl_file:wildcards(ebt_config:value(Target, Config, [])))
+        xl_lists:eforeach(fun(Path) ->
+            xl_file:delete(Path)
+        end, xl_file:wildcards(ebt_config:value(Target, Config, [])))
     ]).
 
 delete({ok, Dir}) ->
     io:format("delete ~s~n", [Dir]),
-    ebt__xl_file:delete(Dir);
+    xl_file:delete(Dir);
 delete(E) -> E.

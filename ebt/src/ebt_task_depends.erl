@@ -28,7 +28,7 @@
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -module(ebt_task_depends).
 
--compile({parse_transform, ebt__do}).
+-compile({parse_transform, do}).
 -behaviour(ebt_task).
 
 -export([perform/3]).
@@ -36,21 +36,21 @@
 perform(Target, _Dir, Config) ->
     DepsDir = ebt_config:value(Target, Config, dir, "./lib"),
     inets:start(),
-    ebt__do([ebt__error_m ||
-        ebt__xl_file:mkdirs(DepsDir),
-        ebt__xl_lists:eforeach(fun({Url, Libs}) ->
-            ebt__xl_lists:eforeach(fun({Name, Version}) ->
-                Lib = ebt__xl_string:join([Name, "-", Version, ".ez"]),
+    do([error_m ||
+        xl_file:mkdirs(DepsDir),
+        xl_lists:eforeach(fun({Url, Libs}) ->
+            xl_lists:eforeach(fun({Name, Version}) ->
+                Lib = xl_string:join([Name, "-", Version, ".ez"]),
                 LocalFile = filename:join(DepsDir, Lib),
-                case ebt__xl_file:exists(ebt__xl_string:join([DepsDir, "/", Name, "-", Version])) of
+                case xl_file:exists(xl_string:join([DepsDir, "/", Name, "-", Version])) of
                     {ok, true} ->
                         io:format("already downloaded ~s~n", [Lib]);
                     {ok, false} ->
                         io:format("download ~s/~s~n", [Url, Lib]),
-                        ebt__do([ebt__error_m ||
+                        do([error_m ||
                             httpc:request(get, {Url ++ "/" ++ Lib, []}, [], [{stream, LocalFile}]),
-                            ebt__xl_zip:unzip(LocalFile, [{cwd, DepsDir}, verbose]),
-                            ebt__xl_file:delete(LocalFile)
+                            xl_zip:unzip(LocalFile, [{cwd, DepsDir}, verbose]),
+                            xl_file:delete(LocalFile)
                         ]);
                     E -> E
                 end

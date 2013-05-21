@@ -29,18 +29,18 @@
 -module(ebt_task_edoc).
 -author("volodymyr.kyrychenko@strikead.com").
 
--compile({parse_transform, ebt__do}).
+-compile({parse_transform, do}).
 %% API
 -export([perform/3]).
 
 perform(Target, Dir, Config) ->
-    ebt__do([ebt__error_m ||
+    do([error_m ||
         App <- ebt_config:appname(Dir),
         ProdDir <- ebt_config:app_outdir(production, Dir, Config),
         DocDir <- return(filename:join(ProdDir, "doc")),
-        ebt__xl_file:copy_if_exists("doc", ProdDir),
+        xl_file:copy_if_exists("doc", ProdDir),
         OverviewPath <- return(filename:join(DocDir, "overview.edoc")),
-        HasOverview <- ebt__xl_file:exists(OverviewPath),
+        HasOverview <- xl_file:exists(OverviewPath),
         case HasOverview of
             true -> ebt_task_template:substitute_file(Config, OverviewPath, OverviewPath, [], {${, $}});
             _ -> ok

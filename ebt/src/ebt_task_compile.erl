@@ -28,65 +28,65 @@
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -module(ebt_task_compile).
 
--compile({parse_transform, ebt__do}).
+-compile({parse_transform, do}).
 
 -behaviour(ebt_task).
 
 -export([perform/3]).
 
--spec(perform(atom(), file:name(), ebt_config:config()) -> ebt__error_m:monad(ok)).
+-spec(perform(atom(), file:name(), ebt_config:config()) -> error_m:monad(ok)).
 perform(Target, Dir, Config) ->
     SrcDir = Dir ++ "/src",
     TestDir = Dir ++ "/test",
-    ebt__do([ebt__error_m ||
+    do([error_m ||
         AppProdDir <- ebt_config:app_outdir(production, Dir, Config),
         EbinProdDir <- return(AppProdDir ++ "/ebin"),
         compile(Target, SrcDir, EbinProdDir, Config, {sources, [["src/*.erl"]]}),
         AppSpec <- ebt_applib:load(SrcDir),
         update_app(AppSpec, EbinProdDir, Config),
-        ebt__xl_file:copy_if_exists(Dir ++ "/src", AppProdDir),
-        ebt__xl_file:copy_if_exists(Dir ++ "/include", AppProdDir),
-        ebt__xl_file:copy_if_exists(Dir ++ "/priv", AppProdDir),
-        ebt__xl_file:copy_if_exists(Dir ++ "/bin", AppProdDir),
-        ebt__xl_file:copy_filtered(SrcDir, ebt_config:value(Target, Config, resources, []), EbinProdDir),
+        xl_file:copy_if_exists(Dir ++ "/src", AppProdDir),
+        xl_file:copy_if_exists(Dir ++ "/include", AppProdDir),
+        xl_file:copy_if_exists(Dir ++ "/priv", AppProdDir),
+        xl_file:copy_if_exists(Dir ++ "/bin", AppProdDir),
+        xl_file:copy_filtered(SrcDir, ebt_config:value(Target, Config, resources, []), EbinProdDir),
         AppTestDir <- ebt_config:app_outdir(test, Dir, Config),
         EbinTestDir <- return(AppTestDir ++ "/ebin"),
-        HasTests <- ebt__xl_file:exists(Dir ++ "/test"),
+        HasTests <- xl_file:exists(Dir ++ "/test"),
         case HasTests of
             true ->
-                ebt__do([ebt__error_m ||
+                do([error_m ||
                     compile(Target, TestDir, EbinTestDir, Config, {tests, [["test/*.erl"]]}),
-                    ebt__xl_file:copy_filtered(TestDir,
+                    xl_file:copy_filtered(TestDir,
                         ebt_config:value(Target, Config, resources, []), EbinTestDir)
                 ]);
             false -> ok
         end
     ]).
 
--spec(update_app(application:application_spec(), file:name(), ebt_config:config()) -> ebt__error_m:monad(ok)).
+-spec(update_app(application:application_spec(), file:name(), ebt_config:config()) -> error_m:monad(ok)).
 update_app(AppSpec = {_, App, _}, EbinProdDir, Config) ->
-    Filename = ebt__xl_string:join([EbinProdDir, "/", App, ".app"], ""),
+    Filename = xl_string:join([EbinProdDir, "/", App, ".app"], ""),
     Modules = [list_to_atom(filename:basename(F, ".beam")) || F <- filelib:wildcard(EbinProdDir ++ "/*.beam")],
-    ebt__do([ebt__error_m ||
+    do([error_m ||
         Version <- ebt_config:version(Config),
-        ebt__xl_file:write_term(Filename, ebt_applib:update(AppSpec, [{modules, Modules}, {vsn, Version}]))
+        xl_file:write_term(Filename, ebt_applib:update(AppSpec, [{modules, Modules}, {vsn, Version}]))
     ]).
 
--spec(compile(atom(), file:name(), file:name(), ebt_config:config(), {atom(), [[string()]]}) -> ebt__error_m:monad(ok)).
+-spec(compile(atom(), file:name(), file:name(), ebt_config:config(), {atom(), [[string()]]}) -> error_m:monad(ok)).
 compile(Target, SrcDir, OutDir, Config, {Key, Defaults}) when is_atom(Target) ->
-    ebt__do([ebt__error_m ||
+    do([error_m ||
         io:format("compiling ~s to ~s~n", [SrcDir, OutDir]),
         Includes <- return([{i, Lib} || Lib <- ebt_config:value(libraries, Config, [])]),
         Flags <- return(ebt_config:value(Target, Config, flags, []) ++ Includes),
-        ebt__xl_file:mkdirs(OutDir),
-        ebt__xl_lists:eforeach(fun(Files) ->
-            compile_files(ebt__xl_file:wildcards(Files), Flags, OutDir, Config)
+        xl_file:mkdirs(OutDir),
+        xl_lists:eforeach(fun(Files) ->
+            compile_files(xl_file:wildcards(Files), Flags, OutDir, Config)
         end, ebt_config:value(Target, Config, Key, Defaults))
     ]).
 
 compile_files(Files, Flags, OutDir, Config) ->
     Options = [{outdir, OutDir}, {i, "./include"}, report | Flags],
-    ebt__do([ebt__error_m ||
+    do([error_m ||
         ebt:load_libraries(Config),
         lists:foldl(fun(File, Status) ->
             io:format("compile ~s~n", [File]),

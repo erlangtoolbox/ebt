@@ -28,24 +28,24 @@
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -module(ebt_target_mapping).
 
--compile({parse_transform, ebt__do}).
+-compile({parse_transform, do}).
 
 -export([get/2]).
 
--spec(get(atom(), ebt_config:config()) -> ebt__error_m:monad({module(), [atom()]})).
+-spec(get(atom(), ebt_config:config()) -> error_m:monad({module(), [atom()]})).
 get(Target, Config) ->
-    ebt__do([ebt__error_m ||
+    do([error_m ||
         {Modules, Targets} <- mapping_to_tuple(system_mapping()),
         {UserModules, UserTargets} <- mapping_to_tuple({ok,
             ebt_config:value(tasks, Config, [{modules, []}, {targets, []}])}),
         Module <- get_module(Target, Modules ++ UserModules),
-        Depends <- return(ebt__xl_lists:kvfind(Target, Targets, [])),
-        UserDepends <- return(ebt__xl_lists:kvfind(Target, UserTargets, [])),
+        Depends <- return(xl_lists:kvfind(Target, Targets, [])),
+        UserDepends <- return(xl_lists:kvfind(Target, UserTargets, [])),
         return({Module, Depends ++ UserDepends})
     ]).
 
 system_mapping() ->
-    ebt__option_m:to_ebt__error_m(
+    option_m:to_error_m(
         application:get_env(ebt, tasks),
         "cannot find task mapping"
     ).
@@ -53,13 +53,13 @@ system_mapping() ->
 mapping_to_tuple(E = {error, _}) -> E;
 mapping_to_tuple({ok, Mapping}) ->
     {ok, {
-        ebt__xl_lists:kvfind(modules, Mapping, []),
-        ebt__xl_lists:kvfind(targets, Mapping, [])
+        xl_lists:kvfind(modules, Mapping, []),
+        xl_lists:kvfind(targets, Mapping, [])
     }}.
 
 get_module(Target, Modules) ->
-    ebt__option_m:to_ebt__error_m(
-        ebt__xl_lists:kvfind(Target, Modules),
-        ebt__xl_string:format("cannot find module of ~p", [Target])
+    option_m:to_error_m(
+        xl_lists:kvfind(Target, Modules),
+        xl_string:format("cannot find module of ~p", [Target])
     ).
 

@@ -29,15 +29,15 @@
 
 -module(ebt_applib).
 
--compile({parse_transform, ebt__do}).
+-compile({parse_transform, do}).
 
 -export([load/1, update/2]).
 
--spec(load(file:name()) -> ebt__error_m:monad(application:application_spec())).
+-spec(load(file:name()) -> error_m:monad(application:application_spec())).
 load(Dir) ->
     case filelib:wildcard(Dir ++ "/*.app") of
         [File] ->
-            case ebt__xl_file:read_terms(File) of
+            case xl_file:read_terms(File) of
                 {ok, [App = {application, _, Params}]} when is_list(Params) ->
                     {ok, App};
                 E = {error, _} -> E;
@@ -49,6 +49,6 @@ load(Dir) ->
 -spec(update(application:application_spec(), [application:application_opt()])
         -> application:application_spec()).
 update({application, App, Params}, Updates) ->
-    {application, App, lists:foldl(fun(P, Ps) -> ebt__xl_lists:keyreplace_or_add(1, Ps, P) end, Params, Updates)}.
+    {application, App, lists:foldl(fun(P, Ps) -> xl_lists:keyreplace_or_add(1, Ps, P) end, Params, Updates)}.
 
 

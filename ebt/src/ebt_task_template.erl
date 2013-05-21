@@ -29,7 +29,7 @@
 -module(ebt_task_template).
 -author("volodymyr.kyrychenko@strikead.com").
 
--compile({parse_transform, ebt__do}).
+-compile({parse_transform, do}).
 
 -behaviour(ebt_task).
 
@@ -37,15 +37,15 @@
 -export([perform/3, substitute_file/5]).
 
 perform(Target, _Dir, Config) ->
-    ebt__xl_lists:eforeach(fun({In, Out, Map, Braces}) ->
+    xl_lists:eforeach(fun({In, Out, Map, Braces}) ->
         substitute_file(Config, In, Out, Map, Braces)
     end, ebt_config:value(Target, Config, [])).
 
 substitute_file(Config, Src, Dst, Map, Braces) ->
-    ebt__do([ebt__error_m ||
+    do([error_m ||
         Version <- ebt_config:version(Config),
         Build <- ebt_config:build_number(Config),
-        CommonMap <- return([{'EBT_VERSION', Version}, {'EBT_BUILD', Build} | ebt__xl_shell:getenv()]),
-        InFile <- ebt__xl_file:read_file(Src),
-        ebt__xl_file:write_file(Dst, ebt__xl_string:substitute(InFile, Map ++ CommonMap, Braces))
+        CommonMap <- return([{'EBT_VERSION', Version}, {'EBT_BUILD', Build} | xl_shell:getenv()]),
+        InFile <- xl_file:read_file(Src),
+        xl_file:write_file(Dst, xl_string:substitute(InFile, Map ++ CommonMap, Braces))
     ]).
