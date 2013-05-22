@@ -26,6 +26,29 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+%% @doc Dependencies configuration
+%%
+%% == Configuration ==
+%% <ul>
+%% <li>dir - downloaded libraries goes there</li>
+%% <li>repositaries - repositary configuration</li>
+%% </ul>
+%%
+%% == Example ==
+%% <pre>
+%% {depends, [
+%%     {dir, "./lib"},
+%%     {repositories, [
+%%         {"http://erlang-build-tool.googlecode.com/files", [
+%%             {erlandox, "1.0.5"},
+%%             {xl_stdlib, "1.2.0.301"},
+%%             {xl_io, "1.2.0.301"},
+%%             {getopt, "0.7.1"}
+%%         ]}
+%%     ]}
+%% ]}
+%% </pre>
 -module(ebt_task_depends).
 
 -compile({parse_transform, do}).

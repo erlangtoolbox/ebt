@@ -26,6 +26,22 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+%% @doc Build PLT
+%%
+%% == Configuration ==
+%% <ul>
+%% <li>plt_path - path to PLT</li>
+%% <li>options - building plt options</li>
+%% </ul>
+%%
+%% == Example ==
+%% <pre>
+%% {build_plt, [
+%%     {plt_path, "out/dislyzer/erlang.plt"},
+%%     {options, [{apps, [kernel, stdlib]}]}
+%% ]}
+%% </pre>
 -module(ebt_task_build_plt).
 -author("Volodymyr Kyrychenko <vladimirk.kirichenko@gmail.com>").
 

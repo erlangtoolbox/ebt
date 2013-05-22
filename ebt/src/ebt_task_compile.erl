@@ -26,6 +26,26 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+%% @doc Compile erlang sources and tests
+%%
+%% == Configuration ==
+%% <ul>
+%% <li>sources - list of lists of wildcards</li>
+%% <li>tests - list of lists of wildcards</li>
+%% <li>resources - files to copy to ebin</li>
+%% <li>flags - compilation flags</li>
+%% </ul>
+%%
+%% == Example ==
+%% <pre>
+%% {compile, [
+%%     {sources, [["src/*.erl"]]},
+%%     {tests, [["src/*.erl"]]},
+%%     {resources, ["src/*.json"]]},
+%%     {flags, [warnings_as_errors, debug_info]}
+%% ]}
+%% </pre>
 -module(ebt_task_compile).
 
 -compile({parse_transform, do}).

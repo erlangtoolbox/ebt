@@ -26,6 +26,19 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+%% @doc Generating escript
+%%
+%% == Configuration ==
+%% {scriptname, emu_args, resources} - name of executable, emulator arguments and resources to be included
+%%
+%% == Example ==
+%% <pre>
+%% {escript, [
+%%     {scriptname1, "-noshell -noinput +d", ["priv/*"]},
+%%     {scriptname2, "-noshell -noinput +d", ["priv/*"]},
+%% ]}
+%% </pre>
 -module(ebt_task_escript).
 
 -include_lib("kernel/include/file.hrl").

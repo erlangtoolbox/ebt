@@ -26,6 +26,27 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+%% @doc Dialyze
+%%
+%% == Configuration ==
+%% <ul>
+%% <li>plt_path - initial PLT path</li>
+%% <li>files - include/exclude files</li>
+%% <li>options - dialyzer options</li>
+%% </ul>
+%%
+%% == Example ==
+%% <pre>
+%% {dialyze, [
+%%     {plt_path, "out/dislyzer/erlang.plt"},
+%%     {options, [{warnings, [error_handling, race_conditions, unmatched_returns]}]
+%%     {files, [
+%%          {include, ["src/*.erl"]},
+%%          {exclude, []}
+%%     ]},
+%% ]}
+%% </pre>
 -module(ebt_task_dialyze).
 -author("Volodymyr Kyrychenko <vladimirk.kirichenko@gmail.com>").
 

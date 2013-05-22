@@ -26,6 +26,16 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+%% @doc Clean
+%%
+%% == Configuration ==
+%% List of wildcards to clean up.
+%%
+%% == Example ==
+%% <pre>
+%% {clean, ["*.fprof"]}
+%% </pre>
 -module(ebt_task_clean).
 
 -compile({parse_transform, do}).

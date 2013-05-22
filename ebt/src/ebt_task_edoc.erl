@@ -26,6 +26,21 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+%% @doc EDoc
+%%
+%% == Configuration ==
+%% files - include/exclude files
+%%
+%% == Example ==
+%% <pre>
+%% {edoc, [
+%%     {files, [
+%%          {include, ["src/*.erl"]},
+%%          {exclude, []}
+%%     ]},
+%% ]}
+%% </pre>
 -module(ebt_task_edoc).
 -author("volodymyr.kyrychenko@strikead.com").
 

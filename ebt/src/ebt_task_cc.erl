@@ -26,6 +26,33 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+%% @doc Compile NIF/Port
+%%
+%% == Configuration ==
+%% <ul>
+%% <li>nifname - name of the library</li>
+%% <li>cc - compiler</li>
+%% <li>files - files to compile</li>
+%% </ul>
+%%
+%% == Example ==
+%% <pre>
+%% {cc, [
+%%     {nifname1, [
+%%          {linux, [
+%%              {cc, "gcc"},
+%%              {files, [
+%%                   {include, ["c_src/*.c", "c_src/*.cc", "c_src/*.cpp"]},
+%%                   {exclude, []}
+%%              ]},
+%%              {cflags, ""},
+%%              {ldflags, ""}
+%%          ]}
+%%     ]}
+%%     {nifname2, []}
+%% ]}
+%% </pre>
 -module(ebt_task_cc).
 
 -compile({parse_transform, do}).
