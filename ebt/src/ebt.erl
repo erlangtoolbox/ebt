@@ -120,9 +120,10 @@ libinfo(Path) ->
     AbsPath = xl_file:absolute(Path),
     Dir = filename:dirname(AbsPath),
     LibName = filename:basename(AbsPath),
-    [Name, Version] = string:tokens(LibName, "-"),
+    NameTokens = string:tokens(LibName, "-"),
+    {Name, [Version]} = lists:split(length(NameTokens) - 1, NameTokens),
     VersionList = string:tokens(Version, "."),
-    {Dir, Name, VersionList}.
+    {Dir, xl_string:join(Name, "-"), VersionList}.
 
 compare({_, Name1, Version1}, {_, Name2, Version2}) ->
     case Name1 of
