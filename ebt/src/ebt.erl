@@ -39,11 +39,8 @@
 ]).
 -spec(main([string()]) -> ok).
 main(Args) ->
-%%     todo make proper unpacking and compilation of dependencies in make with normal app dependecies
-    xl_state:start_link(),
-    xl_re:start(),
     R = do([error_m ||
-        application:load(ebt),
+        xl_application:start(ebt),
         Vsn <- application:get_key(ebt, vsn),
         io:format("Erlang Build Tool, v.~s~n", [Vsn]),
         {Opts, _} <- getopt:parse(?OPTS, Args),
