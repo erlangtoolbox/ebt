@@ -101,16 +101,34 @@ build(Profile, ContextDir, Defaults) ->
 
 -spec(load_libraries(ebt_config:config()) -> [file:name()]).
 load_libraries(Config) ->
-    xl_lists:eforeach(fun load_library/1, [Lib ||
-        LibDir <- ebt_config:value(libraries, Config, []),
-        Lib <- filelib:wildcard(LibDir ++ "/*")]).
+    LibMasks = lists:map(fun(LibDir) -> LibDir ++ "/*" end, ebt_config:value(libraries, Config, [])),
+    SortedLibs = lists:sort(fun compare/2, lists:map(fun libinfo/1, xl_file:wildcards(LibMasks))),
+    Libs = lists:foldl(fun(L = {_, Name, _}, Libraries) ->
+        case lists:keymember(Name, 2, Libraries) of
+            false -> [L | Libraries];
+            true -> Libraries
+        end
+    end, [], SortedLibs),
+    xl_lists:eforeach(fun load_library/1, [Lib || Lib <- Libs]).
 
--spec(load_library(file:name()) -> error_m:monad(ok)).
+-spec(load_library(file:name() | {file:name(), string(), string()}) -> error_m:monad(ok)).
+load_library({Dir, Name, Version}) -> load_library(Dir ++ "/" ++ Name ++ "-" ++ xl_string:join(Version, "."));
 load_library(Path) ->
     case code:add_patha(filename:join(Path, "ebin")) of
         true -> ok;
-        {error, bad_directory} ->
-            io:format("WARNING: failed to load ~s~n", [Path]),
-            ok
+        {error, bad_directory} -> io:format("WARNING: failed to load ~s~n", [Path])
     end.
 
+libinfo(Path) ->
+    AbsPath = xl_file:absolute(Path),
+    Dir = filename:dirname(AbsPath),
+    LibName = filename:basename(AbsPath),
+    [Name, Version] = string:tokens(LibName, "-"),
+    VersionList = string:tokens(Version, "."),
+    {Dir, Name, VersionList}.
+
+compare({_, Name1, Version1}, {_, Name2, Version2}) ->
+    case Name1 of
+        Name2 -> Version1 > Version2;
+        _ -> Name1 > Name2
+    end.
