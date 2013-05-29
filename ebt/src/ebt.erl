@@ -106,7 +106,8 @@ load_libraries(Config) ->
             true -> Libraries
         end
     end, [], SortedLibs),
-    xl_lists:eforeach(fun load_library/1, [Lib || Lib <- Libs]).
+    lists:foreach(fun load_library/1, [Lib || Lib <- Libs]),
+    code:rehash().
 
 -spec(load_library(file:name() | {file:name(), string(), string()}) -> error_m:monad(ok)).
 load_library({Dir, Name, Version}) -> load_library(Dir ++ "/" ++ Name ++ "-" ++ xl_string:join(Version, "."));
