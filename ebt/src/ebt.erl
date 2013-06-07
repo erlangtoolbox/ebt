@@ -64,12 +64,9 @@ build(Opts) ->
     {ok, Profile} = xl_lists:kvfind(profile, Opts),
     Defaults = [{outdir, filename:absname(OutDir)}],
     case build(Profile, ".", Defaults) of
-        {ok, _} ->
-            {ok, "BUILD SUCCESSFUL"};
-        {error, E} when is_list(E) ->
-            {error, xl_string:format("BUILD FAILED: ~s~n", [E])};
-        {error, E} ->
-            {error, xl_string:format("BUILD FAILED: ~p~n", [E])}
+        {ok, _} -> {ok, "BUILD SUCCESSFUL"};
+        {error, E} when is_list(E) -> {error, xl_string:format("BUILD FAILED: ~s~n", [E])};
+        {error, E} -> {error, xl_string:format("BUILD FAILED: ~p~n", [E])}
     end.
 
 -spec(build(atom(), file:name(), ebt_config:config()) -> error_m:monad(any())).
@@ -98,36 +95,41 @@ build(Profile, ContextDir, Defaults) ->
 
 -spec(load_libraries(ebt_config:config()) -> [file:name()]).
 load_libraries(Config) ->
-    LibMasks = lists:map(fun(LibDir) -> LibDir ++ "/*" end, ebt_config:value(libraries, Config, [])),
-    SortedLibs = lists:sort(fun compare/2, lists:map(fun libinfo/1, xl_file:wildcards(LibMasks))),
-    Libs = lists:foldl(fun(L = {_, Name, _}, Libraries) ->
-        case lists:keymember(Name, 2, Libraries) of
-            false -> [L | Libraries];
-            true -> Libraries
-        end
-    end, [], SortedLibs),
-    lists:foreach(fun load_library/1, [Lib || Lib <- Libs]),
+    lists:foreach(fun load_library/1, [Lib || Lib <- ebt_config:libraries(Config)]),
     code:rehash().
 
 -spec(load_library(file:name() | {file:name(), string(), string()}) -> error_m:monad(ok)).
-load_library({Dir, Name, Version}) -> load_library(Dir ++ "/" ++ Name ++ "-" ++ xl_string:join(Version, "."));
 load_library(Path) ->
-    case code:add_patha(filename:join(Path, "ebin")) of
+    EbinPath = filename:join(Path, "ebin"),
+    unload_if_needed(Path),
+    case code:add_patha(EbinPath) of
         true -> ok;
         {error, bad_directory} -> io:format("WARNING: failed to load ~s~n", [Path])
     end.
 
-libinfo(Path) ->
-    AbsPath = xl_file:absolute(Path),
-    Dir = filename:dirname(AbsPath),
-    LibName = filename:basename(AbsPath),
-    NameTokens = string:tokens(LibName, "-"),
-    {Name, [Version]} = lists:split(length(NameTokens) - 1, NameTokens),
-    VersionList = string:tokens(Version, "."),
-    {Dir, xl_string:join(Name, "-"), VersionList}.
-
-compare({_, Name1, Version1}, {_, Name2, Version2}) ->
-    case Name1 of
-        Name2 -> Version1 > Version2;
-        _ -> Name1 > Name2
-    end.
+unload_if_needed(Path) ->
+    lists:foreach(fun(File) ->
+        Module = list_to_atom(filename:basename(File, ".beam")),
+        case code:is_loaded(Module) of
+            {file, File} -> ok;
+            {file, Type} ->
+                case application:get_application(Module) of
+                    {ok, App} ->
+                        {_, _, Version} = ebt_config:libinfo(Path),
+                        case application:get_key(App, vsn) of
+                            {ok, Vsn} ->
+                                case string:tokens(Vsn, ".") of
+                                    V when Version > V ->
+                                        io:format("WARNING: module ~s is ~s. Will be reloaded from ~s, ~s -> ~s ~n",
+                                            [Module, Type, File, string:join(V, "."), string:join(Version, ".")]),
+                                        code:soft_purge(Module),
+                                        code:load_file(Module);
+                                    _ -> ok
+                                end;
+                            _ -> ok
+                        end;
+                    _ -> ok
+                end;
+            _ -> ok
+        end
+    end, filelib:wildcard(Path ++ "/ebin/*.beam")).

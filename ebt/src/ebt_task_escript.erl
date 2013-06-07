@@ -51,7 +51,7 @@
 perform(Target, Dir, Config) ->
     do([error_m ||
         AppProdDir <- ebt_config:app_outdir(production, Dir, Config),
-        Libs <- return(lists:map(fun(L) -> L ++ "/*/ebin/*" end, ebt_config:value(libraries, Config, []))),
+        Libs <- return(lists:map(fun(L) -> L ++ "/ebin/*" end, ebt_config:libraries(Config))),
         Files <- xl_file:read_files([AppProdDir ++ "/ebin/*" | Libs]),
         Scripts <- ebt_config:find_value(Target, Config),
         xl_lists:eforeach(fun({Name, Params, Resources}) ->

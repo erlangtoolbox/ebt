@@ -35,7 +35,7 @@
 
 -export([read/2, value/3, value/4, find_value/2, find_value/3,
     outdir/1, outdir/3, version/1, appname_full/2, appname/1, app_outdir/3,
-    outdir/2, build_number/1, info_outdir/2, files/3, files/4]).
+    outdir/2, build_number/1, info_outdir/2, files/3, files/4, libraries/1, libinfo/1]).
 
 -spec(read(file:name(), config()) -> error_m:monad(config())).
 read(Filename, Defaults) ->
@@ -157,3 +157,26 @@ files(Config, AdditionalMasks, DefaultMasks) ->
     IncludeMasks = AdditionalMasks ++ xl_lists:kvfind(include, Files, DefaultMasks),
     ExcludeMasks = xl_lists:kvfind(exclude, Files, []),
     lists:subtract(xl_file:wildcards(IncludeMasks), xl_file:wildcards(ExcludeMasks)).
+
+-spec(libraries(config()) -> [file:name()]).
+libraries(Config) ->
+    LibMasks = lists:map(fun(LibDir) -> LibDir ++ "/*" end, ebt_config:value(libraries, Config, [])),
+    SortedLibs = lists:sort(fun compare/2, lists:map(fun libinfo/1, xl_file:wildcards(LibMasks))),
+    lists:foldl(fun({Dir, Name, Version}, Libraries) ->
+        case lists:keymember(Name, 2, Libraries) of
+            false -> [Dir ++ "/" ++ Name ++ "-" ++ xl_string:join(Version, ".") | Libraries];
+            true -> Libraries
+        end
+    end, [], SortedLibs).
+
+libinfo(Path) ->
+    AbsPath = xl_file:absolute(Path),
+    Dir = filename:dirname(AbsPath),
+    LibName = filename:basename(AbsPath),
+    NameTokens = string:tokens(LibName, "-"),
+    {Name, [Version]} = lists:split(length(NameTokens) - 1, NameTokens),
+    VersionList = string:tokens(Version, "."),
+    {Dir, xl_string:join(Name, "-"), VersionList}.
+
+compare({_, Name, Version1}, {_, Name, Version2}) -> Version1 > Version2;
+compare({_, Name1, _Version1}, {_, Name2, _Version2}) -> Name1 > Name2.
