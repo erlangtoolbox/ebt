@@ -162,12 +162,13 @@ files(Config, AdditionalMasks, DefaultMasks) ->
 libraries(Config) ->
     LibMasks = lists:map(fun(LibDir) -> LibDir ++ "/*" end, ebt_config:value(libraries, Config, [])),
     SortedLibs = lists:sort(fun compare/2, lists:map(fun libinfo/1, xl_file:wildcards(LibMasks))),
-    lists:foldl(fun({Dir, Name, Version}, Libraries) ->
+    FilteredLibs = lists:foldl(fun(L = {_Dir, Name, _Version}, Libraries) ->
         case lists:keymember(Name, 2, Libraries) of
-            false -> [Dir ++ "/" ++ Name ++ "-" ++ xl_string:join(Version, ".") | Libraries];
+            false -> [L | Libraries];
             true -> Libraries
         end
-    end, [], SortedLibs).
+    end, [], SortedLibs),
+    lists:map(fun({Dir, Name, Version}) -> Dir ++ "/" ++ Name ++ "-" ++ xl_string:join(Version, ".") end, FilteredLibs).
 
 libinfo(Path) ->
     AbsPath = xl_file:absolute(Path),

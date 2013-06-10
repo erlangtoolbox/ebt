@@ -49,16 +49,18 @@
 -export([perform/3]).
 
 perform(Target, Dir, Config) ->
+    Libraries = ebt_config:libraries(Config),
+    lists:foreach(fun(L) -> io:format("include ~s~n", [L]) end, Libraries),
     do([error_m ||
         AppProdDir <- ebt_config:app_outdir(production, Dir, Config),
-        Libs <- return(lists:map(fun(L) -> L ++ "/ebin/*" end, ebt_config:libraries(Config))),
-        Files <- xl_file:read_files([AppProdDir ++ "/ebin/*" | Libs]),
+        LibMasks <- return(lists:map(fun(L) -> L ++ "/ebin/*" end, Libraries)),
+        Masks <- xl_file:read_files([AppProdDir ++ "/ebin/*" | LibMasks]),
         Scripts <- ebt_config:find_value(Target, Config),
         xl_lists:eforeach(fun({Name, Params, Resources}) ->
             Path = xl_string:join([AppProdDir, "/bin/", Name]),
             do([error_m ||
-                ResourceFiles <- xl_file:read_files(Resources, {base, Dir}),
-                {"memory", Zip} <- zip:create("memory", Files ++ ResourceFiles, [memory]),
+                ResourceMasks <- xl_file:read_files(Resources, {base, Dir}),
+                {"memory", Zip} <- zip:create("memory", Masks ++ ResourceMasks, [memory]),
                 xl_file:ensure_dir(Path),
                 escript:create(Path, [
                     {shebang, default},
