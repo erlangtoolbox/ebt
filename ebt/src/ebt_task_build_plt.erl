@@ -54,7 +54,7 @@ perform(Target, _Dir, Config) ->
         Plt <- initial_plt_path(Target, Config),
         case xl_file:exists(Plt) of
             {ok, false} ->
-                io:format("building PLT: ~s~n", [Plt]),
+                io:format("build PLT: ~s~n", [Plt]),
                 Options = [{analysis_type, plt_build}, {output_plt, Plt} |
                     ebt_config:value(Target, Config, options, [{apps, [kernel, stdlib]}])],
                 ebt_task_dialyze:display_warnings(dialyzer:run(Options));

@@ -70,7 +70,7 @@ perform(Target, Dir, Config) ->
                 ]),
                 #file_info{mode = Mode} <- xl_file:read_file_info(Path),
                 xl_file:change_mode(Path, Mode bor 8#00100),
-                io:format("created ~s~n", [Path])
+                io:format("create ~s~n", [Path])
             ])
         end, Scripts)
     ]).

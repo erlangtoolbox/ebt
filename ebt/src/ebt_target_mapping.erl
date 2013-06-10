@@ -44,11 +44,7 @@ get(Target, Config) ->
         return({Module, Depends ++ UserDepends})
     ]).
 
-system_mapping() ->
-    option_m:to_error_m(
-        application:get_env(ebt, tasks),
-        "cannot find task mapping"
-    ).
+system_mapping() -> xl_application:eget_env(ebt, tasks).
 
 mapping_to_tuple(E = {error, _}) -> E;
 mapping_to_tuple({ok, Mapping}) ->
@@ -60,6 +56,6 @@ mapping_to_tuple({ok, Mapping}) ->
 get_module(Target, Modules) ->
     option_m:to_error_m(
         xl_lists:kvfind(Target, Modules),
-        xl_string:format("cannot find module of ~p", [Target])
+        xl_string:format("cannot find module for target ~p", [Target])
     ).
 
