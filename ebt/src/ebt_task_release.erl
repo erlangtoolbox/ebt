@@ -49,8 +49,7 @@ perform(Target, Dir, Config) ->
         after
             reltool:stop(RelTool)
         end,
-        xl_file:copy_filtered(Dir,
-            ebt_config:value(Target, Config, resources, []), ReleaseDir),
+        xl_file:copy_filtered(Dir, ebt_config:value(Target, Config, resources, []), ReleaseDir),
         generate_runners(RelConfigUpdated, ReleaseDir),
         pack(Target, Config)
     ]).

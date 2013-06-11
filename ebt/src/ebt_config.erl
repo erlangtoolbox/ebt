@@ -147,13 +147,19 @@ appname(Dir) ->
         return(Name)
     ]).
 
--spec(files(atom(), config(), [string()], [string()]) -> [string()]).
-files(Target, Config, AdditionalMasks, DefaultMasks) ->
-    files(ebt_config:value(Target, Config, []), AdditionalMasks, DefaultMasks).
+
+-spec(files(atom(), config(), atom(), [string()], [string()]) -> [string()]).
+files(Target, Config, Key, AdditionalMasks, DefaultMasks) ->
+    files(ebt_config:value(Target, Config, []), Key, AdditionalMasks, DefaultMasks).
 
 -spec(files([{atom(), term()}], [string()], [string()]) -> [string()]).
-files(Config, AdditionalMasks, DefaultMasks) ->
-    Files = xl_lists:kvfind(files, Config, []),
+files(Config, AdditionalMasks, DefaultMasks) -> files(Config, files, AdditionalMasks, DefaultMasks).
+
+-spec(files([{atom(), term()}] | atom(), atom(), [string()], [string()]) -> [string()]).
+files(Target, Config, AdditionalMasks, DefaultMasks) when is_atom(Target) ->
+    files(Target, Config, files, AdditionalMasks, DefaultMasks);
+files(Config, Key, AdditionalMasks, DefaultMasks) when is_atom(Key) ->
+    Files = xl_lists:kvfind(Key, Config, []),
     IncludeMasks = AdditionalMasks ++ xl_lists:kvfind(include, Files, DefaultMasks),
     ExcludeMasks = xl_lists:kvfind(exclude, Files, []),
     lists:subtract(xl_file:wildcards(IncludeMasks), xl_file:wildcards(ExcludeMasks)).

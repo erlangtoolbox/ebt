@@ -45,13 +45,8 @@
 
 perform(Target, _Dir, Config) ->
     do([error_m ||
-        delete(ebt_config:outdir(Config)),
+        OutDir <- ebt_config:outdir(Config),
         xl_lists:eforeach(fun(Path) ->
             xl_file:delete(Path)
-        end, xl_file:wildcards(ebt_config:value(Target, Config, [])))
+        end, xl_file:wildcards(ebt_config:value(Target, Config, [OutDir])))
     ]).
-
-delete({ok, Dir}) ->
-    io:format("delete ~s~n", [Dir]),
-    xl_file:delete(Dir);
-delete(E) -> E.
