@@ -95,17 +95,15 @@ case "$1" in
         fi
         rc_status -v
         ;;
-    hup)
-        echo -n "Calling $APPNAME $2:hup"
+    call)
         if is_running
         then
             $ERL_BIN -name clean_$RANDOM@127.0.0.1 -setcookie $COOKIE \
                 -boot $BASE/releases/$APP_VSN/$CLEAN_BOOT \
-                -noshell -eval "rpc:call('$NODE_NAME', '$2', hup, [])" -s init stop
+                -noshell -eval "R = rpc:call('$NODE_NAME', '$2', '$3', [$4]), io:format(\"~p\",[R])" -s init stop
         else
             rc_failed 3
         fi
-        rc_status -v
         ;;
     profile)
         case "$2" in
