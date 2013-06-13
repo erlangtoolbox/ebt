@@ -10,7 +10,31 @@
 # Short-Description: @APPNAME@
 ### END INIT INFO
 
-. /etc/rc.status
+_rc_status=0
+
+rc_reset()
+{
+    _rc_status=0
+    return 0
+}
+
+rc_status()
+{
+    case "$_rc_status" in
+        0) echo -e " ...done";;
+        1) echo -e " ...failed";;
+        2) echo -e " ...missed";;
+        3) echo -e " ...running";;
+        *) echo -e " ...done";;
+    esac
+    return $_rc_status
+}
+
+rc_failed()
+{
+    _rc_status=$1
+    return $_rc_status
+}
 
 cd `dirname $0`/..
 BASE=`pwd`
@@ -40,7 +64,8 @@ case "$1" in
         if is_running
         then
             echo -n "$APPNAME is already running"
-            rc_status -v
+            rc_failed 1
+            rc_status
         else
             $ERL_BIN -args_file $BASE/etc/$APPNAME.vm.args -setcookie $COOKIE \
                 -name $NODE_NAME -boot $BASE/releases/$APP_VSN/$APPNAME \
@@ -51,14 +76,14 @@ case "$1" in
         if is_running
         then
             echo -n "$APPNAME is already running"
+            rc_failed 1
         else
             echo -n "Starting $APPNAME "
-            rc_reset
             $ERL_BIN -args_file $BASE/etc/$APPNAME.vm.args -setcookie $COOKIE \
                 -name $NODE_NAME -boot $BASE/releases/$APP_VSN/$APPNAME \
                 -config $BASE/etc/$APPNAME -noshell -detached
         fi
-        rc_status -v
+        rc_status
         ;;
     attach)
         echo -n "Attaching to $APPNAME "
@@ -68,8 +93,8 @@ case "$1" in
             $ERL_BIN -name clean_$RANDOM@127.0.0.1 -setcookie $COOKIE \
                 -boot $BASE/releases/$APP_VSN/$CLEAN_BOOT -remsh $NODE_NAME
         else
-            rc_failed 3
-            rc_status -v
+            rc_failed 2
+            rc_status
         fi
         ;;
     stop)
@@ -80,20 +105,19 @@ case "$1" in
                 -boot $BASE/releases/$APP_VSN/$CLEAN_BOOT \
                 -noshell -eval "rpc:call('$NODE_NAME', init, stop, [])" -s init stop
         else
-            rc_failed 3
+            rc_failed 2
         fi
-        rc_status -v
+        rc_status
         ;;
     status)
         echo -n "Checking for $APPNAME"
         if is_running
         then
-            #running
-            :
-        else
             rc_failed 3
+        else
+            rc_failed 2
         fi
-        rc_status -v
+        rc_status
         ;;
     call)
         if is_running
@@ -102,7 +126,8 @@ case "$1" in
                 -boot $BASE/releases/$APP_VSN/$CLEAN_BOOT \
                 -noshell -eval "R = rpc:call('$NODE_NAME', '$2', '$3', [$4]), io:format(\"~p\",[R])" -s init stop
         else
-            rc_failed 3
+            rc_failed 2
+            rc_status
         fi
         ;;
     profile)
@@ -115,7 +140,7 @@ case "$1" in
                         -boot $BASE/releases/$APP_VSN/$CLEAN_BOOT \
                         -noshell -eval "ok=rpc:call('$NODE_NAME', fprof, trace, [[start, {procs, all}, {file, \"/tmp/$NODE_NAME.trace\"}]])" -s init stop
                 else
-                    rc_failed 3
+                    rc_failed 2
                 fi
             ;;
             stop)
@@ -130,7 +155,7 @@ case "$1" in
                             ok=fprof:analyse(dest, \"/tmp/$NODE_NAME.analyse\")\
                         " -s init stop
                 else
-                    rc_failed 3
+                    rc_failed 2
                 fi
             ;;
             *)
@@ -138,12 +163,10 @@ case "$1" in
                 exit 1
                 ;;
         esac
-        rc_status -v
+        rc_status
         ;;
     *)
-        echo "Usage: $APPNAME {run|start|stop|attach|status|profile <start|stop>|hup <module>}"
+        echo "Usage: $APPNAME {run|start|stop|attach|status|profile <start|stop>|call <module> <fun> <args>}"
         exit 1
         ;;
 esac
-rc_exit
-
