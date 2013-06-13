@@ -20,7 +20,7 @@ rc_reset()
 
 rc_status()
 {
-    case "$_rc_status" in
+    case $_rc_status in
         0) echo -e " ...done";;
         1) echo -e " ...failed";;
         2) echo -e " ...missed";;
@@ -36,6 +36,10 @@ rc_failed()
     return $_rc_status
 }
 
+rc_exit() {
+    exit $_rc_status
+}
+
 cd `dirname $0`/..
 BASE=`pwd`
 APPNAME=`basename $0`
@@ -47,6 +51,17 @@ ERTS_VSN=${DATA% *}
 APP_VSN=${DATA#* }
 ERL_BIN=$BASE/erts-$ERTS_VSN/bin/erl
 
+suexec()
+{
+    if [ "$USER" != "$SU" -a ! -z "$SU" ]
+    then
+       su -l $SU -c '"$0" "$@"' -- "$@"
+       [ $? -ne 0 ] && rc_failed 1
+    else
+        $@
+    fi
+}
+
 rc_reset
 
 function is_running
@@ -56,7 +71,7 @@ function is_running
         -eval "net_kernel:hidden_connect_node('$NODE_NAME'),
             R = net_adm:ping('$NODE_NAME'),
             io:format(\"~p~n\", [R])." -s init stop`
-    [ "x$PING" = "xpong" ]
+    [ "$PING" = "pong" ]
 }
 
 case "$1" in
@@ -67,7 +82,7 @@ case "$1" in
             rc_failed 1
             rc_status
         else
-            $ERL_BIN -args_file $BASE/etc/$APPNAME.vm.args -setcookie $COOKIE \
+            suexec $ERL_BIN -args_file $BASE/etc/$APPNAME.vm.args -setcookie $COOKIE \
                 -name $NODE_NAME -boot $BASE/releases/$APP_VSN/$APPNAME \
                 -config $BASE/etc/$APPNAME
         fi
@@ -79,7 +94,7 @@ case "$1" in
             rc_failed 1
         else
             echo -n "Starting $APPNAME "
-            $ERL_BIN -args_file $BASE/etc/$APPNAME.vm.args -setcookie $COOKIE \
+            suexec $ERL_BIN -args_file $BASE/etc/$APPNAME.vm.args -setcookie $COOKIE \
                 -name $NODE_NAME -boot $BASE/releases/$APP_VSN/$APPNAME \
                 -config $BASE/etc/$APPNAME -noshell -detached
         fi
@@ -170,3 +185,4 @@ case "$1" in
         exit 1
         ;;
 esac
+rc_exit
