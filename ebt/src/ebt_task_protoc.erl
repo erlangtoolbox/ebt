@@ -28,7 +28,7 @@
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -module(ebt_task_protoc).
 
--compile({parse_transform, do}).
+-compile({parse_transform, ebt__do}).
 
 -behaviour(ebt_task).
 
@@ -37,13 +37,13 @@
 perform(_Target, Dir, Config) ->
     Sources = filelib:wildcard(Dir ++ "/src/*.proto"),
     IncludeDir = Dir ++ "/include",
-    do([error_m ||
+    ebt__do([ebt__error_m ||
         OutDir <- ebt_config:app_outdir(production, Dir, Config),
         EbinDir <- return(OutDir ++ "/ebin"),
-        xl_file:mkdirs(EbinDir),
-        xl_lists:eforeach(fun(File) ->
-            do([error_m ||
-                xl_file:mkdirs(IncludeDir),
+        ebt__xl_file:mkdirs(EbinDir),
+        ebt__xl_lists:eforeach(fun(File) ->
+            ebt__do([ebt__error_m ||
+                ebt__xl_file:mkdirs(IncludeDir),
                 protobuffs_compile:scan_file(File, [
                     {output_ebin_dir, EbinDir},
                     {output_include_dir, IncludeDir}

@@ -38,15 +38,15 @@
 %% </pre>
 -module(ebt_task_clean).
 
--compile({parse_transform, do}).
+-compile({parse_transform, ebt__do}).
 -behaviour(ebt_task).
 
 -export([perform/3]).
 
 perform(Target, _Dir, Config) ->
-    do([error_m ||
+    ebt__do([ebt__error_m ||
         OutDir <- ebt_config:outdir(Config),
-        xl_lists:eforeach(fun(Path) ->
-            xl_file:delete(Path)
-        end, xl_file:wildcards(ebt_config:value(Target, Config, [OutDir])))
+        ebt__xl_lists:eforeach(fun(Path) ->
+            ebt__xl_file:delete(Path)
+        end, ebt__xl_file:wildcards(ebt_config:value(Target, Config, [OutDir])))
     ]).

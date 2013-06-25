@@ -35,7 +35,7 @@
 perform(_Target, Dir, _Config) ->
     SrcDir = Dir ++ "/src",
     Files = filelib:wildcard(SrcDir ++ "/*.xrl"),
-    xl_lists:eforeach(fun(F) ->
+    ebt__xl_lists:eforeach(fun(F) ->
         io:format("generate lexer ~p~n", [F]),
         leex:file(F)
     end, Files).

@@ -28,34 +28,34 @@
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -module(ebt_target_mapping).
 
--compile({parse_transform, do}).
+-compile({parse_transform, ebt__do}).
 
 -export([get/2]).
 
--spec(get(atom(), ebt_config:config()) -> error_m:monad({module(), [atom()]})).
+-spec(get(atom(), ebt_config:config()) -> ebt__error_m:monad({module(), [atom()]})).
 get(Target, Config) ->
-    do([error_m ||
+    ebt__do([ebt__error_m ||
         {Modules, Targets} <- mapping_to_tuple(system_mapping()),
         {UserModules, UserTargets} <- mapping_to_tuple({ok,
             ebt_config:value(tasks, Config, [{modules, []}, {targets, []}])}),
         Module <- get_module(Target, Modules ++ UserModules),
-        Depends <- return(xl_lists:kvfind(Target, Targets, [])),
-        UserDepends <- return(xl_lists:kvfind(Target, UserTargets, [])),
+        Depends <- return(ebt__xl_lists:kvfind(Target, Targets, [])),
+        UserDepends <- return(ebt__xl_lists:kvfind(Target, UserTargets, [])),
         return({Module, Depends ++ UserDepends})
     ]).
 
-system_mapping() -> xl_application:eget_env(ebt, tasks).
+system_mapping() -> ebt__xl_application:eget_env(ebt, tasks).
 
 mapping_to_tuple(E = {error, _}) -> E;
 mapping_to_tuple({ok, Mapping}) ->
     {ok, {
-        xl_lists:kvfind(modules, Mapping, []),
-        xl_lists:kvfind(targets, Mapping, [])
+        ebt__xl_lists:kvfind(modules, Mapping, []),
+        ebt__xl_lists:kvfind(targets, Mapping, [])
     }}.
 
 get_module(Target, Modules) ->
-    option_m:to_error_m(
-        xl_lists:kvfind(Target, Modules),
-        xl_string:format("cannot find module for target ~p", [Target])
+    ebt__option_m:to_error_m(
+        ebt__xl_lists:kvfind(Target, Modules),
+        ebt__xl_string:format("cannot find module for target ~p", [Target])
     ).
 

@@ -6,10 +6,10 @@
     {applications, [
         kernel,
         stdlib,
-        xl_stdlib,
-        xl_io,
-        getopt,
-        erlandox
+        ebt__xl_stdlib,
+        ebt__xl_io,
+        ebt__getopt,
+        ebt__erlandox
     ]},
     {env, [
         {tasks, [

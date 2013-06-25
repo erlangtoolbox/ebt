@@ -55,7 +55,7 @@
 %% </pre>
 -module(ebt_task_cc).
 
--compile({parse_transform, do}).
+-compile({parse_transform, ebt__do}).
 -behaviour(ebt_task).
 
 -export([perform/3]).
@@ -65,27 +65,27 @@ perform(Target, Dir, Config) ->
         {ok, Natives} ->
             {_, Os} = os:type(),
             io:format("os is ~s~n", [Os]),
-            xl_lists:eforeach(fun({SoName, Cfg}) ->
-                OsConfig = xl_lists:kvfind(Os, Cfg, []),
-                CC = xl_lists:kvfind(cc, OsConfig, "gcc"),
+            ebt__xl_lists:eforeach(fun({SoName, Cfg}) ->
+                OsConfig = ebt__xl_lists:kvfind(Os, Cfg, []),
+                CC = ebt__xl_lists:kvfind(cc, OsConfig, "gcc"),
                 Sources = ebt_config:files(OsConfig, [], ["c_src/*.c", "c_src/*.cc", "c_src/*.cpp"]),
                 Includes = "-I" ++ hd(filelib:wildcard(code:lib_dir() ++ "/erl_interface-*/include"))
                     ++ " -I" ++ hd(filelib:wildcard(code:root_dir() ++ "/erts-*/include")),
-                CFlags = "-g -Wall -fPIC " ++ xl_lists:kvfind(cflags, OsConfig, ""),
-                LDFlags = "-shared -L" ++ hd(filelib:wildcard(code:lib_dir() ++ "/erl_interface-*/lib")) ++ " -lei -lerl_interface " ++ xl_lists:kvfind(ldflags, OsConfig, ""),
-                do([error_m ||
+                CFlags = "-g -Wall -fPIC " ++ ebt__xl_lists:kvfind(cflags, OsConfig, ""),
+                LDFlags = "-shared -L" ++ hd(filelib:wildcard(code:lib_dir() ++ "/erl_interface-*/lib")) ++ " -lei -lerl_interface " ++ ebt__xl_lists:kvfind(ldflags, OsConfig, ""),
+                ebt__do([ebt__error_m ||
                     NativeOut <- ebt_config:app_outdir(native, Dir, Config),
-                    xl_lists:eforeach(fun(File) ->
+                    ebt__xl_lists:eforeach(fun(File) ->
                         Name = filename:basename(filename:rootname(File)),
-                        Command = xl_string:format("~s ~s ~s -c ~s -o ~s/~s.o", [CC, CFlags, Includes, File, NativeOut, Name]),
+                        Command = ebt__xl_string:format("~s ~s ~s -c ~s -o ~s/~s.o", [CC, CFlags, Includes, File, NativeOut, Name]),
                         io:format("~s~n", [Command]),
-                        xl_shell:command(Command)
+                        ebt__xl_shell:command(Command)
                     end, Sources),
                     SoOut <- ebt_config:app_outdir(production, Dir, Config),
-                    xl_file:mkdirs(SoOut ++ "/priv"),
-                    Command <- return(xl_string:format("~s ~s -o ~s/priv/~s.so ~s/*.o", [CC, LDFlags, SoOut, SoName, NativeOut])),
+                    ebt__xl_file:mkdirs(SoOut ++ "/priv"),
+                    Command <- return(ebt__xl_string:format("~s ~s -o ~s/priv/~s.so ~s/*.o", [CC, LDFlags, SoOut, SoName, NativeOut])),
                     io:format("~s~n", [Command]),
-                    xl_shell:command(Command)
+                    ebt__xl_shell:command(Command)
                 ])
             end, Natives);
         _ -> ok

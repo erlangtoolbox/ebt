@@ -43,7 +43,7 @@
 
 -include_lib("kernel/include/file.hrl").
 
--compile({parse_transform, do}).
+-compile({parse_transform, ebt__do}).
 -behaviour(ebt_task).
 
 -export([perform/3]).
@@ -51,25 +51,25 @@
 perform(Target, Dir, Config) ->
     Libraries = ebt_config:libraries(Config),
     lists:foreach(fun(L) -> io:format("include ~s~n", [L]) end, Libraries),
-    do([error_m ||
+    ebt__do([ebt__error_m ||
         AppProdDir <- ebt_config:app_outdir(production, Dir, Config),
         LibMasks <- return(lists:map(fun(L) -> L ++ "/ebin/*" end, Libraries)),
-        Masks <- xl_file:read_files([AppProdDir ++ "/ebin/*" | LibMasks]),
+        Masks <- ebt__xl_file:read_files([AppProdDir ++ "/ebin/*" | LibMasks]),
         Scripts <- ebt_config:find_value(Target, Config),
-        xl_lists:eforeach(fun({Name, Params, Resources}) ->
-            Path = xl_string:join([AppProdDir, "/bin/", Name]),
-            do([error_m ||
-                ResourceMasks <- xl_file:read_files(Resources, {base, Dir}),
+        ebt__xl_lists:eforeach(fun({Name, Params, Resources}) ->
+            Path = ebt__xl_string:join([AppProdDir, "/bin/", Name]),
+            ebt__do([ebt__error_m ||
+                ResourceMasks <- ebt__xl_file:read_files(Resources, {base, Dir}),
                 {"memory", Zip} <- zip:create("memory", Masks ++ ResourceMasks, [memory]),
-                xl_file:ensure_dir(Path),
+                ebt__xl_file:ensure_dir(Path),
                 escript:create(Path, [
                     {shebang, default},
                     {comment, default},
                     {emu_args, Params},
                     {archive, Zip}
                 ]),
-                #file_info{mode = Mode} <- xl_file:read_file_info(Path),
-                xl_file:change_mode(Path, Mode bor 8#00100),
+                #file_info{mode = Mode} <- ebt__xl_file:read_file_info(Path),
+                ebt__xl_file:change_mode(Path, Mode bor 8#00100),
                 io:format("create ~s~n", [Path])
             ])
         end, Scripts)

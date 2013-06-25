@@ -29,7 +29,7 @@
 
 -module(ebt).
 
--compile({parse_transform, do}).
+-compile({parse_transform, ebt__do}).
 
 -export([main/1, load_libraries/1, load_library/1]).
 
@@ -39,11 +39,11 @@
 ]).
 -spec(main([string()]) -> ok).
 main(Args) ->
-    R = do([error_m ||
-        xl_application:start(ebt),
+    R = ebt__do([ebt__error_m ||
+        ebt__xl_application:start(ebt),
         Vsn <- application:get_key(ebt, vsn),
         io:format("Erlang Build Tool, v.~s~n", [Vsn]),
-        {Opts, _} <- getopt:parse(?OPTS, Args),
+        {Opts, _} <- ebt__getopt:parse(?OPTS, Args),
         case build(Opts) of
             {error, X} ->
                 io:format(standard_error, "~s~n", [X]),
@@ -60,25 +60,25 @@ main(Args) ->
     end.
 
 build(Opts) ->
-    {ok, OutDir} = xl_lists:kvfind(outdir, Opts),
-    {ok, Profile} = xl_lists:kvfind(profile, Opts),
+    {ok, OutDir} = ebt__xl_lists:kvfind(outdir, Opts),
+    {ok, Profile} = ebt__xl_lists:kvfind(profile, Opts),
     Defaults = [{outdir, filename:absname(OutDir)}],
     case build(Profile, ".", Defaults) of
         {ok, _} -> {ok, "BUILD SUCCESSFUL"};
-        {error, E} when is_list(E) -> {error, xl_string:format("BUILD FAILED: ~s~n", [E])};
-        {error, E} -> {error, xl_string:format("BUILD FAILED: ~p~n", [E])}
+        {error, E} when is_list(E) -> {error, ebt__xl_string:format("BUILD FAILED: ~s~n", [E])};
+        {error, E} -> {error, ebt__xl_string:format("BUILD FAILED: ~p~n", [E])}
     end.
 
--spec(build(atom(), file:name(), ebt_config:config()) -> error_m:monad(any())).
+-spec(build(atom(), file:name(), ebt_config:config()) -> ebt__error_m:monad(any())).
 build(Profile, ContextDir, Defaults) ->
     io:format("==> build profile: ~p~n", [Profile]),
     ConfigFile = filename:join(ContextDir, "ebt.config"),
-    do([error_m ||
+    ebt__do([ebt__error_m ||
         Config <- ebt_config:read(ConfigFile, Defaults),
         OutDir <- ebt_config:outdir(Config),
         ProfileConfig <- return(ebt_config:value(profiles, Config, Profile, ebt_config:value(profiles, Config, default, []))),
-        ebt_task:perform(prepare, xl_lists:kvfind(prepare, ProfileConfig, []), ContextDir, Config),
-        xl_lists:eforeach(
+        ebt_task:perform(prepare, ebt__xl_lists:kvfind(prepare, ProfileConfig, []), ContextDir, Config),
+        ebt__xl_lists:eforeach(
             fun(Dir) ->
                 io:format("==> entering ~s~n", [Dir]),
                 Result = ebt_cmdlib:exec({"~s -o ~p -p ~s", [filename:absname(escript:script_name()), OutDir, Profile]}, Dir),
@@ -90,7 +90,7 @@ build(Profile, ContextDir, Defaults) ->
             end,
             ebt_config:value(subdirs, Config, [])
         ),
-        ebt_task:perform(perform, xl_lists:kvfind(perform, ProfileConfig, [package]), ContextDir, Config)
+        ebt_task:perform(perform, ebt__xl_lists:kvfind(perform, ProfileConfig, [package]), ContextDir, Config)
     ]).
 
 -spec(load_libraries(ebt_config:config()) -> [file:name()]).
@@ -98,7 +98,7 @@ load_libraries(Config) ->
     lists:foreach(fun load_library/1, [Lib || Lib <- ebt_config:libraries(Config)]),
     code:rehash().
 
--spec(load_library(file:name() | {file:name(), string(), string()}) -> error_m:monad(ok)).
+-spec(load_library(file:name() | {file:name(), string(), string()}) -> ebt__error_m:monad(ok)).
 load_library(Path) ->
     EbinPath = filename:join(Path, "ebin"),
     unload_if_needed(Path),
