@@ -43,14 +43,16 @@ read(Filename, Defaults, Defines) ->
         {ok, true} ->
             ebt__do([ebt__error_m ||
                 Config <- ebt__xl_file:read_terms(Filename),
-                eval_definitions(ebt__xl_lists:keyreplace_or_add(1, Defaults, Config), Defines)
+                eval_definitions(lists:keymerge(1, lists:keysort(1, Config), lists:keysort(1, Defaults)), Defines)
             ]);
         {ok, false} -> {ok, Defaults};
         E -> E
     end.
 
+
 eval_definitions(Config, Defines) ->
-    WithDfines = lists:foldl(fun(ND = {define, Key, _}, Cfg) ->
+    WithDfines = lists:foldl(fun(ND, Cfg) ->
+        Key = element(2, ND),
         case ebt__xl_lists:keyfind(Key, 2, Cfg) of
             {ok, E = {define, Key, _}} -> [ND | lists:delete(E, Cfg)];
             _ -> [ND | Cfg]
