@@ -47,6 +47,7 @@ perform(Target, _Dir, Config) ->
     ebt__do([ebt__error_m ||
         OutDir <- ebt_config:outdir(Config),
         ebt__xl_lists:eforeach(fun(Path) ->
+            io:format("delete ~s~n", [Path]),
             ebt__xl_file:delete(Path)
         end, ebt__xl_file:wildcards(ebt_config:value(Target, Config, [OutDir])))
     ]).

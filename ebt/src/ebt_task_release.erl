@@ -39,7 +39,7 @@ perform(Target, Dir, Config) ->
     ebt__do([ebt__error_m ||
         RelConfigFile <- ebt_config:find_value(Target, Config, config),
         [RelConfig] <- ebt__xl_file:read_terms(RelConfigFile),
-        RelConfigUpdated <- update_release_config(RelConfig, Config),
+        RelConfigUpdated <- return(update_release_config(RelConfig, Config)),
         Name <- ebt_config:find_value(Target, Config, name),
         ReleaseDir <- ebt_config:outdir(releases, Config, Name),
         io:format("release ~p to ~s~n", [Name, ReleaseDir]),
@@ -80,10 +80,7 @@ pack(Target, Config) ->
     ]).
 
 update_release_config({sys, Opts}, Config) ->
-    ebt__do([ebt__error_m ||
-        Version <- ebt_config:version(Config),
-        return({sys, lists:map(fun
-            ({rel, Name, _, Apps}) -> {rel, Name, Version, Apps};
-            (X) -> X
-        end, Opts)})
-    ]).
+    {sys, lists:map(fun
+        ({rel, Name, _, Apps}) -> {rel, Name, ebt_config:version(Config), Apps};
+        (X) -> X
+    end, Opts)}.

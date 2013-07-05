@@ -1,7 +1,7 @@
 %define realname ebt
 
 Name:          %{realname}
-Version:       @EBT_VERSION@
+Version:       @version@
 Release:       0
 License:       BSD-3-Clause
 Group:         Development/Tools/Building

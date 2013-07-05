@@ -87,10 +87,10 @@ perform(Target, Dir, Config) ->
 update_app(AppSpec = {_, App, _}, EbinProdDir, Config) ->
     Filename = ebt__xl_string:join([EbinProdDir, "/", App, ".app"], ""),
     Modules = [list_to_atom(filename:basename(F, ".beam")) || F <- filelib:wildcard(EbinProdDir ++ "/*.beam")],
-    ebt__do([ebt__error_m ||
-        Version <- ebt_config:version(Config),
-        ebt__xl_file:write_term(Filename, ebt_applib:update(AppSpec, [{modules, Modules}, {vsn, Version}]))
-    ]).
+    ebt__xl_file:write_term(Filename, ebt_applib:update(AppSpec, [
+        {modules, Modules},
+        {vsn, ebt_config:version(Config)}
+    ])).
 
 -spec(compile(atom(), file:name(), file:name(), ebt_config:config(), {atom(), [[string()]]}) -> ebt__error_m:monad(ok)).
 compile(Target, SrcDir, OutDir, Config, {Key, Defaults}) when is_atom(Target) ->

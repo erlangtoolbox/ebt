@@ -43,9 +43,7 @@ perform(Target, _Dir, Config) ->
 
 substitute_file(Config, Src, Dst, Map, Braces) ->
     ebt__do([ebt__error_m ||
-        Version <- ebt_config:version(Config),
-        Build <- ebt_config:build_number(Config),
-        CommonMap <- return([{'EBT_VERSION', Version}, {'EBT_BUILD', Build} | ebt__xl_shell:getenv()]),
+        CommonMap <- return(ebt__xl_shell:getenv() ++ ebt_config:definitions(Config)),
         InFile <- ebt__xl_file:read_file(Src),
         ebt__xl_file:write_file(Dst, ebt__xl_string:substitute(InFile, Map ++ CommonMap, Braces))
     ]).

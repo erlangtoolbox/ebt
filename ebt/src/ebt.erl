@@ -35,7 +35,8 @@
 
 -define(OPTS, [
     {outdir, $o, outdir, {string, "out"}, "output directory"},
-    {profile, $p, profile, {atom, default}, "build profile"}
+    {profile, $p, profile, {atom, default}, "build profile"},
+    {define, $D, define, string, "define parameters"}
 ]).
 -spec(main([string()]) -> ok).
 main(Args) ->
@@ -62,26 +63,35 @@ main(Args) ->
 build(Opts) ->
     {ok, OutDir} = ebt__xl_lists:kvfind(outdir, Opts),
     {ok, Profile} = ebt__xl_lists:kvfind(profile, Opts),
+    Defines = lists:map(fun({define, X}) ->
+        case string:tokens(X, "=") of
+            [K, V] -> {define, list_to_atom(K), V};
+            [K] -> {define, list_to_atom(K), true}
+        end
+    end, ebt__xl_lists:keyfilter(1, define, Opts)),
     Defaults = [{outdir, filename:absname(OutDir)}],
-    case build(Profile, ".", Defaults) of
+    case build(Profile, ".", Defaults, Defines) of
         {ok, _} -> {ok, "BUILD SUCCESSFUL"};
         {error, E} when is_list(E) -> {error, ebt__xl_string:format("BUILD FAILED: ~s~n", [E])};
         {error, E} -> {error, ebt__xl_string:format("BUILD FAILED: ~p~n", [E])}
     end.
 
--spec(build(atom(), file:name(), ebt_config:config()) -> ebt__error_m:monad(any())).
-build(Profile, ContextDir, Defaults) ->
+-spec(build(atom(), file:name(), ebt_config:config(), [{define, atom(), term()}]) -> ebt__error_m:monad(any())).
+build(Profile, ContextDir, Defaults, Defines) ->
     io:format("==> build profile: ~p~n", [Profile]),
     ConfigFile = filename:join(ContextDir, "ebt.config"),
     ebt__do([ebt__error_m ||
-        Config <- ebt_config:read(ConfigFile, Defaults),
+        Config <- ebt_config:read(ConfigFile, Defaults, Defines),
         OutDir <- ebt_config:outdir(Config),
         ProfileConfig <- return(ebt_config:value(profiles, Config, Profile, ebt_config:value(profiles, Config, default, []))),
         ebt_task:perform(prepare, ebt__xl_lists:kvfind(prepare, ProfileConfig, []), ContextDir, Config),
         ebt__xl_lists:eforeach(
             fun(Dir) ->
+                Definitions = ebt__xl_string:join(lists:map(fun({K, V}) ->
+                    "-D'" ++ ebt__xl_string:join([K, V], "=") ++ "'"
+                end, ebt_config:definitions(Config)), " "),
                 io:format("==> entering ~s~n", [Dir]),
-                Result = ebt_cmdlib:exec({"~s -o ~p -p ~s", [filename:absname(escript:script_name()), OutDir, Profile]}, Dir),
+                Result = ebt_cmdlib:exec({"~s -o ~p -p ~s ~s", [filename:absname(escript:script_name()), OutDir, Profile, Definitions]}, Dir),
                 io:format("==> leaving ~s~n", [Dir]),
                 case Result of
                     ok -> ok;

@@ -33,21 +33,40 @@
 -type(config() :: ebt__xl_lists:kvlist_at()).
 -export_types([config/0, defaults/0]).
 
--export([read/2, value/3, value/4, find_value/2, find_value/3,
+-export([read/3, value/3, value/4, find_value/2, find_value/3,
     outdir/1, outdir/3, version/1, appname_full/2, appname/1, app_outdir/3,
-    outdir/2, build_number/1, info_outdir/2, files/3, files/4, libraries/1, libinfo/1]).
+    outdir/2, info_outdir/2, files/3, files/4, libraries/1, libinfo/1, definition/3, definitions/1]).
 
--spec(read(file:name(), config()) -> ebt__error_m:monad(config())).
-read(Filename, Defaults) ->
+-spec(read(file:name(), config(), [{define, atom(), term()}]) -> ebt__error_m:monad(config())).
+read(Filename, Defaults, Defines) ->
     case ebt__xl_file:exists(Filename) of
         {ok, true} ->
             ebt__do([ebt__error_m ||
                 Config <- ebt__xl_file:read_terms(Filename),
-                return(ebt__xl_lists:keyreplace_or_add(1, Defaults, Config))
+                eval_definitions(ebt__xl_lists:keyreplace_or_add(1, Defaults, Config), Defines)
             ]);
         {ok, false} -> {ok, Defaults};
         E -> E
     end.
+
+eval_definitions(Config, Defines) ->
+    WithDfines = lists:foldl(fun(ND = {define, Key, _}, Cfg) ->
+        case ebt__xl_lists:keyfind(Key, 2, Cfg) of
+            {ok, E = {define, Key, _}} -> [ND | lists:delete(E, Cfg)];
+            _ -> [ND | Cfg]
+        end
+    end, Config, Defines),
+    ebt__xl_lists:emap(fun
+        ({define, Key, Value}) ->
+            ebt__do([ebt__error_m ||
+                V <- evaluate(Value),
+                return({define, Key, V})
+            ]);
+        (X) -> {ok, X}
+    end, WithDfines).
+
+evaluate({shell, Cmd}) -> ebt__xl_shell:command(Cmd);
+evaluate(X) -> {ok, X}.
 
 -spec(find_value(atom(), config()) -> ebt__error_m:monad(any())).
 find_value(Key, Config) ->
@@ -118,26 +137,14 @@ info_outdir(Dir, Config) ->
         return(InfoDir)
     ]).
 
--spec(version(config()) -> ebt__error_m:monad(string())).
-version(Config) ->
-    case ebt__xl_lists:kvfind(version, Config) of
-        {ok, {shell, Cmd}} -> ebt__xl_shell:command(Cmd);
-        _ -> {ok, "0.0.1"}
-    end.
-
--spec(build_number(config()) -> ebt__error_m:monad(string())).
-build_number(Config) ->
-    case ebt__xl_lists:kvfind(build, Config) of
-        {ok, {shell, Cmd}} -> ebt__xl_shell:command(Cmd);
-        _ -> {ok, "0"}
-    end.
+-spec(version(config()) -> string()).
+version(Config) -> definition(version, Config, "0.0.1").
 
 -spec(appname_full(file:name(), config()) -> ebt__error_m:monad(string())).
 appname_full(Dir, Config) ->
     ebt__do([ebt__error_m ||
         {_, Name, _} <- ebt_applib:load(Dir ++ "/src"),
-        Version <- ebt_config:version(Config),
-        return(ebt__xl_string:join([Name, Version], "-"))
+        return(ebt__xl_string:join([Name, ebt_config:version(Config)], "-"))
     ]).
 
 -spec(appname(file:name()) -> ebt__error_m:monad(atom())).
@@ -187,3 +194,14 @@ libinfo(Path) ->
 
 compare({_, Name, Version1}, {_, Name, Version2}) -> Version1 > Version2;
 compare({_, Name1, _Version1}, {_, Name2, _Version2}) -> Name1 > Name2.
+
+definition(Key, Config, Default) ->
+    case ebt__xl_lists:keyfind(Key, 2, Config) of
+        {ok, {define, Key, Value}} -> Value;
+        _ -> Default
+    end.
+
+definitions(Config) ->
+    lists:map(fun({define, K, V}) ->
+        {K, V}
+    end, ebt__xl_lists:keyfilter(1, define, Config)).
