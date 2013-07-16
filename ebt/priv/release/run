@@ -55,7 +55,7 @@ suexec()
 {
     if [ "$USER" != "$SU" -a ! -z "$SU" ]
     then
-       su -l $SU -c '"$0" "$@"' -- "$@"
+       su $SU -c '"$0" "$@"' -- "$@"
        [ $? -ne 0 ] && rc_failed 1
     else
         $@

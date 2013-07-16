@@ -42,7 +42,7 @@
 %% {compile, [
 %%     {sources, [["src/*.erl"]]},
 %%     {tests, [["src/*.erl"]]},
-%%     {resources, ["src/*.json"]]},
+%%     {resources, ["src/*.json"]},
 %%     {flags, [warnings_as_errors, debug_info]}
 %% ]}
 %% </pre>
