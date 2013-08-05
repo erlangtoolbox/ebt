@@ -43,16 +43,19 @@ perform(_Level, [], _Dir, _Config, Acc) -> {ok, Acc};
 perform(Level, [Target | Targets], Dir, Config, Acc) ->
     case lists:member(Target, Acc) of
         true ->
-            io:format("~p => ~s at ~s already done~n", [Level, Target, Dir]),
+            ebt:format("~p => ~s at ~s already done~n", [Level, Target, Dir]),
             perform(Level, Targets, Dir, Config, Acc);
         false ->
-            io:format("~p => ~s at ~s~n", [Level, Target, Dir]),
+            ebt:format("~p => ~s at ~s~n", [Level, Target, Dir]),
             ebt__do([ebt__error_m ||
                 {Module, Depends} <- ebt_target_mapping:get(Target, Config),
                 DoneTargets <- perform(Level, Depends, Dir, Config, Acc),
-                io:format("~s:~n", [Target]),
+                ebt:format("~s:~n", [Target]),
+                ebt:io_context(Target),
                 ebt:load_libraries(Config),
                 Module:perform(Target, Dir, Config),
-                perform(Level, Targets, Dir, Config, [Target | Acc] ++ DoneTargets)
+                R <- perform(Level, Targets, Dir, Config, [Target | Acc] ++ DoneTargets),
+                ebt:io_context(undefined),
+                return(R)
             ])
     end.

@@ -31,7 +31,7 @@
 
 -compile({parse_transform, ebt__do}).
 
--export([main/1, load_libraries/1, load_library/1]).
+-export([main/1, load_libraries/1, load_library/1, format/2, format/3, io_context/1, format_mfa/4]).
 
 -define(OPTS, [
     {outdir, $o, outdir, {string, "out"}, "output directory"},
@@ -43,24 +43,25 @@ main(Args) ->
     R = ebt__do([ebt__error_m ||
         ebt__xl_application:start(ebt),
         Vsn <- application:get_key(ebt, vsn),
-        io:format("Erlang Build Tool, v.~s~n", [Vsn]),
+        format("Erlang Build Tool, v.~s~n", [Vsn]),
         {Opts, _} <- ebt__getopt:parse(?OPTS, Args),
         case build(Opts) of
             {error, X} ->
-                io:format(standard_error, "~s~n", [X]),
+                format(standard_error, "~s~n", [X]),
                 halt(1);
             {ok, X} ->
-                io:format("~s~n", [X])
+                format("~s~n", [X])
         end
     ]),
     case R of
         {error, X} ->
-            io:format(standard_error, "~p~n", [X]),
+            format(standard_error, "~p~n", [X]),
             halt(1);
         _ -> ok
     end.
 
 build(Opts) ->
+    initialize_io(),
     {ok, OutDir} = ebt__xl_lists:kvfind(outdir, Opts),
     {ok, Profile} = ebt__xl_lists:kvfind(profile, Opts),
     Defines = lists:map(fun({define, X}) ->
@@ -78,7 +79,7 @@ build(Opts) ->
 
 -spec(build(atom(), file:name(), ebt_config:config(), [{define, atom(), term()}]) -> ebt__error_m:monad(any())).
 build(Profile, ContextDir, Defaults, Defines) ->
-    io:format("==> build profile: ~p~n", [Profile]),
+    format("==> build profile: ~p~n", [Profile]),
     ConfigFile = filename:join(ContextDir, "ebt.config"),
     ebt__do([ebt__error_m ||
         Config <- ebt_config:read(ConfigFile, Defaults, Defines),
@@ -90,9 +91,9 @@ build(Profile, ContextDir, Defaults, Defines) ->
                 Definitions = ebt__xl_string:join(lists:map(fun({K, V}) ->
                     "-D'" ++ ebt__xl_string:join([K, V], "=") ++ "'"
                 end, ebt_config:definitions(Config)), " "),
-                io:format("==> entering ~s~n", [Dir]),
+                format("==> entering ~s~n", [Dir]),
                 Result = ebt_cmdlib:exec({"~s -o ~p -p ~s ~s", [filename:absname(escript:script_name()), OutDir, Profile, Definitions]}, Dir),
-                io:format("==> leaving ~s~n", [Dir]),
+                format("==> leaving ~s~n", [Dir]),
                 case Result of
                     ok -> ok;
                     {error, _} -> {error, "build in directory " ++ Dir ++ " failed"}
@@ -143,3 +144,44 @@ unload_if_needed(Path) ->
             _ -> ok
         end
     end, filelib:wildcard(Path ++ "/ebin/*.beam")).
+
+format(Pattern, Args) ->
+    format(user, Pattern, Args).
+
+format(Device, Pattern, Args) ->
+    io:format(Device, Pattern, Args).
+
+initialize_io() ->
+    MasterGroupLeader = group_leader(),
+    IoLeader = spawn(fun() -> process_io(MasterGroupLeader, undefined) end),
+    put(io_leader, IoLeader),
+    group_leader(IoLeader, self()).
+
+io_context(Target) ->
+    get(io_leader) ! {ebt_io_context, Target},
+    ok.
+
+process_io(MasterGroupLeader, IoContext) ->
+    receive
+        {ebt_io_context, Context} ->
+            process_io(MasterGroupLeader, Context);
+        Msg when IoContext == undefined ->
+            MasterGroupLeader ! Msg,
+            process_io(MasterGroupLeader, IoContext);
+        {io_request, From, ReplyAs, {put_chars, Enc, IoList}} when is_binary(IoList) ->
+            MasterGroupLeader ! {io_request, From, ReplyAs, {put_chars, Enc, format_context(IoContext, IoList)}},
+            process_io(MasterGroupLeader, IoContext);
+        {io_request, From, ReplyAs, {put_chars, Enc, M, F, A}} ->
+            MasterGroupLeader ! {io_request, From, ReplyAs, {put_chars, Enc, ?MODULE, format_mfa, [IoContext, M, F, A]}},
+            process_io(MasterGroupLeader, IoContext);
+        Msg ->
+            MasterGroupLeader ! Msg,
+            process_io(MasterGroupLeader, IoContext)
+    end.
+
+format_context(IoContext, IoList) when is_list(IoList) -> format_context(IoContext, list_to_binary(IoList));
+format_context(IoContext, IoList) when is_binary(IoList) ->
+    Prefix = list_to_binary(io_lib:format("\t[~s] ", [IoContext])),
+    <<Prefix/binary, IoList/binary>>.
+
+format_mfa(IoContext, M, F, A) -> format_context(IoContext, apply(M, F, A)).
