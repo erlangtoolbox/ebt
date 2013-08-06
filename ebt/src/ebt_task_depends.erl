@@ -42,8 +42,7 @@
 %%     {repositories, [
 %%         {"http://erlang-build-tool.googlecode.com/files", [
 %%             {erlandox, "1.0.5"},
-%%             {ebt__xl_stdlib, "1.2.0.301"},
-%%             {ebt__xl_io, "1.2.0.301"},
+%%             {xl_stdlib, "1.2.0.301"},
 %%             {getopt, "0.7.1"}
 %%         ]}
 %%     ]}
