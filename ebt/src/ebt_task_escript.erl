@@ -53,24 +53,50 @@ perform(Target, Dir, Config) ->
     lists:foreach(fun(L) -> io:format("include ~s~n", [L]) end, Libraries),
     ebt__do([ebt__error_m ||
         AppProdDir <- ebt_config:app_outdir(production, Dir, Config),
-        LibMasks <- return(lists:map(fun(L) -> L ++ "/ebin/*" end, Libraries)),
-        Masks <- ebt__xl_file:read_files([AppProdDir ++ "/ebin/*" | LibMasks]),
+        LibBeams <- ebt__xl_lists:eflatmap(fun(L) ->
+            ebt__xl_file:read_files([L ++ "/ebin/*"])
+        end, Libraries),
+        LibPrivs <- ebt__xl_lists:eflatmap(fun(L) ->
+            ebt__xl_file:read_files([L ++ "/priv/*"], {base, L})
+        end, Libraries),
+        Files <- ebt__xl_file:read_files([AppProdDir ++ "/ebin/*"]),
         Scripts <- ebt_config:find_value(Target, Config),
-        ebt__xl_lists:eforeach(fun({Name, Params, Resources}) ->
-            Path = ebt__xl_string:join([AppProdDir, "/bin/", Name]),
-            ebt__do([ebt__error_m ||
-                ResourceMasks <- ebt__xl_file:read_files(Resources, {base, Dir}),
-                {"memory", Zip} <- zip:create("memory", Masks ++ ResourceMasks, [memory]),
-                ebt__xl_file:ensure_dir(Path),
-                escript:create(Path, [
-                    {shebang, default},
-                    {comment, default},
-                    {emu_args, Params},
-                    {archive, Zip}
-                ]),
-                #file_info{mode = Mode} <- ebt__xl_file:read_file_info(Path),
-                ebt__xl_file:change_mode(Path, Mode bor 8#00100),
-                io:format("create ~s~n", [Path])
-            ])
+        ebt__xl_lists:eforeach(fun(ScriptConfig) ->
+            create_escript(ScriptConfig, AppProdDir, Dir, LibBeams ++ LibPrivs ++ Files)
         end, Scripts)
+    ]).
+
+create_escript({Name, Params, Resources, {priv_link, Target}}, AppProdDir, Dir, Files) ->
+    ebt__do([error_m ||
+        ebt__xl_file:mkdirs(ebt__xl_string:join([AppProdDir, "/bin"])),
+        ebt__xl_file:make_symlink(Target, ebt__xl_string:join([AppProdDir, "/bin/priv"])),
+        Beams <- ebt__xl_lists:emap(fun(F) ->
+            case ebt__xl_escript:read_file(F) of
+                {ok, Bin} -> {ok, {F, Bin}};
+                E -> E
+            end
+        end, [
+            "ebt__xl_escript.beam",
+            "ebt__xl_lists.beam",
+            "ebt__xl_file.beam",
+            "ebt__xl_io.beam",
+            "ebt__error_m.beam"
+        ]),
+        create_escript({Name, Params, Resources}, AppProdDir, Dir, Beams ++ Files)
+    ]);
+create_escript({Name, Params, Resources}, AppProdDir, Dir, Files) ->
+    Path = ebt__xl_string:join([AppProdDir, "/bin/", Name]),
+    ebt__do([ebt__error_m ||
+        ResourceFiles <- ebt__xl_file:read_files(Resources, {base, Dir}),
+        {"memory", Zip} <- zip:create("memory", Files ++ ResourceFiles, [memory]),
+        ebt__xl_file:ensure_dir(Path),
+        escript:create(Path, [
+            {shebang, default},
+            {comment, default},
+            {emu_args, Params},
+            {archive, Zip}
+        ]),
+        #file_info{mode = Mode} <- ebt__xl_file:read_file_info(Path),
+        ebt__xl_file:change_mode(Path, Mode bor 8#00100),
+        io:format("create ~s~n", [Path])
     ]).
