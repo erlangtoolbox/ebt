@@ -44,7 +44,18 @@ cd `dirname $0`/..
 BASE=`pwd`
 APPNAME=`basename $0`
 
+# Default heart settings
+ERL_CRASH_DUMP_SECONDS=-1
+ERL_CRASH_DUMP=/tmp/${APPNAME}_crash.dump
+HEART_BEAT_TIMEOUT=30
+HEART_COMMAND="$BASE/bin/$APPNAME start"
+
 . $BASE/etc/$APPNAME.rc
+
+export ERL_CRASH_DUMP_SECONDS
+export ERL_CRASH_DUMP
+export HEART_BEAT_TIMEOUT
+export HEART_COMMAND
 
 DATA=`cat $BASE/releases/start_erl.data`
 ERTS_VSN=${DATA% *}
@@ -55,10 +66,11 @@ suexec()
 {
     if [ "$USER" != "$SU" -a ! -z "$SU" ]
     then
-       su $SU -c '"$0" "$@"' -- "$@"
-       [ $? -ne 0 ] && rc_failed 1
+        su $SU -c '"$0" "$@"' -- "$@"
+        [ $? -ne 0 ] && rc_failed 1
     else
         $@
+        [ $? -ne 0 ] && rc_failed 1
     fi
 }
 
@@ -94,9 +106,13 @@ case "$1" in
             rc_failed 1
         else
             echo -n "Starting $APPNAME "
+            if [ "$HEART" = "yes" ]
+            then
+                HEART_ENABLED=-heart
+            fi
             suexec $ERL_BIN -args_file $BASE/etc/$APPNAME.vm.args -setcookie $COOKIE \
                 -name $NODE_NAME -boot $BASE/releases/$APP_VSN/$APPNAME \
-                -config $BASE/etc/$APPNAME -noshell -detached
+                -config $BASE/etc/$APPNAME -noshell -detached $HEART_ENABLED
         fi
         rc_status
         ;;
