@@ -1,1 +1,1 @@
-bs/ebt
+bs/ebt $@
