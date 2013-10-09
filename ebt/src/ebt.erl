@@ -99,7 +99,7 @@ build(Profile, ContextDir, Defaults, Defines) ->
                     {error, _} -> {error, "build in directory " ++ Dir ++ " failed"}
                 end
             end,
-            ebt_config:value(subdirs, Config, [])
+            ebt__xl_lists:kvfind(subdirs, ProfileConfig, [])
         ),
         ebt_task:perform(perform, ebt__xl_lists:kvfind(perform, ProfileConfig, [package]), ContextDir, Config)
     ]).
