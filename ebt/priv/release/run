@@ -76,7 +76,7 @@ suexec()
 
 rc_reset
 
-function is_running
+is_running()
 {
     PING=`$ERL_BIN -name clean_$RANDOM@127.0.0.1 -setcookie $COOKIE \
         -boot $BASE/releases/$APP_VSN/$CLEAN_BOOT -noshell \
