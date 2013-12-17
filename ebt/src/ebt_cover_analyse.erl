@@ -17,7 +17,7 @@
 
 
 -spec(perform(atom(), file:name(), ebt_config:config()) -> ebt__error_m:monad(ok)).
-perform(Target, _Dir, Config) ->
+perform(Target, Dir, Config) ->
     Output = ebt_config:value(Target, Config, output, file),
     Analysis = ebt_config:value(Target, Config, analysis, coverage),
     Level = ebt_config:value(Target, Config, level, function),
@@ -48,7 +48,7 @@ perform(Target, _Dir, Config) ->
                             {error, E} -> io:format("ERROR: ~p~n", [E])
                         end;
                     file ->
-                        case ebt_config:outdir(cover, Config) of
+                        case ebt_config:app_outdir(cover, Dir, Config) of
                             {ok, CoverDir} when Html ->
                                 case cover:analyse_to_file(Module, ebt__xl_string:join([CoverDir, "/", Module, ".html"]), [html]) of
                                     {ok, _} -> ok;
