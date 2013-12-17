@@ -29,14 +29,17 @@
                 {edoc, ebt_task_edoc},
                 {build_plt, ebt_task_build_plt},
                 {dialyze, ebt_task_dialyze},
-                {cc, ebt_task_cc}
+                {cc, ebt_task_cc},
+                {cover, ebt_cover},
+                {cover_analyse, ebt_cover_analyse}
             ]},
             {targets, [
                 {dialyze, [build_plt, compile]},
                 {compile, [template, leex, yecc, protoc, cc]},
-                {eunit, [compile]},
-                {package, [eunit, edoc, git_info]},
-                {escript, [eunit]}
+                {eunit, [compile, cover]},
+                {cover_analyse, [eunit]},
+                {package, [cover_analyse, edoc, git_info]},
+                {escript, [cover_analyse]}
             ]}
         ]}
     ]}
