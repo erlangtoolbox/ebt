@@ -5,7 +5,7 @@
 %%%
 %%% @end
 %%%-------------------------------------------------------------------
--module(ebt_cover_analyse).
+-module(ebt_task_cover_analyse).
 -author("Volodymyr Kyrychenko <vladimir.kirichenko@gmail.com>").
 
 -compile({parse_transform, ebt__do}).

@@ -30,14 +30,22 @@
                 {build_plt, ebt_task_build_plt},
                 {dialyze, ebt_task_dialyze},
                 {cc, ebt_task_cc},
-                {cover, ebt_cover},
-                {cover_analyse, ebt_cover_analyse}
+                {cover, ebt_task_cover},
+                {cover_analyse, ebt_task_cover_analyse},
+                {dot, ebt_task_graphviz},
+                {neato, ebt_task_graphviz},
+                {twopi, ebt_task_graphviz},
+                {circo, ebt_task_graphviz},
+                {fdp, ebt_task_graphviz},
+                {sfdp, ebt_task_graphviz},
+                {patchwork, ebt_task_graphviz}
             ]},
             {targets, [
                 {dialyze, [build_plt, compile]},
                 {compile, [template, leex, yecc, protoc, cc]},
                 {eunit, [compile, cover]},
                 {cover_analyse, [eunit]},
+                {edoc, [dot, neato, twopi, circo, fdp, sfdp, patchwork]},
                 {package, [cover_analyse, edoc, git_info]},
                 {escript, [cover_analyse]}
             ]}
