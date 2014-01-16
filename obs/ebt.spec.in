@@ -7,7 +7,7 @@ License:       BSD-3-Clause
 Group:         Development/Tools/Building
 Source:        %{realname}-%{version}.zip
 Summary:       Erlang Build Tool
-URL:           https://github.com/strikead/%{realname}
+URL:           https://github.com/erlangtoolbox/%{realname}
 Requires:      erlang >= R15B03 erlang-dialyzer erlang-reltool
 BuildRequires: unzip
 BuildArch:     noarch
