@@ -149,7 +149,7 @@ file. It looks like this:
             ]}
 
 First configuration is modules. It assigns symbolical target 'compile' erlang module
-implementing this feature 'ebt_task_compile'. Targets defines dependancies.
+implementing this feature 'ebt_task_compile'. Targets defines dependencies.
 For instance before compile there should be some other targets performed.
 
 ## Profiles
@@ -171,15 +171,15 @@ Profile could be invoked with command line parameter:
 In the case of multimodule project every subdir will be invoked with the same profile.
 If this profile is not defined default profile will be used.
 
-## Dependancy Management
+## Dependency Management
 
-Dependancy management is on of the key features of EBT. There is public repo with couple
+Dependency management is on of the key features of EBT. There is public repo with couple
 of libraries already set at google code  http://code.google.com/p/erlang-build-tool/downloads/list
 IT's not very usable and any help with publi server will be appreciated. Also build server for public
 libraries is on the way so build configuration could be submitted to it and build result will be
 published into the public repository.
 
-Dependancy configuration example:
+Dependency configuration example:
 
     {depends, [
         {dir, "./lib"},
@@ -192,7 +192,7 @@ Dependancy configuration example:
         ]}
     ]}.
 
-EBT will download ez packages and will use it in the build. Dependancy download is target itself
+EBT will download ez packages and will use it in the build. Dependency download is target itself
 so for things to be done it should be configured in the prepare phase of the root ebt.config.
 
 ## Libraries
@@ -201,7 +201,7 @@ Library configuration:
 
     {libraries, ["./lib", "./out/production"]}.
 
-Library paths should be configured if there are dependancies to the libs downloaded or modules
+Library paths should be configured if there are dependencies to the libs downloaded or modules
 just built by other modules.
 
 
