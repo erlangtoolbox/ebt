@@ -175,7 +175,7 @@ If this profile is not defined default profile will be used.
 
 Dependency management is on of the key features of EBT. There is public repo with couple
 of libraries already set at google code  http://code.google.com/p/erlang-build-tool/downloads/list
-IT's not very usable and any help with publi server will be appreciated. Also build server for public
+It's good for browsing and any help with public server will be appreciated. Also build server for public
 libraries is on the way so build configuration could be submitted to it and build result will be
 published into the public repository.
 
