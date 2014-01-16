@@ -71,7 +71,7 @@ The contents of the ebt.config:
     {define, version, "1.0.0"}.
 
 Type ebt. You'll see that your erlang application is now build with version 1.0.0.
-Having it statically defined is good but not enough. The sourfce of the defition could
+Having it statically defined is good but not enough. The source of the defition could
 be shell command invocation. Let's do that:
 
     {define, version, {shell, "echo -n 1.0.1"}}.
@@ -106,7 +106,7 @@ Trying to build we will get an error:
 
     BUILD FAILED: failed to locate single app file in ./src
 
-This arror is caused because by default ebt tryes to build OTP application and every OTP application
+This error is caused because by default ebt tries to build OTP application and every OTP application
 should at least have and application descriptor in it's src dir. Current directory is not OTP
 application and we should tell ebt to get over it and do some work in subdirs. To achieve this we
 should tell it not to perform any kind of work in current directory. ebt.config:
