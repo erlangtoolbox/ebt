@@ -121,80 +121,184 @@ should tell it not to perform any kind of work in current directory. ebt.config:
     ]}.
 
 Configuring perform with empty list tells ebt to perform empty list of tasks. Type ebt and you'll see that
-everything was build an everything on their places. To see complex multimodule project look at the example
-directory in the ebt github repository.
+everything was build an everything on their places. For more complex complex multimodular project look at
+the example directory in the ebt github repository.
 
+# Key Concepts
 
+## Tasks
+
+Single worker of the ebt build process is target. Targets depend on each other. For instance before eunit
+tests could be performed project should be compiled. Default dependecy configuration is defined in the ebt.app
+file. It looks like this:
+
+     {tasks, [
+            {modules, [
+                {clean, ebt_task_clean},
+                {compile, ebt_task_compile},
+                {eunit, ebt_task_eunit},
+                {package, ebt_task_package},
+                .....
+            ]},
+            {targets, [
+                {compile, [template, leex, yecc, protoc, cc]},
+                {eunit, [compile, cover]},
+                ....
+                {package, [cover_analyse, edoc, git_info]},
+                ....
+            ]}
+
+First configuration is modules. It assigns symbolical target 'compile' erlang module
+implementing this feature 'ebt_task_compile'. Targets defines dependancies.
+For instance before compile there should be some other targets performed.
 
 ## Profiles
 
-Public Repository http://code.google.com/p/erlang-build-tool/downloads/list
+EBT configuration could have multiple profiles for build. For instance generating application
+release is heavy time consuming task and for the sake of time we can configure different profiles
+for the whole distribution and for unit tests only. Default profile name is 'default'. Profile
+configuration has 3 settings:
+* subdirs - list of subdirectories to attend
+* prepare - lists of targets to execute before going to subdirs
+* perform - lists of targets to execute after exiting from subdirs.
 
-Tuitorial
----------
+By default prepare does nothing and perform builds ez package.
 
+Profile could be invoked with command line parameter:
 
-Version
--------
-    {version, {shell, "echo -n 1.0.0"}}.
+    ebt -p profile_name
 
-Compile
--------
-    {compile, [
-        {first, ["first_file.erl"]},
-        {flags, [erlang,compile,flags]}
-        {resources. ["resource_*.txt", "to_copy.*"]}
-    ]}
+In the case of multimodule project every subdir will be invoked with the same profile.
+If this profile is not defined default profile will be used.
 
-Subdirs
--------
-    {subdirs, ["dir1", "dir2"]}
+## Dependancy Management
 
-Targets
--------
-Do default target for phase 'prepare'. Default target for phase 'perform'
-is 'package'.
-    {profiles, [
-        {default, [
-            {perform, [package]}
-        ]}
-    ]}.
+Dependancy management is on of the key features of EBT. There is public repo with couple
+of libraries already set at google code  http://code.google.com/p/erlang-build-tool/downloads/list
+IT's not very usable and any help with publi server will be appreciated. Also build server for public
+libraries is on the way so build configuration could be submitted to it and build result will be
+published into the public repository.
 
-Dependencies
-------------
-Add target 'depends' to prepare phase
-    {profiles, [
-        {default, [
-            {prepare, [depends]},
-            {perform, [compile]}
-        ]}
-    ]}.
+Dependancy configuration example:
 
-Configure dependencies:
     {depends, [
         {dir, "./lib"},
         {repositories, [
             {"http://erlang-build-tool.googlecode.com/files", [
-                {erlandox, "1.0.4"}
+                {erlandox, "1.0.5"},
+                {xl_stdlib, "1.2.11.358"},
+                {getopt, "0.7.1"}
             ]}
         ]}
     ]}.
 
-Libraries
----------
-    {libraries, ["../lib"]}.
+EBT will download ez packages and will use it in the build. Dependancy download is target itself
+so for things to be done it should be configured in the prepare phase of the root ebt.config.
 
-EScript
--------
-    {profiles, [
-        {default, [
-            {perform, [escript]}
+## Libraries
+
+Library configuration:
+
+    {libraries, ["./lib", "./out/production"]}.
+
+Library paths should be configured if there are dependancies to the libs downloaded or modules
+just built by other modules.
+
+
+## Extending EBT
+
+
+### Task implementation
+
+ebtx/src/ebtx.app:
+
+    {application, ebtx, [
+        {description, "Hello EBT Extentions"},
+        {registered, []},
+        {applications, [
+            kernel,
+            stdlib
         ]}
     ]}.
 
-    {escript, [
-        {escript1, "-noshell -noinput", ["priv/*"]},
-        {escript2, "-noshell -noinput", ["priv/*"]},
-        {escript3, "-noshell -noinput", ["priv/*"]}
+ebtx/src/ebtx.erl:
+
+    -module(ebtx).
+
+    -behaviour(ebt_task).
+
+    -export([perform/3]).
+
+    perform(_Target, _Dir, _Config) ->
+        io:format("Hello from EBT!~n").
+
+ebtx/ebt.config:
+
+    {libraries, ["./lib"]}.
+
+    {profiles, [
+        {default, [
+            {prepare, [depends]}
+        ]}
     ]}.
 
+    {depends, [
+        {dir, "./lib"},
+        {repositories, [
+            {"http://erlang-build-tool.googlecode.com/files", [
+                {ebt, "1.4.3"}
+            ]}
+        ]}
+    ]}.
+
+### Configure custom target in ebt.config
+
+hello/ebt.config:
+
+    {libraries, ["../out/production"]}.
+
+    {tasks, [
+        {modules, [
+            {ebtx, ebtx}
+        ]},
+        {targets, [
+            {compile, [ebtx]}
+        ]}
+    ]}.
+
+This means ebtx target will be executed before compile.
+
+### Add subdir to root ebt.config
+
+    {define, version, {shell, "echo -n 1.0.1"}}.
+
+    {profiles, [
+        {default, [
+            {subdirs, ["ebtx", "hello"]},
+            {perform, []}
+        ]}
+    ]}.
+
+### Hooray!
+
+Type ebt and see hello project built with custom target invoked:
+
+    ...........
+    perform => cc at .
+    cc:
+    perform => ebtx at .
+    ebtx:
+            [ebtx] Hello from EBT!
+    compile:
+            [compile] compiling ./src to /home/devel/projects/ebt/hello_ebt/out/production/hello-1.0.1/ebin
+            [compile] compile src/hello.erl
+            [compile] compiling ./test to /home/devel/projects/ebt/hello_ebt/out/test/hello-1.0.1/ebin
+      ..........
+
+
+For other tasks and thair configuration see edoc, ebts own build scripts,
+example project and source codes.
+
+Any help or suggestions will be appriciated.
+
+Discussion group: https://groups.google.com/forum/#!forum/erlang-build-tool
