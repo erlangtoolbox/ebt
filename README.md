@@ -299,6 +299,6 @@ Type ebt and see hello project built with custom target invoked:
 For other tasks and thair configuration see edoc, ebts own build scripts,
 example project and source codes.
 
-Any help or suggestions will be appriciated.
+Any help or suggestions will be appreciated.
 
 Discussion group: https://groups.google.com/forum/#!forum/erlang-build-tool
