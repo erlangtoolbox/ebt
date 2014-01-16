@@ -126,7 +126,7 @@ the example directory in the ebt github repository.
 
 # Key Concepts
 
-## Tasks
+## Targets
 
 Single worker of the ebt build process is target. Targets depend on each other. For instance before eunit
 tests could be performed project should be compiled. Default dependecy configuration is defined in the ebt.app
