@@ -1,4 +1,4 @@
-%%  Copyright (c) 2012-2013
+%%  Copyright (c) 2012-2014
 %%  StrikeAd LLC http://www.strikead.com
 %%
 %%  All rights reserved.
@@ -26,41 +26,47 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
--module(ebt_task_eunit).
+
+%%
+%%  All rights reserved.
+%%
+%%  Redistribution and use in source and binary forms, with or without
+%%  modification, are permitted provided that the following conditions are met:
+%%
+%%
+%% @doc Compile NIF/Port
+%%
+%% == Configuration ==
+%% <ul>
+%% <li>output_format - one supported by graphviz. default is png</li>
+%% <li>options - additional options</li>
+%% </ul>
+%%
+%% == Example ==
+%% <pre>
+%% {graphviz, [
+%%   {output_format, png}
+%% ]}
+%% </pre>
+-module(ebt_task_graphviz).
 
 -compile({parse_transform, ebt__do}).
-
 -behaviour(ebt_task).
 
 -export([perform/3]).
 
-%% @doc EUnit Tests
-%%
-%% == Configuration ==
-%% files - optional
-%%
-%% == Example ==
-%% <pre>
-%% {eunit, [
-%%     {files, [
-%%          {include, ["src/*_tests.erl"]},
-%%          {exclude, []}
-%%     ]},%% ]}
-%% </pre>
--spec(perform(atom(), file:name(), ebt_config:config()) -> ebt__error_m:monad(ok)).
 perform(Target, Dir, Config) ->
+    OutputFormat = ebt_config:value(Target, Dir, output_format, png),
+    Options = ebt_config:value(Target, Dir, options, ""),
+    Files = ebt_config:files(Target, Config, [], []),
     ebt__do([ebt__error_m ||
-        TestDir <- ebt_config:app_outdir(test, Dir, Config),
         ProdDir <- ebt_config:app_outdir(production, Dir, Config),
-        ebt:load_library(TestDir),
-        ebt:load_library(ProdDir),
-        ebt__xl_lists:eforeach(fun(Module) ->
-            io:format("test ~p~n", [Module]),
-            case eunit:test(Module) of
-                error -> {error, {test_led, Module}};
-                ok -> ok
-            end
-        end, lists:map(fun(F) ->
-            list_to_atom(filename:basename(F, "_tests.erl"))
-        end, ebt_config:files(Target, Config, [], ["test/*_tests.erl"])))
+        DocDir <- return(filename:join(ProdDir, "doc")),
+        ebt__xl_file:mkdirs(DocDir),
+        ebt__xl_lists:eforeach(fun(F) ->
+            Command = ebt__xl_string:format("~s -T~s ~s ~s > ~s/~s.~s",
+                [Target, OutputFormat, Options, F, DocDir, filename:basename(F, ".dot"), OutputFormat]),
+            io:format("~s~n", [Command]),
+            ebt__xl_shell:command(Command)
+        end, Files)
     ]).

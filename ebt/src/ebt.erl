@@ -34,6 +34,7 @@
 -export([main/1, load_libraries/1, load_library/1, format/2, format/3, io_context/1, format_mfa/4]).
 
 -define(OPTS, [
+    {file, $f, file, {string, "ebt.config"}, "config file"},
     {outdir, $o, outdir, {string, "out"}, "output directory"},
     {profile, $p, profile, {atom, default}, "build profile"},
     {define, $D, define, string, "define parameters"}
@@ -64,6 +65,7 @@ build(Opts) ->
     initialize_io(),
     {ok, OutDir} = ebt__xl_lists:kvfind(outdir, Opts),
     {ok, Profile} = ebt__xl_lists:kvfind(profile, Opts),
+    {ok, EbtConfig} = ebt__xl_lists:kvfind(file, Opts),
     Defines = lists:map(fun({define, X}) ->
         case string:tokens(X, "=") of
             [K, V] -> {define, list_to_atom(K), V};
@@ -71,16 +73,16 @@ build(Opts) ->
         end
     end, ebt__xl_lists:keyfilter(1, define, Opts)),
     Defaults = [{outdir, filename:absname(OutDir)}],
-    case build(Profile, ".", Defaults, Defines) of
+    case build(Profile, ".", Defaults, Defines, EbtConfig) of
         {ok, _} -> {ok, "BUILD SUCCESSFUL"};
         {error, E} when is_list(E) -> {error, ebt__xl_string:format("BUILD FAILED: ~s~n", [E])};
         {error, E} -> {error, ebt__xl_string:format("BUILD FAILED: ~p~n", [E])}
     end.
 
--spec(build(atom(), file:name(), ebt_config:config(), [{define, atom(), term()}]) -> ebt__error_m:monad(any())).
-build(Profile, ContextDir, Defaults, Defines) ->
-    format("==> build profile: ~p~n", [Profile]),
-    ConfigFile = filename:join(ContextDir, "ebt.config"),
+-spec(build(atom(), file:name(), ebt_config:config(), [{define, atom(), term()}], file:name()) -> ebt__error_m:monad(any())).
+build(Profile, ContextDir, Defaults, Defines, EbtConfig) ->
+    format("==> build file: ~s, profile: ~p~n", [EbtConfig, Profile]),
+    ConfigFile = filename:join(ContextDir, EbtConfig),
     ebt__do([ebt__error_m ||
         Config <- ebt_config:read(ConfigFile, Defaults, Defines),
         OutDir <- ebt_config:outdir(Config),
@@ -92,7 +94,7 @@ build(Profile, ContextDir, Defaults, Defines) ->
                     "-D'" ++ ebt__xl_string:join([K, V], "=") ++ "'"
                 end, ebt_config:definitions(Config)), " "),
                 format("==> entering ~s~n", [Dir]),
-                Result = ebt_cmdlib:exec({"~s -o ~p -p ~s ~s", [filename:absname(escript:script_name()), OutDir, Profile, Definitions]}, Dir),
+                Result = ebt_cmdlib:exec({"~s -f ~p -o ~p -p ~s ~s", [filename:absname(escript:script_name()), EbtConfig, OutDir, Profile, Definitions]}, Dir),
                 format("==> leaving ~s~n", [Dir]),
                 case Result of
                     ok -> ok;

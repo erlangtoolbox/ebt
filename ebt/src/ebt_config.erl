@@ -45,7 +45,7 @@ read(Filename, Defaults, Defines) ->
                 Config <- ebt__xl_file:read_terms(Filename),
                 eval_definitions(lists:keymerge(1, lists:keysort(1, Config), lists:keysort(1, Defaults)), Defines)
             ]);
-        {ok, false} -> {ok, Defaults};
+        {ok, false} -> {ok, Defaults ++ Defines};
         E -> E
     end.
 
