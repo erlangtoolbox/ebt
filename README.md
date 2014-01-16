@@ -3,8 +3,8 @@
 The purpose of creating EBT was trying incapsulate building by convention
 approach to minimalize efforts of doing same things differently. Following
 naming convention with EBT you can have erlagn application build really easy
-configuring the thing only required to be configured. EBT is not just build tool
-- it does dependency management for Erlang. EBT can build erlang project from sources
+configuring the thing only required to be configured. EBT is not just build tool -
+it does dependency management for Erlang. EBT can build erlang project from sources
 to erlang release.
 
 It follows OTP Design Principles: http://www.erlang.org/doc/design_principles/
