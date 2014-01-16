@@ -58,7 +58,7 @@
 perform(Target, Dir, Config) ->
     OutputFormat = ebt_config:value(Target, Dir, output_format, png),
     Options = ebt_config:value(Target, Dir, options, ""),
-    Files = ebt_config:files(Target, Config, [], ["doc/*.dot"]),
+    Files = ebt_config:files(Target, Config, [], []),
     ebt__do([ebt__error_m ||
         ProdDir <- ebt_config:app_outdir(production, Dir, Config),
         DocDir <- return(filename:join(ProdDir, "doc")),
