@@ -10,7 +10,7 @@ to erlang release.
 It follows OTP Design Principles: http://www.erlang.org/doc/design_principles/
 
 
-NOTICE: Erlang version requireid is Erlang R15.
+NOTICE: Erlang version required is Erlang R15.
 
 Before start clone latests EBT sources from http://github.com/erlangtoolbox/ebt and type execute make.sh.
 After successful build executable will be located into out/production/ebt-X.Y.Z/bin/ebt.
@@ -40,7 +40,7 @@ Put this file into src/hello.erl. Then make it erlang application. Create src/he
 
 Type ebt in the directory and you will see successful build of the our Hello project.
 Build result can be found in the out directory. out/production contains compiled version of
-our OTP aaplication and out/dist contains erlang EZ package hello-0.0.1.ez. You can look
+our OTP application and out/dist contains erlang EZ package hello-0.0.1.ez. You can look
 at the application description file out/production/hello-0.0.1/ebin/hello.app. As you
 can see there is version and modules defined automatically. No manual intervention
 needed! This is it - compilation is done.
@@ -55,7 +55,7 @@ Now try adding some tests. Lets create test/hello_tests.erl with eunit test.
     hello_test() ->
         ?assertEqual(ok, hello:hello()).
 
-Then type ebt again. You will see in output that eunit found your tests and perfoprmed it:
+Then type ebt again. You will see in output that eunit found your tests and performed it:
 
     eunit:
             [eunit] test hello
@@ -71,7 +71,7 @@ The contents of the ebt.config:
     {define, version, "1.0.0"}.
 
 Type ebt. You'll see that your erlang application is now build with version 1.0.0.
-Having it statically defined is good but not enough. The source of the defition could
+Having it statically defined is good but not enough. The source of the definition could
 be shell command invocation. Lets do that:
 
     {define, version, {shell, "echo -n 1.0.1"}}.
@@ -129,7 +129,7 @@ look at the example directory in the ebt github repository.
 ## Targets
 
 Single worker of the ebt build process is target. Targets depend on each other. For instance before eunit
-tests could be performed project should be compiled. Default dependecy configuration is defined in the
+tests could be performed project should be compiled. Default dependency configuration is defined in the
 ebt.app file. It looks like this:
 
      {tasks, [
