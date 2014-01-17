@@ -14,7 +14,7 @@ NOTICE: Erlang version requireid is Erlang R15.
 
 Before start clone latests EBT sources from http://github.com/erlangtoolbox/ebt and type execute make.sh.
 After successful build executable will be located into out/production/ebt-X.Y.Z/bin/ebt.
-Put it somewhethe in the search path and assuming you have erlang R15 installed in your
+Put it somewhere in the search path and assuming you have erlang R15 installed in your
 system you're good to go.
 
 ## Hello world project
