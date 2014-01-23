@@ -51,6 +51,7 @@ format(Device, Pattern, Args) ->
 initialize() ->
     MasterGroupLeader = group_leader(),
     IoLeader = spawn(fun() -> process_io(MasterGroupLeader, undefined) end),
+    ebt_error_logger_tty:add_handler(IoLeader),
     put(io_leader, IoLeader),
     group_leader(IoLeader, self()).
 
@@ -79,6 +80,7 @@ process_io(MasterGroupLeader, IoContext) ->
 format_context(IoContext, IoList) when is_list(IoList) -> format_context(IoContext, list_to_binary(IoList));
 format_context(IoContext, IoList) when is_binary(IoList) ->
     Prefix = list_to_binary(io_lib:format("\t[~s] ", [IoContext])),
-    <<Prefix/binary, IoList/binary>>.
+    Lines = [<<Prefix/binary, Line/binary, "\n">> || Line <- binary:split(IoList, <<"\n">>, [global, trim])],
+    ebt__xl_string:join(Lines, <<>>).
 
 format_mfa(IoContext, M, F, A) -> format_context(IoContext, apply(M, F, A)).
