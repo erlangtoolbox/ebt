@@ -39,11 +39,11 @@
 -callback(perform(atom(), file:name(), ebt_config:config()) -> ebt__error_m:monad(ebt_config:config())).
 
 -spec(perform(atom(), [atom()], file:name(), ebt_config:config()) ->
-    ebt__error_m:monad([atom()])).
+    ebt__error_m:monad({[atom()], ebt_config:config()})).
 perform(Level, Targets, Dir, Config) ->
     perform(Level, Targets, Dir, Config, []).
 
-perform(_Level, [], _Dir, _Config, Acc) -> {ok, Acc};
+perform(_Level, [], _Dir, Config, Acc) -> {ok, {Acc, Config}};
 perform(Level, [Target | Targets], Dir, Config, Acc) ->
     case lists:member(Target, Acc) of
         true ->
@@ -53,11 +53,11 @@ perform(Level, [Target | Targets], Dir, Config, Acc) ->
             ebt_tty:format("~p => ~s at ~s~n", [Level, Target, Dir]),
             ebt__do([ebt__error_m ||
                 {Module, Depends} <- ebt_target_mapping:get(Target, Config),
-                DoneTargets <- perform(Level, Depends, Dir, Config, Acc),
+                {DoneTargets, DoneConfig} <- perform(Level, Depends, Dir, Config, Acc),
                 ebt_tty:format("~s:~n", [Target]),
                 ebt_tty:io_context(Target),
                 ebt:load_libraries(Config),
-                NewConfig <- Module:perform(Target, Dir, Config),
+                NewConfig <- Module:perform(Target, Dir, DoneConfig),
                 R <- perform(Level, Targets, Dir, NewConfig, [Target | Acc] ++ DoneTargets),
                 ebt_tty:io_context(undefined),
                 return(R)

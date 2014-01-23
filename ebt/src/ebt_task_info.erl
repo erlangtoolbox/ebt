@@ -1,4 +1,3 @@
-%%  Copyright (c) 2012-2013 StrikeAd LLC http://www.strikead.com
 %%  Copyright (c) 2012-2014 Vladimir Kirichenko vladimir.kirichenko@gmail.com
 %%
 %%  All rights reserved.
@@ -26,19 +25,24 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
--module(ebt_task_git_info).
+-module(ebt_task_info).
+
+-compile({parse_transform, ebt__do}).
 
 -behaviour(ebt_task).
 
 -export([perform/3]).
 
-perform(_Target, _Dir, Config) ->
-    case ebt__xl_shell:command("git --no-pager log -1 --pretty='format:%H'") of
-        {ok, Commit} ->
-            io:format("commit ~s~n", [Commit]),
-            {ok, ebt_config:update_buildinfo(Config, git_commit, Commit)};
-        {error, E} ->
-            io:format("failed to retrieve git commit: ~n~p~n", [E]),
-            {ok, Config}
-    end.
-
+perform(_Target, Dir, Config) ->
+    Info = lists:usort([
+        {build_host, net_adm:localhost()},
+        {publisher, ebt_config:definition(buildinfo_publisher, Config, undefined)},
+        {erlang, erlang:system_info(otp_release)}
+        | ebt_config:buildinfo(Config)
+    ]),
+    ebt__do([ebt__error_m ||
+        App <- ebt_config:appname(Dir),
+        EbinDir <- ebt_config:ebin_outdir(Dir, Config),
+        ebt__xl_file:write_terms(ebt__xl_string:join([EbinDir, "/", App, ".ebt"]), Info),
+        return(Config)
+    ]).

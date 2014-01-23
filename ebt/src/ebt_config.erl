@@ -35,7 +35,7 @@
 
 -export([read/3, value/3, value/4, find_value/2, find_value/3,
     outdir/1, outdir/3, version/1, appname_full/2, appname/1, app_outdir/3,
-    outdir/2, info_outdir/2, files/3, files/4, libraries/1, libinfo/1, definition/3, definitions/1]).
+    outdir/2, ebin_outdir/2, files/3, files/4, libraries/1, libinfo/1, definition/3, definitions/1, update_buildinfo/3, buildinfo/1]).
 
 -spec(read(file:name(), config(), [{define, atom(), term()}]) -> ebt__error_m:monad(config())).
 read(Filename, Defaults, Defines) ->
@@ -130,13 +130,13 @@ app_outdir(Kind, Dir, Config) ->
         outdir(Kind, Config, App)
     ]).
 
--spec(info_outdir(file:name(), config()) -> ebt__error_m:monad(string())).
-info_outdir(Dir, Config) ->
+-spec(ebin_outdir(file:name(), config()) -> ebt__error_m:monad(string())).
+ebin_outdir(Dir, Config) ->
     ebt__do([ebt__error_m ||
         AppProdDir <- app_outdir(production, Dir, Config),
-        InfoDir <- return(ebt__xl_string:join([AppProdDir, ".ebt-info"], "/")),
-        ebt__xl_file:mkdirs(InfoDir),
-        return(InfoDir)
+        EbinDir <- return(ebt__xl_string:join([AppProdDir, "ebin"], "/")),
+        ebt__xl_file:mkdirs(EbinDir),
+        return(EbinDir)
     ]).
 
 -spec(version(config()) -> string()).
@@ -156,6 +156,13 @@ appname(Dir) ->
         return(Name)
     ]).
 
+-spec(update_buildinfo(config(), atom(), term()) -> config()).
+update_buildinfo(Config, Key, Value) ->
+    Info = value(buildinfo, Config, []),
+    lists:keystore(buildinfo, 1, Config, {buildinfo, lists:keystore(Key, 1, Info, {Key, Value})}).
+
+-spec(buildinfo(config()) -> [{atom(), term()}]).
+buildinfo(Config) -> value(buildinfo, Config, []).
 
 -spec(files(atom(), config(), atom(), [string()], [string()]) -> [string()]).
 files(Target, Config, Key, AdditionalMasks, DefaultMasks) ->
@@ -183,7 +190,8 @@ libraries(Config) ->
             true -> Libraries
         end
     end, [], SortedLibs),
-    lists:map(fun({Dir, Name, Version}) -> Dir ++ "/" ++ Name ++ "-" ++ ebt__xl_string:join(Version, ".") end, FilteredLibs).
+    lists:map(fun({Dir, Name, Version}) ->
+        Dir ++ "/" ++ Name ++ "-" ++ ebt__xl_string:join(Version, ".") end, FilteredLibs).
 
 libinfo(Path) ->
     AbsPath = ebt__xl_file:absolute(Path),

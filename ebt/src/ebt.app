@@ -64,7 +64,8 @@
                 {circo, ebt_task_graphviz},
                 {fdp, ebt_task_graphviz},
                 {sfdp, ebt_task_graphviz},
-                {patchwork, ebt_task_graphviz}
+                {patchwork, ebt_task_graphviz},
+                {info, ebt_task_info}
             ]},
             {targets, [
                 {dialyze, [build_plt, compile]},
@@ -72,7 +73,8 @@
                 {eunit, [compile, cover]},
                 {cover_analyse, [eunit]},
                 {edoc, [dot, neato, twopi, circo, fdp, sfdp, patchwork]},
-                {package, [cover_analyse, edoc, git_info]},
+                {info, [git_info]},
+                {package, [cover_analyse, edoc, info]},
                 {escript, [cover_analyse]}
             ]}
         ]}

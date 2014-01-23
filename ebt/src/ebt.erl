@@ -94,12 +94,12 @@ build(Profile, ContextDir, Defaults, Defines, EbtConfig) ->
         Config <- ebt_config:read(ConfigFile, Defaults, Defines),
         OutDir <- ebt_config:outdir(Config),
         ProfileConfig <- return(ebt_config:value(profiles, Config, Profile, ebt_config:value(profiles, Config, default, []))),
-        ebt_task:perform(prepare, ebt__xl_lists:kvfind(prepare, ProfileConfig, []), ContextDir, Config),
+        {_, PreparedConfig} <- ebt_task:perform(prepare, ebt__xl_lists:kvfind(prepare, ProfileConfig, []), ContextDir, Config),
         ebt__xl_lists:eforeach(
             fun(Dir) ->
                 Definitions = ebt__xl_string:join(lists:map(fun({K, V}) ->
                     "-D'" ++ ebt__xl_string:join([K, V], "=") ++ "'"
-                end, ebt_config:definitions(Config)), " "),
+                end, ebt_config:definitions(PreparedConfig)), " "),
                 ebt_tty:format("==> entering ~s~n", [Dir]),
                 Result = ebt_cmdlib:exec({"~s -f ~p -o ~p -p ~s ~s", [filename:absname(escript:script_name()), EbtConfig, OutDir, Profile, Definitions]}, Dir),
                 ebt_tty:format("==> leaving ~s~n", [Dir]),
@@ -110,7 +110,7 @@ build(Profile, ContextDir, Defaults, Defines, EbtConfig) ->
             end,
             ebt__xl_lists:kvfind(subdirs, ProfileConfig, [])
         ),
-        ebt_task:perform(perform, ebt__xl_lists:kvfind(perform, ProfileConfig, [package]), ContextDir, Config)
+        ebt_task:perform(perform, ebt__xl_lists:kvfind(perform, ProfileConfig, [package]), ContextDir, PreparedConfig)
     ]).
 
 -spec(load_libraries(ebt_config:config()) -> [file:name()]).
