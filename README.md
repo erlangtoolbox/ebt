@@ -232,16 +232,6 @@ ebtx/src/ebtx.erl:
     perform(_Target, _Dir, _Config) ->
         io:format("Hello from EBT!~n").
 
-ebtx/ebt.config:
-
-    {libraries, ["./lib"]}.
-
-    {profiles, [
-        {default, [
-            {prepare, [depends]}
-        ]}
-    ]}.
-
 ### Configure custom target in ebt.config
 
 hello/ebt.config:
