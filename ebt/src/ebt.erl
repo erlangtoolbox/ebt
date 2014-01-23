@@ -45,26 +45,26 @@ main(Args) ->
     try ebt__do([ebt__error_m ||
         ebt__xl_application:start(ebt),
         Vsn <- application:get_key(ebt, vsn),
-        ebt_tty:format("Erlang Build Tool, v.~s~n", [Vsn]),
+        format("Erlang Build Tool, v.~s~n", [Vsn]),
         {Opts, _} <- ebt__getopt:parse(?OPTS, Args),
         case build(Opts) of
             {error, X} when is_list(X) ->
-                ebt_tty:format(standard_error, "~s~n", [X]),
+                format(standard_error, "~s~n", [X]),
                 halt(1);
             {error, X} ->
-                ebt_tty:format(standard_error, "~p~n", [X]),
+                format(standard_error, "~p~n", [X]),
                 halt(1);
             {ok, X} ->
-                ebt_tty:format("~s~n", [X])
+                format("~s~n", [X])
         end
     ]) of
         {error, X} ->
-            ebt_tty:format(standard_error, "~p~n", [X]),
+            format(standard_error, "~p~n", [X]),
             halt(1);
         _ -> ok
     catch
         _:X ->
-            ebt_tty:format(standard_error, "~p~n~p~n", [X, erlang:get_stacktrace()]),
+            format(standard_error, "~p~n~p~n", [X, erlang:get_stacktrace()]),
             halt(1)
     end.
 
