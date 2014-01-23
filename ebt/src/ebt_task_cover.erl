@@ -56,5 +56,5 @@ perform(Target, Dir, Config) ->
                     ({ok, Module}) -> io:format("~s instrumented~n", [Module]);
                     ({error, E}) -> io:format("WARNING: ~p~n", [E])
                 end, Results);
-            false -> ok
+            false -> io:format("disabled~n")
         end]).

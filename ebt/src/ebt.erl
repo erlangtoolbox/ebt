@@ -42,25 +42,32 @@
 ]).
 -spec(main([string()]) -> ok).
 main(Args) ->
-    R = ebt__do([ebt__error_m ||
+    try ebt__do([ebt__error_m ||
         ebt__xl_application:start(ebt),
         Vsn <- application:get_key(ebt, vsn),
-        format("Erlang Build Tool, v.~s~n", [Vsn]),
+        ebt_tty:format("Erlang Build Tool, v.~s~n", [Vsn]),
         {Opts, _} <- ebt__getopt:parse(?OPTS, Args),
         case build(Opts) of
+            {error, X} when is_list(X) ->
+                ebt_tty:format(standard_error, "~s~n", [X]),
+                halt(1);
             {error, X} ->
-                format(standard_error, "~s~n", [X]),
+                ebt_tty:format(standard_error, "~p~n", [X]),
                 halt(1);
             {ok, X} ->
-                format("~s~n", [X])
+                ebt_tty:format("~s~n", [X])
         end
-    ]),
-    case R of
+    ]) of
         {error, X} ->
-            format(standard_error, "~p~n", [X]),
+            ebt_tty:format(standard_error, "~p~n", [X]),
             halt(1);
         _ -> ok
+    catch
+        _:X ->
+            ebt_tty:format(standard_error, "~p~n~p~n", [X, erlang:get_stacktrace()]),
+            halt(1)
     end.
+
 
 build(Opts) ->
     initialize_io(),
