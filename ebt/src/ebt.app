@@ -28,7 +28,6 @@
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 {application, ebt, [
     {description, "Erlang Build Tool"},
-    {vsn, "0.0.0"},
     {registered, []},
     {applications, [
         kernel,

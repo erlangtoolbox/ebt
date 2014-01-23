@@ -32,7 +32,11 @@
 
 -export([perform/4]).
 
--callback(perform(atom(), file:name(), ebt_config:config()) -> ebt__error_m:monad(any())).
+-export_type([context/0]).
+
+-type(context() :: [{atom(), term()}]).
+
+-callback(perform(atom(), file:name(), ebt_config:config(), context()) -> ebt__error_m:monad(context())).
 
 -spec(perform(atom(), [atom()], file:name(), ebt_config:config()) ->
     ebt__error_m:monad([atom()])).
@@ -43,19 +47,19 @@ perform(_Level, [], _Dir, _Config, Acc) -> {ok, Acc};
 perform(Level, [Target | Targets], Dir, Config, Acc) ->
     case lists:member(Target, Acc) of
         true ->
-            ebt:format("~p => ~s at ~s already done~n", [Level, Target, Dir]),
+            ebt_tty:format("~p => ~s at ~s already done~n", [Level, Target, Dir]),
             perform(Level, Targets, Dir, Config, Acc);
         false ->
-            ebt:format("~p => ~s at ~s~n", [Level, Target, Dir]),
+            ebt_tty:format("~p => ~s at ~s~n", [Level, Target, Dir]),
             ebt__do([ebt__error_m ||
                 {Module, Depends} <- ebt_target_mapping:get(Target, Config),
                 DoneTargets <- perform(Level, Depends, Dir, Config, Acc),
-                ebt:format("~s:~n", [Target]),
-                ebt:io_context(Target),
+                ebt_tty:format("~s:~n", [Target]),
+                ebt_tty:io_context(Target),
                 ebt:load_libraries(Config),
                 Module:perform(Target, Dir, Config),
                 R <- perform(Level, Targets, Dir, Config, [Target | Acc] ++ DoneTargets),
-                ebt:io_context(undefined),
+                ebt_tty:io_context(undefined),
                 return(R)
             ])
     end.

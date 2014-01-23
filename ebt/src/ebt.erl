@@ -32,7 +32,7 @@
 
 -compile({parse_transform, ebt__do}).
 
--export([main/1, load_libraries/1, load_library/1, format/2, format/3, io_context/1, format_mfa/4]).
+-export([main/1, load_libraries/1, load_library/1]).
 
 -define(OPTS, [
     {file, $f, file, {string, "ebt.config"}, "config file"},
@@ -42,35 +42,34 @@
 ]).
 -spec(main([string()]) -> ok).
 main(Args) ->
+    ebt_tty:initialize(),
     try ebt__do([ebt__error_m ||
         ebt__xl_application:start(ebt),
         Vsn <- application:get_key(ebt, vsn),
-        format("Erlang Build Tool, v.~s~n", [Vsn]),
+        ebt_tty:format("Erlang Build Tool, v.~s~n", [Vsn]),
         {Opts, _} <- ebt__getopt:parse(?OPTS, Args),
         case build(Opts) of
             {error, X} when is_list(X) ->
-                format(standard_error, "~s~n", [X]),
+                ebt_tty:format(standard_error, "~s~n", [X]),
                 halt(1);
             {error, X} ->
-                format(standard_error, "~p~n", [X]),
+                ebt_tty:format(standard_error, "~p~n", [X]),
                 halt(1);
             {ok, X} ->
-                format("~s~n", [X])
+                ebt_tty:format("~s~n", [X])
         end
     ]) of
         {error, X} ->
-            format(standard_error, "~p~n", [X]),
+            ebt_tty:format(standard_error, "~p~n", [X]),
             halt(1);
         _ -> ok
     catch
         _:X ->
-            format(standard_error, "~p~n~p~n", [X, erlang:get_stacktrace()]),
+            ebt_tty:format(standard_error, "~p~n~p~n", [X, erlang:get_stacktrace()]),
             halt(1)
     end.
 
-
 build(Opts) ->
-    initialize_io(),
     {ok, OutDir} = ebt__xl_lists:kvfind(outdir, Opts),
     {ok, Profile} = ebt__xl_lists:kvfind(profile, Opts),
     {ok, EbtConfig} = ebt__xl_lists:kvfind(file, Opts),
@@ -89,7 +88,7 @@ build(Opts) ->
 
 -spec(build(atom(), file:name(), ebt_config:config(), [{define, atom(), term()}], file:name()) -> ebt__error_m:monad(any())).
 build(Profile, ContextDir, Defaults, Defines, EbtConfig) ->
-    format("==> build file: ~s, profile: ~p~n", [EbtConfig, Profile]),
+    ebt_tty:format("==> build file: ~s, profile: ~p~n", [EbtConfig, Profile]),
     ConfigFile = filename:join(ContextDir, EbtConfig),
     ebt__do([ebt__error_m ||
         Config <- ebt_config:read(ConfigFile, Defaults, Defines),
@@ -101,9 +100,9 @@ build(Profile, ContextDir, Defaults, Defines, EbtConfig) ->
                 Definitions = ebt__xl_string:join(lists:map(fun({K, V}) ->
                     "-D'" ++ ebt__xl_string:join([K, V], "=") ++ "'"
                 end, ebt_config:definitions(Config)), " "),
-                format("==> entering ~s~n", [Dir]),
+                ebt_tty:format("==> entering ~s~n", [Dir]),
                 Result = ebt_cmdlib:exec({"~s -f ~p -o ~p -p ~s ~s", [filename:absname(escript:script_name()), EbtConfig, OutDir, Profile, Definitions]}, Dir),
-                format("==> leaving ~s~n", [Dir]),
+                ebt_tty:format("==> leaving ~s~n", [Dir]),
                 case Result of
                     ok -> ok;
                     {error, _} -> {error, "build in directory " ++ Dir ++ " failed"}
@@ -154,44 +153,3 @@ unload_if_needed(Path) ->
             _ -> ok
         end
     end, filelib:wildcard(Path ++ "/ebin/*.beam")).
-
-format(Pattern, Args) ->
-    format(user, Pattern, Args).
-
-format(Device, Pattern, Args) ->
-    io:format(Device, Pattern, Args).
-
-initialize_io() ->
-    MasterGroupLeader = group_leader(),
-    IoLeader = spawn(fun() -> process_io(MasterGroupLeader, undefined) end),
-    put(io_leader, IoLeader),
-    group_leader(IoLeader, self()).
-
-io_context(Target) ->
-    get(io_leader) ! {ebt_io_context, Target},
-    ok.
-
-process_io(MasterGroupLeader, IoContext) ->
-    receive
-        {ebt_io_context, Context} ->
-            process_io(MasterGroupLeader, Context);
-        Msg when IoContext == undefined ->
-            MasterGroupLeader ! Msg,
-            process_io(MasterGroupLeader, IoContext);
-        {io_request, From, ReplyAs, {put_chars, Enc, IoList}} when is_binary(IoList) ->
-            MasterGroupLeader ! {io_request, From, ReplyAs, {put_chars, Enc, format_context(IoContext, IoList)}},
-            process_io(MasterGroupLeader, IoContext);
-        {io_request, From, ReplyAs, {put_chars, Enc, M, F, A}} ->
-            MasterGroupLeader ! {io_request, From, ReplyAs, {put_chars, Enc, ?MODULE, format_mfa, [IoContext, M, F, A]}},
-            process_io(MasterGroupLeader, IoContext);
-        Msg ->
-            MasterGroupLeader ! Msg,
-            process_io(MasterGroupLeader, IoContext)
-    end.
-
-format_context(IoContext, IoList) when is_list(IoList) -> format_context(IoContext, list_to_binary(IoList));
-format_context(IoContext, IoList) when is_binary(IoList) ->
-    Prefix = list_to_binary(io_lib:format("\t[~s] ", [IoContext])),
-    <<Prefix/binary, IoList/binary>>.
-
-format_mfa(IoContext, M, F, A) -> format_context(IoContext, apply(M, F, A)).

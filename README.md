@@ -242,15 +242,6 @@ ebtx/ebt.config:
         ]}
     ]}.
 
-    {depends, [
-        {dir, "./lib"},
-        {repositories, [
-            {"http://erlang-build-tool.googlecode.com/files", [
-                {ebt, "1.4.3"}
-            ]}
-        ]}
-    ]}.
-
 ### Configure custom target in ebt.config
 
 hello/ebt.config:
