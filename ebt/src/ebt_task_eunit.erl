@@ -62,5 +62,6 @@ perform(Target, Dir, Config) ->
             end
         end, lists:map(fun(F) ->
             list_to_atom(filename:basename(F, "_tests.erl"))
-        end, ebt_config:files(Target, Config, [], ["test/*_tests.erl"])))
+        end, ebt_config:files(Target, Config, [], ["test/*_tests.erl"]))),
+        return(Config)
     ]).

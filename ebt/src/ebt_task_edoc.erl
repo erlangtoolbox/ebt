@@ -45,7 +45,7 @@
 -author("volodymyr.kyrychenko@strikead.com").
 
 -compile({parse_transform, ebt__do}).
-%% API
+
 -export([perform/3]).
 
 perform(Target, Dir, Config) ->
@@ -60,5 +60,7 @@ perform(Target, Dir, Config) ->
             true -> ebt_task_template:substitute_file(Config, OverviewPath, OverviewPath, [], {${, $}});
             _ -> ok
         end,
-        edoc:run([], ebt_config:files(Target, Config, ["src/*.erl"], []), [{dir, DocDir}, {application, App} | ebt_config:value(Target, Config, [])])
+        edoc:run([], ebt_config:files(Target, Config, ["src/*.erl"], []),
+            [{dir, DocDir}, {application, App} | ebt_config:value(Target, Config, [])]),
+        return(Config)
     ]).

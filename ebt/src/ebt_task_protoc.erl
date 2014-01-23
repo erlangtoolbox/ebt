@@ -49,5 +49,6 @@ perform(_Target, Dir, Config) ->
                     {output_include_dir, IncludeDir}
                 ])
             ])
-        end, Sources)
+        end, Sources),
+        return(Config)
     ]).

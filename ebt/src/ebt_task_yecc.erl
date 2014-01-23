@@ -32,11 +32,13 @@
 
 -export([perform/3]).
 
-perform(_Target, Dir, _Config) ->
-    SrcDir = Dir ++ "/src",
-    Files = filelib:wildcard(SrcDir ++ "/*.yrl"),
-    ebt__xl_lists:eforeach(fun(F) ->
+perform(_Target, Dir, Config) ->
+    Files = filelib:wildcard(Dir ++ "/src/*.yrl"),
+    case ebt__xl_lists:eforeach(fun(F) ->
         io:format("generate parser ~s~n", [F]),
         yecc:file(F)
-    end, Files).
+    end, Files) of
+        ok -> {ok, Config};
+        E -> E
+    end.
 

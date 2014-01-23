@@ -54,7 +54,6 @@
 
 -export([perform/3]).
 
--spec(perform(atom(), file:name(), ebt_config:config()) -> ebt__error_m:monad(ok)).
 perform(Target, Dir, Config) ->
     SrcDir = Dir ++ "/src",
     TestDir = Dir ++ "/test",
@@ -80,7 +79,8 @@ perform(Target, Dir, Config) ->
                         ebt_config:value(Target, Config, resources, []), EbinTestDir)
                 ]);
             false -> ok
-        end
+        end,
+        return(Config)
     ]).
 
 -spec(update_app(application:application_spec(), file:name(), ebt_config:config()) -> ebt__error_m:monad(ok)).

@@ -51,6 +51,7 @@
 -module(ebt_task_depends).
 
 -compile({parse_transform, ebt__do}).
+
 -behaviour(ebt_task).
 
 -export([perform/3]).
@@ -90,7 +91,8 @@ perform(Target, _Dir, Config) ->
             LibName = filename:basename(Lib),
             {_, Name, _} = ebt_config:libinfo(Lib),
             escape(DepsDir, Name, LibName, Escape, Modules, ebt_config:value(Target, Config, escape_exclude, []), Apps)
-        end, filelib:wildcard(DepsDir ++ "/*"))
+        end, filelib:wildcard(DepsDir ++ "/*")),
+        return(Config)
     ]).
 
 escape(_Dir, _Name, _Lib, '', _Atoms, _Excludes, _Apps) -> ok;
@@ -130,10 +132,10 @@ escape(Dir, Name, Lib, Escape, Atoms, Excludes, Apps) ->
                             false -> M
                         end end, ebt__xl_lists:kvfind(applications, Params, []))}
                 ]
-                    ++ case ebt__xl_lists:kvfind(mod, Params) of
-                           {ok, {M, P}} -> [{mod, {ebt__xl_convert:make_atom([Escape, M]), P}}];
-                           _ -> []
-                       end
+                ++ case ebt__xl_lists:kvfind(mod, Params) of
+                    {ok, {M, P}} -> [{mod, {ebt__xl_convert:make_atom([Escape, M]), P}}];
+                    _ -> []
+                end
             )
         ),
         ebt__xl_file:delete(AppFile)
@@ -150,6 +152,7 @@ escape_form(Escape, {attribute, Line, module, {Name, Params}}, _Atoms, _Excludes
     {attribute, Line, module, {ebt__xl_convert:make_atom([Escape, Name]), Params}};
 escape_form(Escape, {attribute, Line, module, Name}, _Atoms, _Excludes) ->
     {attribute, Line, module, ebt__xl_convert:make_atom([Escape, Name])};
-escape_form(Escape, X, Atoms, Excludes) when is_tuple(X) -> list_to_tuple([escape_form(Escape, E, Atoms, Excludes) || E <- tuple_to_list(X)]);
+escape_form(Escape, X, Atoms, Excludes) when is_tuple(X) ->
+    list_to_tuple([escape_form(Escape, E, Atoms, Excludes) || E <- tuple_to_list(X)]);
 escape_form(Escape, X, Atoms, Excludes) when is_list(X) -> [escape_form(Escape, E, Atoms, Excludes) || E <- X];
 escape_form(_Escape, X, _Atoms, _Excludes) -> X.

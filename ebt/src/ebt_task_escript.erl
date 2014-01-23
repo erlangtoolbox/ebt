@@ -44,6 +44,7 @@
 -include_lib("kernel/include/file.hrl").
 
 -compile({parse_transform, ebt__do}).
+
 -behaviour(ebt_task).
 
 -export([perform/3]).
@@ -63,7 +64,8 @@ perform(Target, Dir, Config) ->
         Scripts <- ebt_config:find_value(Target, Config),
         ebt__xl_lists:eforeach(fun(ScriptConfig) ->
             create_escript(ScriptConfig, AppProdDir, Dir, LibBeams ++ LibPrivs ++ Files)
-        end, Scripts)
+        end, Scripts),
+        return(Config)
     ]).
 
 create_escript({Name, Params, Resources, {priv_link, Target}}, AppProdDir, Dir, Files) ->

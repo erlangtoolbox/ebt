@@ -51,7 +51,8 @@ perform(Target, Dir, Config) ->
         end,
         ebt__xl_file:copy_filtered(Dir, ebt_config:value(Target, Config, resources, []), ReleaseDir),
         generate_runners(RelConfigUpdated, ReleaseDir),
-        pack(Target, Config)
+        pack(Target, Config),
+        return(Config)
     ]).
 
 generate_runners({sys, L}, ReleaseDir) ->

@@ -40,9 +40,7 @@
 
 -behaviour(ebt_task).
 
-%% API
 -export([perform/3]).
-
 
 -spec(perform(atom(), file:name(), ebt_config:config()) -> ebt__error_m:monad(ok)).
 perform(Target, Dir, Config) ->
@@ -57,4 +55,6 @@ perform(Target, Dir, Config) ->
                     ({error, E}) -> io:format("WARNING: ~p~n", [E])
                 end, Results);
             false -> io:format("disabled~n")
-        end]).
+        end,
+        return(Config)
+    ]).

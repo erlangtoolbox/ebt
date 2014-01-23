@@ -51,7 +51,7 @@
 -author("Volodymyr Kyrychenko <vladimirk.kirichenko@gmail.com>").
 
 -compile({parse_transform, ebt__do}).
-%% API
+
 -export([perform/3, display_warnings/1]).
 
 perform(Target, Dir, Config) ->
@@ -67,10 +67,11 @@ perform(Target, Dir, Config) ->
             {init_plt, Plt},
             {from, src_code},
             {files, ebt_config:files(Target, Config, ["src/*.erl"], [])} |
-                ebt_config:value(Target, Config, options, [
-                    {warnings, [error_handling, race_conditions, unmatched_returns]}
-                ])
-        ]))
+            ebt_config:value(Target, Config, options, [
+                {warnings, [error_handling, race_conditions, unmatched_returns]}
+            ])
+        ])),
+        return(Config)
     ]).
 
 display_warnings([]) -> ok;

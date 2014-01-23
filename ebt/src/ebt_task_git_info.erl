@@ -42,6 +42,7 @@ perform(_Target, Dir, Config) ->
                 ebt__xl_file:write_file(filename:join(OutDir, "git.commit"), Commit);
             {error, E} ->
                 io:format("failed to retrieve git commit: ~n~p~n", [E])
-        end
+        end,
+        return(Config)
     ]).
 

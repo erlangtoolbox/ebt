@@ -61,5 +61,6 @@ perform(Target, Dir, Config) ->
                 [Target, OutputFormat, Options, F, DocDir, filename:basename(F, ".dot"), OutputFormat]),
             io:format("~s~n", [Command]),
             ebt__xl_shell:command(Command)
-        end, Files)
+        end, Files),
+        return(Config)
     ]).

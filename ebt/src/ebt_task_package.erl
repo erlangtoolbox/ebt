@@ -43,5 +43,6 @@ perform(_Target, Dir, Config) ->
         zip:create(Archive, [App], [
             {cwd, ProdDir},
             {compress, all}, {uncompress, [".beam", ".app"]}
-        ])
+        ]),
+        return(Config)
     ]).

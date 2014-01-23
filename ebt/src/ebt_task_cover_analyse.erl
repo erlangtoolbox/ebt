@@ -40,11 +40,8 @@
 
 -behaviour(ebt_task).
 
-%% API
 -export([perform/3]).
 
-
--spec(perform(atom(), file:name(), ebt_config:config()) -> ebt__error_m:monad(ok)).
 perform(Target, Dir, Config) ->
     Output = ebt_config:value(Target, Config, output, file),
     Analysis = ebt_config:value(Target, Config, analysis, coverage),

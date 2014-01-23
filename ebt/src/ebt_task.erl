@@ -36,7 +36,7 @@
 
 -type(context() :: [{atom(), term()}]).
 
--callback(perform(atom(), file:name(), ebt_config:config(), context()) -> ebt__error_m:monad(context())).
+-callback(perform(atom(), file:name(), ebt_config:config()) -> ebt__error_m:monad(ebt_config:config())).
 
 -spec(perform(atom(), [atom()], file:name(), ebt_config:config()) ->
     ebt__error_m:monad([atom()])).
@@ -57,8 +57,8 @@ perform(Level, [Target | Targets], Dir, Config, Acc) ->
                 ebt_tty:format("~s:~n", [Target]),
                 ebt_tty:io_context(Target),
                 ebt:load_libraries(Config),
-                Module:perform(Target, Dir, Config),
-                R <- perform(Level, Targets, Dir, Config, [Target | Acc] ++ DoneTargets),
+                NewConfig <- Module:perform(Target, Dir, Config),
+                R <- perform(Level, Targets, Dir, NewConfig, [Target | Acc] ++ DoneTargets),
                 ebt_tty:io_context(undefined),
                 return(R)
             ])

@@ -37,9 +37,12 @@
 -export([perform/3, substitute_file/5]).
 
 perform(Target, _Dir, Config) ->
-    ebt__xl_lists:eforeach(fun({In, Out, Map, Braces}) ->
+    case ebt__xl_lists:eforeach(fun({In, Out, Map, Braces}) ->
         substitute_file(Config, In, Out, Map, Braces)
-    end, ebt_config:value(Target, Config, [])).
+    end, ebt_config:value(Target, Config, [])) of
+        ok -> {ok, Config};
+        E -> E
+    end.
 
 substitute_file(Config, Src, Dst, Map, Braces) ->
     ebt__do([ebt__error_m ||

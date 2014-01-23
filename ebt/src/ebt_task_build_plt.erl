@@ -46,7 +46,7 @@
 -author("Volodymyr Kyrychenko <vladimirk.kirichenko@gmail.com>").
 
 -compile({parse_transform, ebt__do}).
-%% API
+
 -export([perform/3, initial_plt_path/2]).
 
 perform(Target, _Dir, Config) ->
@@ -60,7 +60,8 @@ perform(Target, _Dir, Config) ->
                 ebt_task_dialyze:display_warnings(dialyzer:run(Options));
             {ok, true} -> io:format("PLT is already built: ~s~n", [Plt]);
             E -> E
-        end
+        end,
+        return(Config)
     ]).
 
 initial_plt_path(Target, Config) ->
