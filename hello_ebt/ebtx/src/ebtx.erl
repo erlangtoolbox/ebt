@@ -2,5 +2,6 @@
 
 -export([perform/3]).
 
-perform(_Target, _Dir, _Config) ->
-    io:format("Hello from EBT!~n").
+perform(_Target, _Dir, Config) ->
+    io:format("Hello from EBT!~n"),
+    {ok, Config}.

@@ -71,7 +71,8 @@ perform(Target, Dir, Config) ->
             Includes = "-I" ++ hd(filelib:wildcard(code:lib_dir() ++ "/erl_interface-*/include"))
                 ++ " -I" ++ hd(filelib:wildcard(code:root_dir() ++ "/erts-*/include")),
             CFlags = "-g -Wall -fPIC " ++ xl_lists:kvfind(cflags, OsConfig, ""),
-            LDFlags = "-shared -L" ++ hd(filelib:wildcard(code:lib_dir() ++ "/erl_interface-*/lib")) ++ " -lei -lerl_interface " ++ xl_lists:kvfind(ldflags, OsConfig, ""),
+            LDFlags = "-shared -L" ++ hd(filelib:wildcard(code:lib_dir() ++ "/erl_interface-*/lib"))
+                ++ " -lei -lerl_interface " ++ xl_lists:kvfind(ldflags, OsConfig, ""),
             do([error_m ||
                 NativeOut <- ebt_config:app_outdir(native, Dir, Config),
                 xl_lists:eforeach(fun(File) ->
@@ -80,9 +81,10 @@ perform(Target, Dir, Config) ->
                     io:format("~s~n", [Command]),
                     xl_shell:command(Command)
                 end, Sources),
-                SoOut <- ebt_config:app_outdir(production, Dir, Config),
-                xl_file:mkdirs(SoOut ++ "/priv"),
-                Command <- return(xl_string:format("~s ~s -o ~s/priv/~s.so ~s/*.o", [CC, LDFlags, SoOut, SoName, NativeOut])),
+                SoOut <- ebt_config:output_dir({outdir, production, "priv/" ++
+                    xl_lists:kvfind(lib_dir, OsConfig, "lib")}, Dir, Config),
+                xl_file:mkdirs(SoOut),
+                Command <- return(xl_string:format("~s ~s -o ~s/~s.so ~s/*.o", [CC, LDFlags, SoOut, SoName, NativeOut])),
                 io:format("~s~n", [Command]),
                 xl_shell:command(Command)
             ])

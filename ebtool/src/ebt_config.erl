@@ -140,7 +140,7 @@ output_dir({config, Target, Key}, Dir, Config) ->
     ]);
 output_dir({outdir, Kind, Suffix}, Dir, Config) ->
     do([error_m ||
-        Parent <- output_dir({out, Kind}, Dir, Config),
+        Parent <- output_dir({outdir, Kind}, Dir, Config),
         TargetDir <- return(xl_string:join([Parent, Suffix], "/")),
         xl_file:mkdirs(TargetDir),
         return(TargetDir)
