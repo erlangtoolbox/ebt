@@ -50,16 +50,20 @@ perform(Target, Dir, Config) ->
     do([error_m ||
         TestDir <- ebt_config:app_outdir(test, Dir, Config),
         ProdDir <- ebt_config:app_outdir(production, Dir, Config),
-        ebtool:load_library(TestDir),
-        ebtool:load_library(ProdDir),
-        xl_lists:eforeach(fun(Module) ->
-            io:format("test ~p~n", [Module]),
-            case eunit:test(Module) of
-                error -> {error, {test_failed, Module}};
-                ok -> ok
-            end
-        end, lists:map(fun(F) ->
+        case lists:map(fun(F) ->
             list_to_atom(filename:basename(F, "_tests.erl"))
-        end, ebt_config:files(Target, Config, [], ["test/*_tests.erl"]))),
+        end, ebt_config:files(Target, Config, [], ["test/*_tests.erl"])) of
+            [] -> io:format("no eunit tests~n");
+            List ->
+                ebtool:load_library(TestDir),
+                ebtool:load_library(ProdDir),
+                xl_lists:eforeach(fun(Module) ->
+                    io:format("test ~p~n", [Module]),
+                    case eunit:test(Module) of
+                        error -> {error, {test_failed, Module}};
+                        ok -> ok
+                    end
+                end, List)
+        end,
         return(Config)
     ]).

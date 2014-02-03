@@ -119,35 +119,7 @@ load_libraries(Config) ->
 -spec(load_library(file:name() | {file:name(), string(), string()}) -> error_m:monad(ok)).
 load_library(Path) ->
     EbinPath = filename:join(Path, "ebin"),
-    unload_if_needed(Path),
     case code:add_patha(EbinPath) of
         true -> ok;
-        {error, bad_directory} -> io:format("WARNING: failed to load ~s~n", [Path])
+        {error, bad_directory} -> io:format("WARNING: failed to load ~s~n", [EbinPath])
     end.
-
-unload_if_needed(Path) ->
-    lists:foreach(fun(File) ->
-        Module = list_to_atom(filename:basename(File, ".beam")),
-        case code:is_loaded(Module) of
-            {file, File} -> ok;
-            {file, Type} ->
-                case application:get_application(Module) of
-                    {ok, App} ->
-                        {_, _, Version} = ebt_config:libinfo(Path),
-                        case application:get_key(App, vsn) of
-                            {ok, Vsn} ->
-                                case string:tokens(Vsn, ".") of
-                                    V when Version > V ->
-                                        io:format("WARNING: module ~s is ~s. Will be reloaded from ~s, ~s -> ~s ~n",
-                                            [Module, Type, File, string:join(V, "."), string:join(Version, ".")]),
-                                        code:soft_purge(Module),
-                                        code:load_file(Module);
-                                    _ -> ok
-                                end;
-                            _ -> ok
-                        end;
-                    _ -> ok
-                end;
-            _ -> ok
-        end
-    end, filelib:wildcard(Path ++ "/ebin/*.beam")).
