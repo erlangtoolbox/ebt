@@ -31,11 +31,24 @@
 
 -compile({parse_transform, do}).
 
+-include_lib("kernel/include/file.hrl").
+
 -export([perform/3]).
 
 perform(Target, Dir, Config) ->
     do([error_m ||
-        Command <- ebt_config:find_value(Target, Config, command),
+        Command <- case ebt_config:find_value(Target, Config, script) of
+            {ok, Script} ->
+                {_, _, X} = os:timestamp(),
+                Path = xl_string:join(["/tmp/", X, ".sh"]),
+                do([error_m ||
+                    xl_file:write_file(Path, Script),
+                    #file_info{mode = Mode} <- xl_file:read_file_info(Path),
+                    xl_file:change_mode(Path, Mode bor 8#00100),
+                    return(Path)
+                ]);
+            _ -> ebt_config:find_value(Target, Config, command)
+        end,
         ebt_cmdlib:exec(Command, ebt_config:value(Target, Config, dir, Dir)),
         return(Config)
     ]).
