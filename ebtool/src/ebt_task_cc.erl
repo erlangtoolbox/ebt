@@ -82,7 +82,7 @@ perform(Target, Dir, Config) ->
                     xl_shell:command(Command)
                 end, Sources),
                 SoOut <- ebt_config:output_dir({outdir, production, "priv/" ++
-                    xl_lists:kvfind(lib_dir, OsConfig, "lib")}, Dir, Config),
+                    xl_lists:kvfind(libdir, OsConfig, "lib")}, Dir, Config),
                 xl_file:mkdirs(SoOut),
                 Command <- return(xl_string:format("~s ~s -o ~s/~s.so ~s/*.o", [CC, LDFlags, SoOut, SoName, NativeOut])),
                 io:format("~s~n", [Command]),
