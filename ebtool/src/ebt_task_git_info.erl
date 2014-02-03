@@ -30,13 +30,22 @@
 
 -export([perform/3]).
 
+-define(cmds, [
+    {repository, "echo -n `git config --get remote.origin.url`"},
+    {branch, "echo -n `git rev-parse --abbrev-ref HEAD`"},
+    {commit, "git --no-pager log -1 --pretty='format:%H'"}
+]).
+
 perform(_Target, _Dir, Config) ->
-    case xl_shell:command("git --no-pager log -1 --pretty='format:%H'") of
-        {ok, Commit} ->
-            io:format("commit ~s~n", [Commit]),
-            {ok, ebt_config:update_buildinfo(Config, git_commit, Commit)};
-        {error, E} ->
-            io:format("failed to retrieve git commit: ~n~p~n", [E]),
-            {ok, Config}
-    end.
+    GitInfo = lists:map(fun({Key, Command}) ->
+        case xl_shell:command(Command) of
+            {ok, Data} ->
+                io:format("~s: ~s~n", [Key, Data]),
+                {Key, Data};
+            {error, E} ->
+                io:format("git command failed: ~n~s~n~p~n", [Command, E]),
+                {Key, undefined}
+        end
+    end, ?cmds),
+    {ok, ebt_config:update_buildinfo(Config, git, GitInfo)}.
 
