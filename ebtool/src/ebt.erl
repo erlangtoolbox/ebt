@@ -1,4 +1,3 @@
-%%  Copyright (c) 2012-2013 StrikeAd LLC http://www.strikead.com
 %%  Copyright (c) 2012-2014 Vladimir Kirichenko vladimir.kirichenko@gmail.com
 %%
 %%  All rights reserved.
@@ -26,35 +25,8 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-module(ebt).
 
-{define, version, {shell, "echo -n `git describe --tags --abbrev=0`"}}.
+-export([main/1]).
 
-{profiles, [
-    {default, [
-        {subdirs, ["ebtool"]},
-        {prepare, [clean, depends]},
-        {perform, []}
-    ]},
-    {example, [
-        {subdirs, ["example"]},
-        {perform, []}
-    ]},
-    {hello, [
-        {subdirs, ["hello_ebt"]},
-        {perform, []}
-    ]}
-]}.
-
-{depends, [
-    {dir, "./lib"},
-    {repositories, [
-        {"http://erlang-build-tool.googlecode.com/files", [
-            {ebml, "1.0.4"},
-            {erlandox, "1.0.5"},
-            {xl_stdlib, "1.3.34"},
-            {getopt, "0.7.1"}
-        ]}
-    ]}
-]}.
-
-{cover, [{enabled, false}]}.
+main(Args) -> ebtool:main(Args).

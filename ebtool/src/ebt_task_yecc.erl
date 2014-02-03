@@ -26,35 +26,17 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-module(ebt_task_yecc).
 
-{define, version, {shell, "echo -n `git describe --tags --abbrev=0`"}}.
+-export([perform/3]).
 
-{profiles, [
-    {default, [
-        {subdirs, ["ebtool"]},
-        {prepare, [clean, depends]},
-        {perform, []}
-    ]},
-    {example, [
-        {subdirs, ["example"]},
-        {perform, []}
-    ]},
-    {hello, [
-        {subdirs, ["hello_ebt"]},
-        {perform, []}
-    ]}
-]}.
+perform(_Target, Dir, Config) ->
+    Files = filelib:wildcard(Dir ++ "/src/*.yrl"),
+    case xl_lists:eforeach(fun(F) ->
+        io:format("generate parser ~s~n", [F]),
+        yecc:file(F)
+    end, Files) of
+        ok -> {ok, Config};
+        E -> E
+    end.
 
-{depends, [
-    {dir, "./lib"},
-    {repositories, [
-        {"http://erlang-build-tool.googlecode.com/files", [
-            {ebml, "1.0.4"},
-            {erlandox, "1.0.5"},
-            {xl_stdlib, "1.3.34"},
-            {getopt, "0.7.1"}
-        ]}
-    ]}
-]}.
-
-{cover, [{enabled, false}]}.

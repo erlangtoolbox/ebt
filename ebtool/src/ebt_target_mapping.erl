@@ -26,35 +26,36 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-module(ebt_target_mapping).
 
-{define, version, {shell, "echo -n `git describe --tags --abbrev=0`"}}.
+-compile({parse_transform, do}).
 
-{profiles, [
-    {default, [
-        {subdirs, ["ebtool"]},
-        {prepare, [clean, depends]},
-        {perform, []}
-    ]},
-    {example, [
-        {subdirs, ["example"]},
-        {perform, []}
-    ]},
-    {hello, [
-        {subdirs, ["hello_ebt"]},
-        {perform, []}
-    ]}
-]}.
+-export([get/2]).
 
-{depends, [
-    {dir, "./lib"},
-    {repositories, [
-        {"http://erlang-build-tool.googlecode.com/files", [
-            {ebml, "1.0.4"},
-            {erlandox, "1.0.5"},
-            {xl_stdlib, "1.3.34"},
-            {getopt, "0.7.1"}
-        ]}
-    ]}
-]}.
+-spec(get(atom(), ebt_config:config()) -> error_m:monad({module(), [atom()]})).
+get(Target, Config) ->
+    do([error_m ||
+        {Modules, Targets} <- mapping_to_tuple(system_mapping()),
+        {UserModules, UserTargets} <- mapping_to_tuple({ok,
+            ebt_config:value(tasks, Config, [{modules, []}, {targets, []}])}),
+        Module <- get_module(Target, Modules ++ UserModules),
+        Depends <- return(xl_lists:kvfind(Target, Targets, [])),
+        UserDepends <- return(xl_lists:kvfind(Target, UserTargets, [])),
+        return({Module, Depends ++ UserDepends})
+    ]).
 
-{cover, [{enabled, false}]}.
+system_mapping() -> xl_application:eget_env(ebtool, tasks).
+
+mapping_to_tuple(E = {error, _}) -> E;
+mapping_to_tuple({ok, Mapping}) ->
+    {ok, {
+        xl_lists:kvfind(modules, Mapping, []),
+        xl_lists:kvfind(targets, Mapping, [])
+    }}.
+
+get_module(Target, Modules) ->
+    option_m:to_error_m(
+        xl_lists:kvfind(Target, Modules),
+        xl_string:format("cannot find module for target ~p", [Target])
+    ).
+

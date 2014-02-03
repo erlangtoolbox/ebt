@@ -26,35 +26,40 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-module(ebt_task_eunit).
 
-{define, version, {shell, "echo -n `git describe --tags --abbrev=0`"}}.
+-compile({parse_transform, do}).
 
-{profiles, [
-    {default, [
-        {subdirs, ["ebtool"]},
-        {prepare, [clean, depends]},
-        {perform, []}
-    ]},
-    {example, [
-        {subdirs, ["example"]},
-        {perform, []}
-    ]},
-    {hello, [
-        {subdirs, ["hello_ebt"]},
-        {perform, []}
-    ]}
-]}.
+-export([perform/3]).
 
-{depends, [
-    {dir, "./lib"},
-    {repositories, [
-        {"http://erlang-build-tool.googlecode.com/files", [
-            {ebml, "1.0.4"},
-            {erlandox, "1.0.5"},
-            {xl_stdlib, "1.3.34"},
-            {getopt, "0.7.1"}
-        ]}
-    ]}
-]}.
-
-{cover, [{enabled, false}]}.
+%% @doc EUnit Tests
+%%
+%% == Configuration ==
+%% files - optional
+%%
+%% == Example ==
+%% <pre>
+%% {eunit, [
+%%     {files, [
+%%          {include, ["src/*_tests.erl"]},
+%%          {exclude, []}
+%%     ]},%% ]}
+%% </pre>
+-spec(perform(atom(), file:name(), ebt_config:config()) -> error_m:monad(ok)).
+perform(Target, Dir, Config) ->
+    do([error_m ||
+        TestDir <- ebt_config:app_outdir(test, Dir, Config),
+        ProdDir <- ebt_config:app_outdir(production, Dir, Config),
+        ebtool:load_library(TestDir),
+        ebtool:load_library(ProdDir),
+        xl_lists:eforeach(fun(Module) ->
+            io:format("test ~p~n", [Module]),
+            case eunit:test(Module) of
+                error -> {error, {test_failed, Module}};
+                ok -> ok
+            end
+        end, lists:map(fun(F) ->
+            list_to_atom(filename:basename(F, "_tests.erl"))
+        end, ebt_config:files(Target, Config, [], ["test/*_tests.erl"]))),
+        return(Config)
+    ]).

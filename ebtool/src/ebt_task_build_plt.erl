@@ -27,34 +27,46 @@
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-{define, version, {shell, "echo -n `git describe --tags --abbrev=0`"}}.
+%% @doc Build PLT
+%%
+%% == Configuration ==
+%% <ul>
+%% <li>plt_path - path to PLT</li>
+%% <li>options - building plt options</li>
+%% </ul>
+%%
+%% == Example ==
+%% <pre>
+%% {build_plt, [
+%%     {plt_path, "out/dislyzer/erlang.plt"},
+%%     {options, [{apps, [kernel, stdlib]}]}
+%% ]}
+%% </pre>
+-module(ebt_task_build_plt).
+-author("Volodymyr Kyrychenko <vladimirk.kirichenko@gmail.com>").
 
-{profiles, [
-    {default, [
-        {subdirs, ["ebtool"]},
-        {prepare, [clean, depends]},
-        {perform, []}
-    ]},
-    {example, [
-        {subdirs, ["example"]},
-        {perform, []}
-    ]},
-    {hello, [
-        {subdirs, ["hello_ebt"]},
-        {perform, []}
-    ]}
-]}.
+-compile({parse_transform, do}).
 
-{depends, [
-    {dir, "./lib"},
-    {repositories, [
-        {"http://erlang-build-tool.googlecode.com/files", [
-            {ebml, "1.0.4"},
-            {erlandox, "1.0.5"},
-            {xl_stdlib, "1.3.34"},
-            {getopt, "0.7.1"}
-        ]}
-    ]}
-]}.
+-export([perform/3, initial_plt_path/2]).
 
-{cover, [{enabled, false}]}.
+perform(Target, _Dir, Config) ->
+    do([error_m ||
+        Plt <- initial_plt_path(Target, Config),
+        case xl_file:exists(Plt) of
+            {ok, false} ->
+                io:format("build PLT: ~s~n", [Plt]),
+                Options = [{analysis_type, plt_build}, {output_plt, Plt} |
+                    ebt_config:value(Target, Config, options, [{apps, [kernel, stdlib]}])],
+                ebt_task_dialyze:display_warnings(dialyzer:run(Options));
+            {ok, true} -> io:format("PLT is already built: ~s~n", [Plt]);
+            E -> E
+        end,
+        return(Config)
+    ]).
+
+initial_plt_path(Target, Config) ->
+    do([error_m ||
+        OutDir <- ebt_config:outdir(dialyzer, Config),
+        return(ebt_config:value(Target, Config, plt_path, filename:join(OutDir, "erlang.plt")))
+    ]).
+

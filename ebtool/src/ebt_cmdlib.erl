@@ -26,35 +26,22 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-module(ebt_cmdlib).
+-author("volodymyr.kyrychenko@strikead.com").
 
-{define, version, {shell, "echo -n `git describe --tags --abbrev=0`"}}.
+%% API
+-export([exec/2, exec/1]).
 
-{profiles, [
-    {default, [
-        {subdirs, ["ebtool"]},
-        {prepare, [clean, depends]},
-        {perform, []}
-    ]},
-    {example, [
-        {subdirs, ["example"]},
-        {perform, []}
-    ]},
-    {hello, [
-        {subdirs, ["hello_ebt"]},
-        {perform, []}
-    ]}
-]}.
+exec({Command, Params}) -> exec(xl_string:format(Command, Params));
+exec(Command) ->
+    io:format("exec ~s~n", [Command]),
+    process_result(Command, xl_shell:exec(Command)).
 
-{depends, [
-    {dir, "./lib"},
-    {repositories, [
-        {"http://erlang-build-tool.googlecode.com/files", [
-            {ebml, "1.0.4"},
-            {erlandox, "1.0.5"},
-            {xl_stdlib, "1.3.34"},
-            {getopt, "0.7.1"}
-        ]}
-    ]}
-]}.
+exec({Command, Params}, Dir) -> exec(xl_string:format(Command, Params), Dir);
+exec(Command, Dir) ->
+    io:format("exec ~s in ~s~n", [Command, Dir]),
+    process_result(Command, xl_shell:exec(Command, Dir)).
 
-{cover, [{enabled, false}]}.
+process_result(_Command, ok) -> ok;
+process_result(Command, {error, Exit}) ->
+    {error, xl_string:format("command ~s failed with exit ~p", [Command, Exit])}.

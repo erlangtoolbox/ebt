@@ -27,34 +27,39 @@
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-{define, version, {shell, "echo -n `git describe --tags --abbrev=0`"}}.
+%% @doc Compile NIF/Port
+%%
+%% == Configuration ==
+%% <ul>
+%% <li>output_format - one supported by graphviz. default is png</li>
+%% <li>options - additional options</li>
+%% </ul>
+%%
+%% == Example ==
+%% <pre>
+%% {graphviz, [
+%%   {output_format, png}
+%% ]}
+%% </pre>
+-module(ebt_task_graphviz).
 
-{profiles, [
-    {default, [
-        {subdirs, ["ebtool"]},
-        {prepare, [clean, depends]},
-        {perform, []}
-    ]},
-    {example, [
-        {subdirs, ["example"]},
-        {perform, []}
-    ]},
-    {hello, [
-        {subdirs, ["hello_ebt"]},
-        {perform, []}
-    ]}
-]}.
+-compile({parse_transform, do}).
 
-{depends, [
-    {dir, "./lib"},
-    {repositories, [
-        {"http://erlang-build-tool.googlecode.com/files", [
-            {ebml, "1.0.4"},
-            {erlandox, "1.0.5"},
-            {xl_stdlib, "1.3.34"},
-            {getopt, "0.7.1"}
-        ]}
-    ]}
-]}.
+-export([perform/3]).
 
-{cover, [{enabled, false}]}.
+perform(Target, Dir, Config) ->
+    OutputFormat = ebt_config:value(Target, Dir, output_format, png),
+    Options = ebt_config:value(Target, Dir, options, ""),
+    Files = ebt_config:files(Target, Config, [], []),
+    do([error_m ||
+        ProdDir <- ebt_config:app_outdir(production, Dir, Config),
+        DocDir <- return(filename:join(ProdDir, "doc")),
+        xl_file:mkdirs(DocDir),
+        xl_lists:eforeach(fun(F) ->
+            Command = xl_string:format("~s -T~s ~s ~s > ~s/~s.~s",
+                [Target, OutputFormat, Options, F, DocDir, filename:basename(F, ".dot"), OutputFormat]),
+            io:format("~s~n", [Command]),
+            xl_shell:command(Command)
+        end, Files),
+        return(Config)
+    ]).

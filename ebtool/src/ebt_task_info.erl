@@ -1,4 +1,3 @@
-%%  Copyright (c) 2012-2013 StrikeAd LLC http://www.strikead.com
 %%  Copyright (c) 2012-2014 Vladimir Kirichenko vladimir.kirichenko@gmail.com
 %%
 %%  All rights reserved.
@@ -26,35 +25,22 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-module(ebt_task_info).
 
-{define, version, {shell, "echo -n `git describe --tags --abbrev=0`"}}.
+-compile({parse_transform, do}).
 
-{profiles, [
-    {default, [
-        {subdirs, ["ebtool"]},
-        {prepare, [clean, depends]},
-        {perform, []}
-    ]},
-    {example, [
-        {subdirs, ["example"]},
-        {perform, []}
-    ]},
-    {hello, [
-        {subdirs, ["hello_ebt"]},
-        {perform, []}
-    ]}
-]}.
+-export([perform/3]).
 
-{depends, [
-    {dir, "./lib"},
-    {repositories, [
-        {"http://erlang-build-tool.googlecode.com/files", [
-            {ebml, "1.0.4"},
-            {erlandox, "1.0.5"},
-            {xl_stdlib, "1.3.34"},
-            {getopt, "0.7.1"}
-        ]}
-    ]}
-]}.
-
-{cover, [{enabled, false}]}.
+perform(_Target, Dir, Config) ->
+    Info = lists:usort([
+        {build_host, net_adm:localhost()},
+        {publisher, ebt_config:definition(buildinfo_publisher, Config, undefined)},
+        {erlang, erlang:system_info(otp_release)}
+        | ebt_config:buildinfo(Config)
+    ]),
+    do([error_m ||
+        App <- ebt_config:appname(Dir),
+        EbinDir <- ebt_config:ebin_outdir(Dir, Config),
+        xl_file:write_terms(xl_string:join([EbinDir, "/", App, ".ebt"]), Info),
+        return(Config)
+    ]).

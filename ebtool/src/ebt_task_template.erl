@@ -26,35 +26,26 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-module(ebt_task_template).
+-author("volodymyr.kyrychenko@strikead.com").
 
-{define, version, {shell, "echo -n `git describe --tags --abbrev=0`"}}.
+-compile({parse_transform, do}).
 
-{profiles, [
-    {default, [
-        {subdirs, ["ebtool"]},
-        {prepare, [clean, depends]},
-        {perform, []}
-    ]},
-    {example, [
-        {subdirs, ["example"]},
-        {perform, []}
-    ]},
-    {hello, [
-        {subdirs, ["hello_ebt"]},
-        {perform, []}
-    ]}
-]}.
+%% API
+-export([perform/3, substitute_file/5]).
 
-{depends, [
-    {dir, "./lib"},
-    {repositories, [
-        {"http://erlang-build-tool.googlecode.com/files", [
-            {ebml, "1.0.4"},
-            {erlandox, "1.0.5"},
-            {xl_stdlib, "1.3.34"},
-            {getopt, "0.7.1"}
-        ]}
-    ]}
-]}.
+perform(Target, _Dir, Config) ->
+    case xl_lists:eforeach(fun({In, Out, Map, Braces}) ->
+        substitute_file(Config, In, Out, Map, Braces)
+    end, ebt_config:value(Target, Config, [])) of
+        ok -> {ok, Config};
+        E -> E
+    end.
 
-{cover, [{enabled, false}]}.
+substitute_file(Config, Src, Dst, Map, Braces) ->
+    do([error_m ||
+        CommonMap <- return(xl_shell:getenv() ++ ebt_config:definitions(Config)),
+        io:format("~s -> ~s~n", [Src, Dst]),
+        InFile <- xl_file:read_file(Src),
+        xl_file:write_file(Dst, xl_string:substitute(InFile, Map ++ CommonMap, Braces))
+    ]).

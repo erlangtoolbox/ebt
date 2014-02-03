@@ -26,35 +26,38 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-module(ebt_task).
 
-{define, version, {shell, "echo -n `git describe --tags --abbrev=0`"}}.
+-compile({parse_transform, do}).
 
-{profiles, [
-    {default, [
-        {subdirs, ["ebtool"]},
-        {prepare, [clean, depends]},
-        {perform, []}
-    ]},
-    {example, [
-        {subdirs, ["example"]},
-        {perform, []}
-    ]},
-    {hello, [
-        {subdirs, ["hello_ebt"]},
-        {perform, []}
-    ]}
-]}.
+-export([perform/4]).
 
-{depends, [
-    {dir, "./lib"},
-    {repositories, [
-        {"http://erlang-build-tool.googlecode.com/files", [
-            {ebml, "1.0.4"},
-            {erlandox, "1.0.5"},
-            {xl_stdlib, "1.3.34"},
-            {getopt, "0.7.1"}
-        ]}
-    ]}
-]}.
+-export_type([context/0]).
 
-{cover, [{enabled, false}]}.
+-type(context() :: [{atom(), term()}]).
+
+-spec(perform(atom(), [atom()], file:name(), ebt_config:config()) ->
+    error_m:monad({[atom()], ebt_config:config()})).
+perform(Level, Targets, Dir, Config) ->
+    perform(Level, Targets, Dir, Config, []).
+
+perform(_Level, [], _Dir, Config, Acc) -> {ok, {Acc, Config}};
+perform(Level, [Target | Targets], Dir, Config, Acc) ->
+    case lists:member(Target, Acc) of
+        true ->
+            ebt_tty:format("~p => ~s at ~s already done~n", [Level, Target, Dir]),
+            perform(Level, Targets, Dir, Config, Acc);
+        false ->
+            ebt_tty:format("~p => ~s at ~s~n", [Level, Target, Dir]),
+            do([error_m ||
+                {Module, Depends} <- ebt_target_mapping:get(Target, Config),
+                {DoneTargets, DoneConfig} <- perform(Level, Depends, Dir, Config, Acc),
+                ebt_tty:format("~s:~n", [Target]),
+                ebt_tty:io_context(Target),
+                ebtool:load_libraries(Config),
+                NewConfig <- Module:perform(Target, Dir, DoneConfig),
+                R <- perform(Level, Targets, Dir, NewConfig, [Target | Acc] ++ DoneTargets),
+                ebt_tty:io_context(undefined),
+                return(R)
+            ])
+    end.

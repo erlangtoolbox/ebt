@@ -207,7 +207,6 @@ just built by other modules.
 
 ## Extending EBT
 
-
 ### Task implementation
 
 ebtx/src/ebtx.app:
@@ -224,8 +223,6 @@ ebtx/src/ebtx.app:
 ebtx/src/ebtx.erl:
 
     -module(ebtx).
-
-    -behaviour(ebt_task).
 
     -export([perform/3]).
 
@@ -283,4 +280,3 @@ example project and source codes.
 Any help or suggestions will be appreciated.
 
 Discussion group: https://groups.google.com/forum/#!forum/erlang-build-tool
-

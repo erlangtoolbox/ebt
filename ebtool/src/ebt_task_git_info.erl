@@ -26,35 +26,17 @@
 %%  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-module(ebt_task_git_info).
 
-{define, version, {shell, "echo -n `git describe --tags --abbrev=0`"}}.
+-export([perform/3]).
 
-{profiles, [
-    {default, [
-        {subdirs, ["ebtool"]},
-        {prepare, [clean, depends]},
-        {perform, []}
-    ]},
-    {example, [
-        {subdirs, ["example"]},
-        {perform, []}
-    ]},
-    {hello, [
-        {subdirs, ["hello_ebt"]},
-        {perform, []}
-    ]}
-]}.
+perform(_Target, _Dir, Config) ->
+    case xl_shell:command("git --no-pager log -1 --pretty='format:%H'") of
+        {ok, Commit} ->
+            io:format("commit ~s~n", [Commit]),
+            {ok, ebt_config:update_buildinfo(Config, git_commit, Commit)};
+        {error, E} ->
+            io:format("failed to retrieve git commit: ~n~p~n", [E]),
+            {ok, Config}
+    end.
 
-{depends, [
-    {dir, "./lib"},
-    {repositories, [
-        {"http://erlang-build-tool.googlecode.com/files", [
-            {ebml, "1.0.4"},
-            {erlandox, "1.0.5"},
-            {xl_stdlib, "1.3.34"},
-            {getopt, "0.7.1"}
-        ]}
-    ]}
-]}.
-
-{cover, [{enabled, false}]}.

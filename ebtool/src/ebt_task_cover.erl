@@ -27,34 +27,32 @@
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-{define, version, {shell, "echo -n `git describe --tags --abbrev=0`"}}.
+%%%-------------------------------------------------------------------
+%%% @author Volodymyr Kyrychenko <vladimir.kirichenko@gmail.com>
+%%% @doc
+%%%
+%%% @end
+%%%-------------------------------------------------------------------
+-module(ebt_task_cover).
+-author("Volodymyr Kyrychenko <vladimir.kirichenko@gmail.com>").
 
-{profiles, [
-    {default, [
-        {subdirs, ["ebtool"]},
-        {prepare, [clean, depends]},
-        {perform, []}
-    ]},
-    {example, [
-        {subdirs, ["example"]},
-        {perform, []}
-    ]},
-    {hello, [
-        {subdirs, ["hello_ebt"]},
-        {perform, []}
-    ]}
-]}.
+-compile({parse_transform, do}).
 
-{depends, [
-    {dir, "./lib"},
-    {repositories, [
-        {"http://erlang-build-tool.googlecode.com/files", [
-            {ebml, "1.0.4"},
-            {erlandox, "1.0.5"},
-            {xl_stdlib, "1.3.34"},
-            {getopt, "0.7.1"}
-        ]}
-    ]}
-]}.
+-export([perform/3]).
 
-{cover, [{enabled, false}]}.
+-spec(perform(atom(), file:name(), ebt_config:config()) -> error_m:monad(ok)).
+perform(Target, Dir, Config) ->
+    do([error_m ||
+        ProdDir <- ebt_config:app_outdir(production, Dir, Config),
+        EbinProdDir <- return(filename:join(ProdDir, "ebin")),
+        case ebt_config:value(Target, Config, enabled, true) of
+            true ->
+                Results = cover:compile_beam_directory(EbinProdDir),
+                lists:foreach(fun
+                    ({ok, Module}) -> io:format("~s instrumented~n", [Module]);
+                    ({error, E}) -> io:format("WARNING: ~p~n", [E])
+                end, Results);
+            false -> io:format("disabled~n")
+        end,
+        return(Config)
+    ]).

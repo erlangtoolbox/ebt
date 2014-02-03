@@ -27,34 +27,30 @@
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-{define, version, {shell, "echo -n `git describe --tags --abbrev=0`"}}.
+%% @doc Clean
+%%
+%% == Configuration ==
+%% List of wildcards to clean up.
+%%
+%% == Example ==
+%% <pre>
+%% {clean, ["*.fprof"]}
+%% </pre>
+-module(ebt_task_clean).
 
-{profiles, [
-    {default, [
-        {subdirs, ["ebtool"]},
-        {prepare, [clean, depends]},
-        {perform, []}
-    ]},
-    {example, [
-        {subdirs, ["example"]},
-        {perform, []}
-    ]},
-    {hello, [
-        {subdirs, ["hello_ebt"]},
-        {perform, []}
-    ]}
-]}.
+-compile({parse_transform, do}).
 
-{depends, [
-    {dir, "./lib"},
-    {repositories, [
-        {"http://erlang-build-tool.googlecode.com/files", [
-            {ebml, "1.0.4"},
-            {erlandox, "1.0.5"},
-            {xl_stdlib, "1.3.34"},
-            {getopt, "0.7.1"}
-        ]}
-    ]}
-]}.
+-export([perform/3]).
 
-{cover, [{enabled, false}]}.
+perform(Target, _Dir, Config) ->
+    do([error_m ||
+        OutDir <- ebt_config:outdir(Config),
+        xl_lists:eforeach(fun(Path) ->
+            io:format("delete ~s~n", [Path]),
+            xl_file:delete(Path)
+        end, xl_file:wildcards(lists:map(fun
+            (outdir) -> OutDir;
+            (X) -> X
+        end, ebt_config:value(Target, Config, [OutDir])))),
+        return(Config)
+    ]).

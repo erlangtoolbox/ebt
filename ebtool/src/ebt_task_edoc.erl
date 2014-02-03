@@ -27,34 +27,40 @@
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-{define, version, {shell, "echo -n `git describe --tags --abbrev=0`"}}.
+%% @doc EDoc
+%%
+%% == Configuration ==
+%% files - include/exclude files
+%%
+%% == Example ==
+%% <pre>
+%% {edoc, [
+%%     {files, [
+%%          {include, ["src/*.erl"]},
+%%          {exclude, []}
+%%     ]},
+%% ]}
+%% </pre>
+-module(ebt_task_edoc).
+-author("volodymyr.kyrychenko@strikead.com").
 
-{profiles, [
-    {default, [
-        {subdirs, ["ebtool"]},
-        {prepare, [clean, depends]},
-        {perform, []}
-    ]},
-    {example, [
-        {subdirs, ["example"]},
-        {perform, []}
-    ]},
-    {hello, [
-        {subdirs, ["hello_ebt"]},
-        {perform, []}
-    ]}
-]}.
+-compile({parse_transform, do}).
 
-{depends, [
-    {dir, "./lib"},
-    {repositories, [
-        {"http://erlang-build-tool.googlecode.com/files", [
-            {ebml, "1.0.4"},
-            {erlandox, "1.0.5"},
-            {xl_stdlib, "1.3.34"},
-            {getopt, "0.7.1"}
-        ]}
-    ]}
-]}.
+-export([perform/3]).
 
-{cover, [{enabled, false}]}.
+perform(Target, Dir, Config) ->
+    do([error_m ||
+        App <- ebt_config:appname(Dir),
+        ProdDir <- ebt_config:app_outdir(production, Dir, Config),
+        DocDir <- return(filename:join(ProdDir, "doc")),
+        xl_file:copy_if_exists("doc", ProdDir),
+        OverviewPath <- return(filename:join(DocDir, "overview.edoc")),
+        HasOverview <- xl_file:exists(OverviewPath),
+        case HasOverview of
+            true -> ebt_task_template:substitute_file(Config, OverviewPath, OverviewPath, [], {${, $}});
+            _ -> ok
+        end,
+        edoc:run([], ebt_config:files(Target, Config, ["src/*.erl"], []),
+            [{dir, DocDir}, {application, App} | ebt_config:value(Target, Config, [])]),
+        return(Config)
+    ]).

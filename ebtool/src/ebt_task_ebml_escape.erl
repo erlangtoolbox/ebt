@@ -1,4 +1,3 @@
-%%  Copyright (c) 2012-2013 StrikeAd LLC http://www.strikead.com
 %%  Copyright (c) 2012-2014 Vladimir Kirichenko vladimir.kirichenko@gmail.com
 %%
 %%  All rights reserved.
@@ -27,34 +26,38 @@
 %%  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 %%  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-{define, version, {shell, "echo -n `git describe --tags --abbrev=0`"}}.
+%%
+%%  All rights reserved.
+%%
+%%  Redistribution and use in source and binary forms, with or without
+%%  modification, are permitted provided that the following conditions are met:
+%%
+%%
+%%%-------------------------------------------------------------------
+%%% @author Volodymyr Kyrychenko <vladimir.kirichenko@gmail.com>
+%%% @doc
+%%%
+%%% @end
+%%%-------------------------------------------------------------------
+-module(ebt_task_ebml_escape).
+-author("Volodymyr Kyrychenko <vladimir.kirichenko@gmail.com>").
 
-{profiles, [
-    {default, [
-        {subdirs, ["ebtool"]},
-        {prepare, [clean, depends]},
-        {perform, []}
-    ]},
-    {example, [
-        {subdirs, ["example"]},
-        {perform, []}
-    ]},
-    {hello, [
-        {subdirs, ["hello_ebt"]},
-        {perform, []}
-    ]}
-]}.
+-compile({parse_transform, do}).
 
-{depends, [
-    {dir, "./lib"},
-    {repositories, [
-        {"http://erlang-build-tool.googlecode.com/files", [
-            {ebml, "1.0.4"},
-            {erlandox, "1.0.5"},
-            {xl_stdlib, "1.3.34"},
-            {getopt, "0.7.1"}
-        ]}
-    ]}
-]}.
+-export([perform/3]).
 
-{cover, [{enabled, false}]}.
+-spec(perform(atom(), file:name(), ebt_config:config()) -> error_m:monad(ok)).
+perform(Target, Dir, Config) ->
+    do([error_m ||
+        OutputDir <- ebt_config:output_dir({config, Target, dir}, Dir, Config),
+        EscapedApps <- ebml:escape_applications(
+            ebt_config:value(Target, Config, prefix, ebt__),
+            ebt_config:files(Target, Config, apps, [], []),
+            OutputDir,
+            ebt_config:value(Target, Config, exclude, [])
+        ),
+        lists:foreach(fun({App, Vsn}) ->
+            io:format("~s/~s-~s", [OutputDir, App, Vsn])
+        end, EscapedApps),
+        return(Config)
+    ]).
