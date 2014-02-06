@@ -66,7 +66,8 @@
                 {sfdp, ebt_task_graphviz},
                 {patchwork, ebt_task_graphviz},
                 {info, ebt_task_info},
-                {ebml_escape, ebt_task_ebml_escape}
+                {ebml_escape, ebt_task_ebml_escape},
+                {fpm, ebt_task_fpm}
             ]},
             {targets, [
                 {ebml_escape, [compile]},
