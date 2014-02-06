@@ -39,8 +39,7 @@ perform(Target, Dir, Config) ->
     do([error_m ||
         Command <- case ebt_config:find_value(Target, Config, script) of
             {ok, Script} ->
-                {_, _, X} = os:timestamp(),
-                Path = xl_string:join(["/tmp/", X, ".sh"]),
+                Path = xl_string:join(["/tmp/ebt__", Target, ".sh"]),
                 do([error_m ||
                     xl_file:write_file(Path, Script),
                     #file_info{mode = Mode} <- xl_file:read_file_info(Path),
