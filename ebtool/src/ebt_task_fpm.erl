@@ -34,6 +34,22 @@
 %%
 %%
 
+%% @doc Compile NIF/Port
+%%
+%% == Example ==
+%% <pre>
+%% {fpm, [
+%%     {package_name, [
+%%         {type, rpm},
+%%         {files, [{include, ["target/scala*/com-strikead-navarro*-one-jar.jar", "bin", "conf"]}]},
+%%         {params, [
+%%             {prefix, "/opt"}
+%%              .....
+%%         ]}
+%%     ]}
+%% ]}.
+%% </pre>
+%% @end
 -module(ebt_task_fpm).
 -author("volodymyr.kyrychenko@strikead.com").
 
@@ -49,14 +65,14 @@ perform(Target, Dir, Config) ->
 
             P = lists:foldl(fun({Key, Value}, Acc) ->
                 xl_string:join([Acc, "--", Key, " ", Value])
-            end, "", xl_lists:kvfind(params, Params, [])),
+            end, "", [{version, ebt_config:version(Config)} || xl_lists:kvfind(params, Params, [])]),
             do([error_m ||
                 OutputDir <- ebt_config:output_dir({outdir, xl_string:join(["fpm/", Name])}, Dir, Config),
                 DistDir <- ebt_config:output_dir({outdir, "dist"}, Dir, Config),
                 xl_lists:eforeach(fun(F) ->
                     xl_file:copy_if_exists(F, OutputDir)
                 end, ebt_config:files(Params, files, [], [])),
-                ebt_cmdlib:exec({"fpm -s dir -t ~s -n ~s -p ~s ~s .", [xl_lists:kvfind(type, Params, rpm), Name, DistDir, P]}, OutputDir)
+                ebt_cmdlib:exec({"fpm -f -s dir -t ~s -n ~s -p ~s ~s .", [xl_lists:kvfind(type, Params, rpm), Name, DistDir, P]}, OutputDir)
             ])
         end, ebt_config:value(Target, Config, [])),
         return(Config)
