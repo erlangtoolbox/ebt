@@ -64,15 +64,15 @@ perform(Target, Dir, Config) ->
         xl_lists:eforeach(fun({Name, Params}) ->
 
             P = lists:foldl(fun({Key, Value}, Acc) ->
-                xl_string:join([Acc, "--", Key, " ", Value])
-            end, "", [{version, ebt_config:version(Config)} || xl_lists:kvfind(params, Params, [])]),
+                Acc ++ xl_string:format(" --~s=~p", [Key, Value])
+            end, "", [{version, ebt_config:version(Config)} | xl_lists:kvfind(params, Params, [])]),
             do([error_m ||
-                OutputDir <- ebt_config:output_dir({outdir, xl_string:join(["fpm/", Name])}, Dir, Config),
+                OutputDir <- ebt_config:output_dir({outdir, "fpm"}, Dir, Config),
                 DistDir <- ebt_config:output_dir({outdir, "dist"}, Dir, Config),
                 xl_lists:eforeach(fun(F) ->
-                    xl_file:copy_if_exists(F, OutputDir)
+                    xl_file:copy_if_exists(F, xl_string:join([OutputDir, "/", Name]))
                 end, ebt_config:files(Params, files, [], [])),
-                ebt_cmdlib:exec({"fpm -f -s dir -t ~s -n ~s -p ~s ~s .", [xl_lists:kvfind(type, Params, rpm), Name, DistDir, P]}, OutputDir)
+                ebt_cmdlib:exec({"fpm -f -s dir -t ~s -n ~s -p ~s ~s ~s", [xl_lists:kvfind(type, Params, rpm), Name, DistDir, P, Name]}, OutputDir)
             ])
         end, ebt_config:value(Target, Config, [])),
         return(Config)
