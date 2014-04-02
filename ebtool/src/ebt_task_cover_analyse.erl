@@ -48,6 +48,11 @@ perform(Target, Dir, Config) ->
     R = case cover:modules() of
         [] -> io:format("no cover-compiled modules~n");
         Modules ->
+            case ebt_config:app_outdir(cover, Dir, Config) of
+                {ok, CoverReportDir} when Output == file ->
+                    io:format("report ~s~n", [CoverReportDir]);
+                _ -> ok
+            end,
             lists:foreach(fun
                 (Module) when Output == console ->
                     case cover:analyse(Module, Analysis, Level) of
