@@ -62,7 +62,6 @@
 perform(Target, Dir, Config) ->
     do([error_m ||
         xl_lists:eforeach(fun({Name, Params}) ->
-
             P = lists:foldl(fun({Key, Value}, Acc) ->
                 Acc ++ xl_string:format(" --~s=~p", [Key, Value])
             end, "", [{version, ebt_config:version(Config)} | xl_lists:kvfind(params, Params, [])]),

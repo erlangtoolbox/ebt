@@ -45,6 +45,7 @@ main(Args) ->
         xl_application:start(ebtool),
         Vsn <- application:get_key(ebtool, vsn),
         ebt_tty:format("Erlang Build Tool, v.~s~n", [Vsn]),
+        ebt_tty:format("Erlang ~p~n", [erlang:system_info(otp_release)]),
         {Opts, _} <- getopt:parse(?OPTS, Args),
         case build(Opts) of
             {error, X} when is_list(X) ->
