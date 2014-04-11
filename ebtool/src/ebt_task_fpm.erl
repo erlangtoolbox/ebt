@@ -43,7 +43,7 @@
 %% </pre>
 %% @end
 -module(ebt_task_fpm).
--author("volodymyr.kyrychenko@strikead.com").
+-author("Volodymyr Kyrychenko <vladimir.kirichenko@gmail.com>").
 
 -compile({parse_transform, do}).
 

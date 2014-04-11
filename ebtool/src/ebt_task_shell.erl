@@ -20,7 +20,7 @@
 %%  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 -module(ebt_task_shell).
--author("volodymyr.kyrychenko@strikead.com").
+-author("Volodymyr Kyrychenko <vladimir.kirichenko@gmail.com>").
 
 -compile({parse_transform, do}).
 

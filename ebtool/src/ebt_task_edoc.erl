@@ -33,7 +33,7 @@
 %% ]}
 %% </pre>
 -module(ebt_task_edoc).
--author("volodymyr.kyrychenko@strikead.com").
+-author("Volodymyr Kyrychenko <vladimir.kirichenko@gmail.com>").
 
 -compile({parse_transform, do}).
 

@@ -20,7 +20,7 @@
 %%  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 -module(ebt_cmdlib).
--author("volodymyr.kyrychenko@strikead.com").
+-author("Volodymyr Kyrychenko <vladimir.kirichenko@gmail.com>").
 
 %% API
 -export([exec/2, exec/1]).
