@@ -34,7 +34,8 @@
         stdlib,
         xl_stdlib,
         getopt,
-        erlandox
+        et_code,
+        et_lang
     ]},
     {env, [
         {tasks, [
