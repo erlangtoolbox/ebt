@@ -39,7 +39,7 @@
 %%%
 %%% @end
 %%%-------------------------------------------------------------------
--module(ebt_task_ebml_escape).
+-module(ebt_task_code_escape).
 -author("Volodymyr Kyrychenko <vladimir.kirichenko@gmail.com>").
 
 -compile({parse_transform, do}).
@@ -50,7 +50,7 @@
 perform(Target, Dir, Config) ->
     do([error_m ||
         OutputDir <- ebt_config:output_dir({config, Target, dir}, Dir, Config),
-        EscapedApps <- ebml:escape_applications(
+        EscapedApps <- et_code:escape_applications(
             ebt_config:value(Target, Config, prefix, ebt__),
             ebt_config:files(Target, Config, apps, [], []),
             OutputDir,
