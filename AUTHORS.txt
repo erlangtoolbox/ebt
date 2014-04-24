@@ -1,0 +1,2 @@
+- Vladimir Kirichenko <vladimir.kirichenko@gmail.com>
+- Dmitry Kasimtsev <dmitry@kasimtsev.com>
