@@ -29,12 +29,11 @@
 
 -compile({parse_transform, do}).
 
--export([perform/3]).
+-export([perform/3, compile/5]).
 
 perform(Target, Dir, Config) ->
     Sources = filelib:wildcard(Dir ++ "/src/*.proto"),
     IncludeDir = Dir ++ "/include",
-    Compiler = et_string:join_atom([ebt_protobuf_, ebt_config:value(Target, Config, compiler, basho)]),
     do([error_m ||
         OutDir <- ebt_config:app_outdir(production, Dir, Config),
         EbinDir <- return(OutDir ++ "/ebin"),
@@ -42,8 +41,19 @@ perform(Target, Dir, Config) ->
         xl_lists:eforeach(fun(File) ->
             do([error_m ||
                 xl_file:mkdirs(IncludeDir),
-                Compiler:compile(File, EbinDir, IncludeDir)
+                compile(ebt_config:value(Target, Config, compiler, basho), File, EbinDir, Dir ++ "/src", IncludeDir)
             ])
         end, Sources),
         return(Config)
     ]).
+
+-spec(compile(atom(), file:name(), file:name(), file:name(), file:name()) -> error_m:monad(ok)).
+compile(basho, File, EbinDir, _SrcDir, IncludeDir) ->
+    protobuffs_compile:scan_file(File, [
+        {output_ebin_dir, EbinDir},
+        {output_include_dir, IncludeDir}
+    ]);
+compile(gpb, File, _EbinDir, SrcDir, IncludeDir) ->
+    Dir = filename:dirname(File),
+    Proto = filename:basename(File),
+    gpb_compile:file(Proto, [{i, Dir}, {o_hrl, IncludeDir}, {o_erl, SrcDir}]).

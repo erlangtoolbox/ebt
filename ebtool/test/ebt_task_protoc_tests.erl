@@ -25,16 +25,29 @@
 %%%
 %%% @end
 %%%-------------------------------------------------------------------
--module(ebt_protobuf_basho_tests).
+-module(ebt_task_protoc_tests).
 -author("Volodymyr Kyrychenko <vladimir.kirichenko@gmail.com>").
 
 -include_lib("eunit/include/eunit.hrl").
 
-compile_test() ->
+basho_test() ->
     et_file:delete("/tmp/test"),
     et_file:mkdirs("/tmp/test/ebin"),
     et_file:mkdirs("/tmp/test/include"),
-    ?assertEqual(ok, ebt_protobuf_basho:compile(
+    ?assertEqual(ok, ebt_task_protoc:compile(
+        basho,
+        "test/addressbook.proto",
+        "/tmp/test/ebin",
+        "/tmp/test/src",
+        "/tmp/test/include"
+    )).
+
+gpb_test() ->
+    et_file:delete("/tmp/test"),
+    et_file:mkdirs("/tmp/test/src"),
+    et_file:mkdirs("/tmp/test/include"),
+    ?assertEqual(ok, ebt_task_protoc:compile(
+        gpb,
         "test/addressbook.proto",
         "/tmp/test/ebin",
         "/tmp/test/src",
