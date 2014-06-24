@@ -19,25 +19,23 @@
 %%  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 %%  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
--module(ebt_task_protoc).
+%%%-------------------------------------------------------------------
+%%% @author Volodymyr Kyrychenko <vladimir.kirichenko@gmail.com>
+%%% @doc
+%%%
+%%% @end
+%%%-------------------------------------------------------------------
+-module(ebt_protobuf_basho).
+-author("Volodymyr Kyrychenko <vladimir.kirichenko@gmail.com>").
 
--compile({parse_transform, do}).
+%% API
+-export([compile/4]).
 
--export([perform/3]).
-
-perform(Target, Dir, Config) ->
-    Sources = filelib:wildcard(Dir ++ "/src/*.proto"),
-    IncludeDir = Dir ++ "/include",
-    Compiler = et_string:join_atom([ebt_protobuf_, ebt_config:value(Target, Config, compiler, basho)]),
-    do([error_m ||
-        OutDir <- ebt_config:app_outdir(production, Dir, Config),
-        EbinDir <- return(OutDir ++ "/ebin"),
-        xl_file:mkdirs(EbinDir),
-        xl_lists:eforeach(fun(File) ->
-            do([error_m ||
-                xl_file:mkdirs(IncludeDir),
-                Compiler:compile(File, EbinDir, IncludeDir)
-            ])
-        end, Sources),
-        return(Config)
+-spec(compile(file:name(), file:name(), file:name(), file:name()) -> error_m:monad(ok)).
+compile(File, EbinDir, _SrcDir, IncludeDir) ->
+    protobuffs_compile:scan_file(File, [
+        {output_ebin_dir, EbinDir},
+        {output_include_dir, IncludeDir}
     ]).
+
+

@@ -19,25 +19,24 @@
 %%  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 %%  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
--module(ebt_task_protoc).
+%%%-------------------------------------------------------------------
+%%% @author Volodymyr Kyrychenko <vladimir.kirichenko@gmail.com>
+%%% @doc
+%%%
+%%% @end
+%%%-------------------------------------------------------------------
+-module(ebt_protobuf_basho_tests).
+-author("Volodymyr Kyrychenko <vladimir.kirichenko@gmail.com>").
 
--compile({parse_transform, do}).
+-include_lib("eunit/include/eunit.hrl").
 
--export([perform/3]).
-
-perform(Target, Dir, Config) ->
-    Sources = filelib:wildcard(Dir ++ "/src/*.proto"),
-    IncludeDir = Dir ++ "/include",
-    Compiler = et_string:join_atom([ebt_protobuf_, ebt_config:value(Target, Config, compiler, basho)]),
-    do([error_m ||
-        OutDir <- ebt_config:app_outdir(production, Dir, Config),
-        EbinDir <- return(OutDir ++ "/ebin"),
-        xl_file:mkdirs(EbinDir),
-        xl_lists:eforeach(fun(File) ->
-            do([error_m ||
-                xl_file:mkdirs(IncludeDir),
-                Compiler:compile(File, EbinDir, IncludeDir)
-            ])
-        end, Sources),
-        return(Config)
-    ]).
+compile_test() ->
+    et_file:delete("/tmp/test"),
+    et_file:mkdirs("/tmp/test/ebin"),
+    et_file:mkdirs("/tmp/test/include"),
+    ?assertEqual(ok, ebt_protobuf_basho:compile(
+        "test/addressbook.proto",
+        "/tmp/test/ebin",
+        "/tmp/test/src",
+        "/tmp/test/include"
+    )).
