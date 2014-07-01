@@ -56,4 +56,4 @@ compile(basho, File, EbinDir, _SrcDir, IncludeDir) ->
 compile(gpb, File, _EbinDir, SrcDir, IncludeDir) ->
     Dir = filename:dirname(File),
     Proto = filename:basename(File),
-    gpb_compile:file(Proto, [{i, Dir}, {o_hrl, IncludeDir}, {o_erl, SrcDir}]).
+    gpb_compile:file(Proto, [{i, Dir}, {o_hrl, IncludeDir}, {o_erl, SrcDir}, {include_as_lib, true}]).
