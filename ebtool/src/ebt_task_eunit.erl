@@ -44,7 +44,7 @@ perform(Target, Dir, Config) ->
         TestDir <- ebt_config:app_outdir(test, Dir, Config),
         ProdDir <- ebt_config:app_outdir(production, Dir, Config),
         case lists:map(fun(F) ->
-            list_to_atom(filename:basename(F, "_tests.erl"))
+            list_to_atom(filename:basename(F, ".erl"))
         end, ebt_config:files(Target, Config, [], ["test/*_tests.erl"])) of
             [] -> io:format("no eunit tests~n");
             List ->

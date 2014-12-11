@@ -42,10 +42,10 @@ main(Args) ->
         {Opts, _} <- getopt:parse(?OPTS, Args),
         case build(Opts) of
             {error, X} when is_list(X) ->
-                ebt_tty:format(standard_error, "~s~n", [X]),
+                ebt_tty:format("~s~n", [X]),
                 halt(1);
             {error, X} ->
-                ebt_tty:format(standard_error, "~p~n", [X]),
+                ebt_tty:format("~p~n", [X]),
                 halt(1);
             {ok, X} ->
                 ebt_tty:format("~s~n", [X])
